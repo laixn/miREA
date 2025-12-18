@@ -8,8 +8,8 @@ miREA is designed to address the intrinsic many-to-many regulatory interactions 
 
 ## Key Features
 
-* **MGI edge-based** miRNA enrichment analysis
-* **Edge scores** to measure and differentiate regulatory strengths of numerous MGIs
+* **MGI edge-based** miRNA enrichment analysis.
+* **Edge scores** to measure and differentiate regulatory strengths of numerous MGIs.
 * Five novel edge-based enrichment algorithms that include **over-representation**, **scoring-based**, **topology-aware**, and **network-propagation** apporaches.
 * **Comprehansive benchmarking framework** that evaluates sensitivity, specificity, discriminative ability, robustness, biological relevance, and computational efficiency across multiple cancer types.
 * **Advanced visualization modules** to enhance the interpretability for intuitive exploration of miRNA-gene-pathway regulatory mechanisms.
@@ -72,7 +72,7 @@ miREA/
   ├── 2.5_robustness  # corresponds to Supplementary Fig. S3 and Fig. S4
   ├── 2.6_data_source  # corresponds to Supplementary Fig. S5
   ├── 2.7_time_test  # corresponds to Figure 3C and Supplementary Fig. S6
-  ├── 3_case_study  # corresponds to Figure 4
+  └── 3_case_study  # corresponds to Figure 4
 
 └── README.md
 ```
