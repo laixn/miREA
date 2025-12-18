@@ -51,7 +51,7 @@ miREA/
 ├── R/                 # all R functions
 ├── Javascript/        # Javascript codes for estimating p-values for permutation test
 
-├── data/              # processed data
+├── data/              # processed data (only include BLCA for example)
   ├── raw_data/
     ├── background/    # global miRNA-gene interaction and gene-gene interaction background
     ├── cancer_data/   # data needed for enrichment
@@ -62,7 +62,7 @@ miREA/
   ├── input_data/      # input data generated from get_all_input_data() function
   └── cancer_list/     # contains cancer-related genes and miRNAs from well-established research
 
-├── results/           # enrichment results
+├── results/           # enrichment results (only include BLCA for example)
 
 ├── analysis/          # codes, results, and plots generated for analysis
   ├── 2.1_positive_benchmark  # corresponds to Figure 2A
