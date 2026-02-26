@@ -4,6 +4,7 @@ We present miRNA-oriented Enrichment Analysis (**miREA**) framework, which integ
 
 miREA is designed to address the intrinsic many-to-many regulatory interactions of MGIs and reduce biases introduced by conventional node-centric enrichment aprroaches, by explicitly modeling **miRNA-gene regulatory networks**, **pathway topology**, and **expression-informed MGI edge scores**.
 
+![Workflow](Figure1.png)
 ---
 
 ## Key Features
@@ -51,6 +52,7 @@ miREA returns results containing:
 ```
 miREA/
 ├── mapping.docx       # For easy reference, it includes the correspondence between sections, plots, tables in the article and the current repository.
+├── Figure1.png        # Illustration of five edge-based methods
 
 ├── function.RData     # all functions for miREA, integrating functions in R/
 ├── R/                 # all R functions
