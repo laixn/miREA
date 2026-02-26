@@ -51,6 +51,7 @@ miREA returns results containing:
 ```
 miREA/
 ├── mapping.docx       # For easy reference, it includes the correspondence between sections, plots, tables in the article and the current repository.
+
 ├── function.RData     # all functions for miREA, integrating functions in R/
 ├── R/                 # all R functions
 ├── Javascript/        # Javascript codes for estimating p-values for permutation test
