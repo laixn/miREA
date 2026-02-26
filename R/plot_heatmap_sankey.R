@@ -18,8 +18,8 @@
 #' @return A heatmap-sankey plot either in the current window, or saved as heatmap_sankey_[method].pdf in the plot_path.
 
 
-plot_heatmap_sankey <- function(method, result, input_data, n_mir_heatmap = 20, n_mir_sankey = 10,  n_pathway = 10, 
-                                plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL, sankey_prop = 1.5, 
+plot_heatmap_sankey <- function(method, result, input_data, n_mir_heatmap = 20, n_mir_sankey = 10,  n_pathway = 10,
+                                plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL, sankey_prop = 1.5,
                                 gene_annot = NULL, mir_annot = NULL, annot_color = "#A6DDBA"){
   # fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
   #              "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
@@ -236,13 +236,18 @@ plot_heatmap_sankey <- function(method, result, input_data, n_mir_heatmap = 20, 
         gp = gpar(fontsize = 12)
       ),
       mir_annot_flag = anno_simple(
-        #as.character(mir_anno_df),
         as.data.frame(lapply(mir_anno_df, as.character)),
         col = if (ncol(mir_anno_df) == 1) anno_col[[1]] else anno_col,
         border = FALSE,
         width = unit(rep(4, ncol(mir_anno_df)), "mm")
       ),
-      show_annotation_name = FALSE,
+      show_annotation_name = TRUE,
+      annotation_name_side = "top",
+      annotation_name_rot = 90,
+      annotation_name_offset = unit(-3, "mm"),
+      annotation_label = list(
+        mir_annot_flag = colnames(mir_anno_df)          # 使用 mir_annot 的列名
+      ),
       show_legend = FALSE
     )
 
@@ -685,7 +690,7 @@ plot_sankey <- function(dict, pathway, enriched_path, all_paths, top_miRNA, mir_
   col_gene_fc <- colorRamp2(c(-gene_max,0,gene_max),c("#add8e6",  "white", "#ffb6c1"))
   gene_fill_df <- gene_fill_df %>%
     mutate(fill_color = col_gene_fc(geneLogFC))
- 
+
   color_func <- scales::col_numeric(
     palette = c("#ff6666", "mistyrose"),
     domain = c(0, penrichCutoff)

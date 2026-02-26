@@ -1,4 +1,8 @@
 # This is the script to summarize the time
+# Outputs include:
+# 1. Figure S11: 1_time_test.pdf
+# 2. Figure 2E: 2_time_summary.pdf
+
 setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
 result_dir <- "analysis/2.7_time_test/"
 data_dir <- paste0(result_dir, "time_test_result/")
@@ -16,7 +20,7 @@ library(tidyr)
 library(scales) # trans_format
 library(patchwork)
 
-.libPaths(c("/projappl/project_2011179/rpackages_440", .libPaths()))  ## Our special case, please remove this line when using.
+# .libPaths(c("/projappl/project_2011179/rpackages_440", .libPaths()))  ## Our special case, please remove this line when using.
 library(gghalves)
 
 # 1. test optimal number of cores on BLCA----
@@ -205,7 +209,7 @@ hallmark_mat <- as.matrix(t(hallmark_time))
 # plot(reactome_plot)
 
 round_up_to <- function(x, step = 0.1) {
-  if (x > 0){
+  if (x > 1){
     ceiling(x / step) * step
   } else {
     floor(x / step) * step
@@ -213,14 +217,47 @@ round_up_to <- function(x, step = 0.1) {
 
 }
 
-min_time <- min(c(min(log10(reactome_mat)), min(log10(hallmark_mat))))
-max_time <- max(c(max(log10(reactome_mat)), max(log10(hallmark_mat))))
-time_range <- c(round_up_to(min_time), round_up_to(max_time))
-# time_range <- c(round_up_to(min(pr_long$time)), round_up_to(max(pr_long$time)))
-time_breaks <- c(seq(from = ceiling(time_range[1]), to = floor(time_range[2])), time_range[2])
+# minor_breaks_fun <- function(time_range) {
+#   unlist(lapply(time_range, function(p) seq(10^p, 10^(p+1), length.out = 6)[-1]))
+# }
+
+# minor_breaks_fun <- function(time_range) {
+#   log_range <- log10(time_range)
+#
+#   unlist(lapply(seq(floor(log_range[1]), ceiling(log_range[2]) - 1),
+#                 function(p)
+#                   seq(10^p, 10^(p + 1), length.out = 10)[-1]
+#   ))
+# }
+
+minor_breaks_fun <- function(time_range) {
+  log_min <- floor(log10(time_range[1]))
+  log_max <- ceiling(log10(time_range[2]))
+
+  unlist(lapply(log_min:(log_max - 1), function(p)
+    seq(10^p, 10^(p + 1), length.out = 10)[-1]
+  ))
+}
+
+min_time <- min(c(min(reactome_mat), min(hallmark_mat)))
+max_time <- max(c(max(reactome_mat), max(hallmark_mat)))
+time_range <- c(round_up_to(min_time, 0.1), round_up_to(max_time, 1))
+
+log_min <- floor(log10(time_range[1]))
+log_max <- ceiling(log10(time_range[2]))
+log_breaks <- 10^(log_min:log_max)
+time_range <- c(10^log_min, 10^log_max)
+# time_breaks <- seq(from = 0, to = time_range[2], by = 1000)
+# log_breaks <- 10^(-5:10)
+# log_breaks <- log_breaks[
+#   log_breaks >= time_range[1] &
+#     log_breaks <= time_range[2]
+# ]
+minor_breaks <- minor_breaks_fun(time_range)
+
+
 
 matrix <- hallmark_mat
-# pr_long <- na.omit(melt(matrix))
 pr_long <- as.data.frame(matrix) %>%
   rownames_to_column("row") %>%
   pivot_longer(-row, names_to = "column", values_to = "value") %>%
@@ -228,14 +265,13 @@ pr_long <- as.data.frame(matrix) %>%
 colnames(pr_long) <- c("Methods", "cancer", "time")
 pr_long$Methods <- factor(pr_long$Methods, levels = rev(rownames(matrix)))
 pr_long$method_numeric <- as.numeric(pr_long$Methods)# convert method to numeric positions(same as heatmap rows)
-pr_long$time_raw <- pr_long$time
-pr_long$time <- log10(pr_long$time)
+method_range <- c(0, nrow(matrix)+0.5)
+ratio <- diff(method_range) /  diff(time_range)
 
+# pr_long$time_raw <- pr_long$time
+# pr_long$time <- log10(pr_long$time)
 
-method_range <- c(0.5, nrow(matrix)+0.5)
-ratio <-diff(method_range) /  diff(time_range)
 p_pr_hallmark <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
-
   geom_half_violin(aes(fill = Methods), side = "l", scale = "width", alpha = 0.4, color = NA) +
   geom_half_boxplot(aes(fill = Methods), side = "r", outlier.shape = NA, alpha = 1) +
   geom_point(aes(x = method_numeric - 0.2, color = Methods), size = 1) +
@@ -246,18 +282,18 @@ p_pr_hallmark <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
   scale_x_continuous(
     breaks = 1:nrow(matrix),
     labels = rev(rownames(matrix)),
-    limits = c(0.5, nrow(matrix)+0.5),
+    limits = method_range,
     expand = c(0,0)
   ) +
-  scale_y_continuous(
+  scale_y_log10(
     limits = time_range,
-    breaks = time_breaks
+    breaks = log_breaks,
+    minor_breaks = minor_breaks,
+    labels = trans_format("log10", math_format(10^.x)),
+    expand = c(0,0)
   ) +
-
-
-  # coord_fixed(ratio = 1.6 * ratio) +
+  annotation_logticks(sides = "b") +
   coord_flip(clip = "off") +
-  # theme_void() +
   theme_minimal()+
   theme(
     legend.position = "none",
@@ -274,13 +310,11 @@ p_pr_hallmark <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
     panel.grid = element_blank()
   ) +
   annotate("text",
-           x = 1, y = time_range[1],
+           x = 1, y = minor_breaks[1],
            label = "Number of CPU cores:\nEdge_2Ddist: 1\nEdge_Topology: 10\nEdge_Network: 8",
            hjust = 0, vjust = 0,
            size = 2.5,
            color = "black")
-
-
 
 matrix <- reactome_mat
 # pr_long <- na.omit(melt(matrix))
@@ -291,10 +325,8 @@ pr_long <- as.data.frame(matrix) %>%
 colnames(pr_long) <- c("Methods", "cancer", "time")
 pr_long$Methods <- factor(pr_long$Methods, levels = rev(rownames(matrix)))
 pr_long$method_numeric <- as.numeric(pr_long$Methods) # convert method to numeric positions(same as heatmap rows)
-pr_long$time_raw <- pr_long$time
-pr_long$time <- log10(pr_long$time)
 
-method_range <- c(0.5, nrow(matrix)+0.5)
+method_range <- c(0, nrow(matrix)+0.5)
 ratio <-diff(method_range) /  diff(time_range)
 p_pr_reactome <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
 
@@ -307,18 +339,21 @@ p_pr_reactome <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
   scale_x_continuous(
     breaks = 1:nrow(matrix),
     labels = rev(rownames(matrix)),
-    limits = c(0.5, nrow(matrix)+0.5),
+    limits = method_range,
     expand = c(0,0)
   ) +
-  scale_y_continuous(
+  scale_y_log10(
     limits = time_range,
-    breaks = time_breaks
+    breaks = log_breaks,
+    minor_breaks = minor_breaks,
+    labels = trans_format("log10", math_format(10^.x)),
+    expand = c(0,0)
   ) +
-  labs(y = "log10(calculation time) (s)", x = NULL, title = "Reactome (2394 pathways)", fill = "Methods", color = "Methods", shape = "Methods") +
+  annotation_logticks(sides = "b") +
+  labs(y = "Calculation time (s)", x = NULL, title = "Reactome (2394 pathways)", fill = "Methods", color = "Methods", shape = "Methods") +
   guides(fill = guide_legend(title = "Methods"),
          color = guide_legend(title = "Methods")) +
   coord_flip() +
-  # theme_void() +
   theme_minimal()+
   theme(
     axis.text.x = element_text(color = "black", size = 7.5),
@@ -337,7 +372,7 @@ p_pr_reactome <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
     panel.grid = element_blank()
   ) +
   annotate("text",
-           x = 1, y = time_range[1],
+           x = 1, y = minor_breaks[1],
            label = "Number of CPU cores:\nEdge_2Ddist: 4\nEdge_Topology: 32\nEdge_Network: 8",
            hjust = 0, vjust = 0,
            size = 2.5,
@@ -352,5 +387,5 @@ p_pr <- p_pr_hallmark / p_pr_reactome +
       )
     )
   )
-ggsave(paste0(result_dir, "2_time_summary.pdf"), p_pr, width = 14, height = 16, units = "cm")
+ggsave(paste0(result_dir, "2_time_summary.pdf"), p_pr, width = 14, height = 16, units = "cm") # 2_
 

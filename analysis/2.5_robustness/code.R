@@ -1,4 +1,8 @@
 # This is the script to test methods' robustness to data, containing 2.5.1 for score-based methods, and 2.5.2 for DE-based methods
+# Outputs include:
+# 1. Figure S8: 1_score_dist_vs_FPR.pdf
+# 2. Figure S9: 2_threshold_heatmap.pdf
+
 setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
 result_dir <- "analysis/2.5_robustness/"
 if (!dir.exists(result_dir)){

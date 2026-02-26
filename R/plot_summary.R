@@ -15,11 +15,11 @@ plot_summary <- function(result, penrichCutoff = NULL, plot_path = NULL,
                          fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
                                       "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
                                       "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072")){
-  if (!requireNamespace("gridExtra", quietly = TRUE)) install.packages("gridExtra")
-  library(gridExtra)
-
-  if (!requireNamespace("tibble", quietly = TRUE)) install.packages("tibble")
-  library(tibble)
+  # if (!requireNamespace("gridExtra", quietly = TRUE)) install.packages("gridExtra")
+  # library(gridExtra)
+  #
+  # if (!requireNamespace("tibble", quietly = TRUE)) install.packages("tibble")
+  # library(tibble)
 
   enrich <- list()
   # n_pathway <- result$parameter$n_pathway
@@ -64,8 +64,6 @@ plot_summary <- function(result, penrichCutoff = NULL, plot_path = NULL,
     return(list(summary = combined, pvalue = pvalue_plot))
   }
 
-
-
 }
 
 
@@ -83,8 +81,8 @@ plot_positive_rate <- function(summary, fill_col){# plot_path
 
   p <- ggplot(summary, aes(x = method, y = positive_rate, fill = method)) +
     geom_bar(stat = "identity", color= "black") +
-    scale_fill_manual(values = fill_col) +
-    labs(x = "Method", y = paste0("Positive Rate (", n_path, " pathways)"),
+    scale_fill_manual(values = fill_col, guide = "none") +
+    labs(x = NULL, y = paste0("Positive Rate (", n_path, " pathways)"),
          title = "Positive Rates for Different Methods") +
     theme_minimal() +
     theme(
@@ -105,8 +103,8 @@ plot_positive_rate <- function(summary, fill_col){# plot_path
       panel.grid = element_blank()
     ) +
     coord_fixed(ratio = ratio, clip = "off") +
-    scale_y_continuous(expand = c(0,0), limits = c(0, y_range[2] * 1.05)) + #
-    guides(fill = guide_legend(title = "Methods", title.theme = element_text(face = "bold")))
+    scale_y_continuous(expand = c(0,0), limits = c(0, y_range[2] * 1.05)) #+
+    #guides(fill = guide_legend(title = "Methods", title.theme = element_text(face = "bold")))
 
   return(p)
 }
@@ -210,7 +208,6 @@ plot_overlap_ht <- function(enrich){
 
     }
   }
-  # 将矩阵转为长格式数据框
   df <- reshape2::melt(matrix, varnames = c("Method1", "Method2"), value.name = "Value")
   df$Value <- as.numeric(df$Value)
   # df$Method2 <- factor(df$Method2, levels = rev(unique(df$Method2)))
@@ -308,7 +305,7 @@ plot_pvalue_dens <- function(result, fill_col){
         panel.border = element_rect(color = "black", fill = NA, linewidth = 0.75)
       ) +
       labs(x = "pvalue", y = "density") +     # , title = "Pvalue Density for Different Methods"
-      guides(fill = "none") 
+      guides(fill = "none")
   })
   names(plot_list) <- names(plist)
   p_all <- wrap_plots(plot_list, nrow = 3, guides = "collect") +

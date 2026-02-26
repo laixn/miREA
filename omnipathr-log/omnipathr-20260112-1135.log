@@ -1,0 +1,13 @@
+[2026-01-12 11:35:01] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2026-01-12 11:35:01] [INFO]    [OmnipathR] OmnipathR version: 3.14.0
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] Reading JSON from `/users/zhesizha/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2026-01-12 11:35:01] [INFO]    [OmnipathR] Initialized cache: `/users/zhesizha/.cache/OmnipathR`.
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] Reading JSON from `/appl/soft/math/r-env/442/442-rpackages/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] Reading JSON from `/appl/soft/math/r-env/442/442-rpackages/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] Reading JSON from `/appl/soft/math/r-env/442/442-rpackages/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] Reading JSON from `/appl/soft/math/r-env/442/442-rpackages/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2026-01-12 11:35:01] [TRACE]   [OmnipathR] JSON validation successful: TRUE

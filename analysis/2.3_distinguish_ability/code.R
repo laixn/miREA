@@ -1,29 +1,17 @@
 # This is the script for summarizing whether the methods could identify specific cancer-related pathways in cancer-related pathways for all cancer types.
+# Generates Figure S7: cancer_specific_ranks.pdf
+setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
+
 library(dplyr)
 library(readr) # read_csv()
 library(purrr)
-# library(tidyr) # pivot_wider()
 library(ggplot2)
-# library(ComplexHeatmap)
-# library(tibble) # rownames_to_column()
-#
-.libPaths(c("/projappl/project_2011179/rpackages_440", .libPaths()))  ## Our special case, please remove this line when using.
 library(gghalves)
-
 library(rstatix)
 library(ggpubr)
-
 library(patchwork)
+#.libPaths(c("/projappl/project_2011179/rpackages_440", .libPaths()))  ## Our special case, please remove this line when using.
 
-#
-# # 4. TN pvalue distribution
-# library(patchwork)
-# library(scales)
-#
-# # 5. TN-TP pvalue density
-# library(coin) # Fisher-Pitman permutation test
-
-setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
 
 result_dir <- "analysis/2.3_distinguish_ability/"
 if (!dir.exists(result_dir)){
@@ -159,7 +147,9 @@ p_median_rank <- ggplot(pr_long, aes(y = median_rank, x = method_numeric)) +
   geom_violin(aes(fill = Methods), scale = "width", alpha = 0.4, color = NA) +
   geom_half_boxplot(aes(fill = Methods), side = "r", outlier.shape = NA, alpha = 1) +
   geom_point(aes(x = method_numeric - 0.2, color = Methods), size = 1) +
-  labs(y = "Median Relative Rank", x = NULL, title = "Median Relative Ranks") +
+  labs(y = "Median Relative Rank", x = NULL,
+       title = "Median Relative Ranks for Specific Cancer-Related Pathways"
+       ) + # subtitle = "(16 Cancer Types)"
   geom_vline(xintercept = 4.5, linetype = "dashed", color = "grey", linewidth = 1) +
   scale_fill_manual(values = fill_col) +
   scale_color_manual(values = fill_col) +
@@ -186,13 +176,14 @@ p_median_rank <- ggplot(pr_long, aes(y = median_rank, x = method_numeric)) +
     axis.ticks.y = element_line(color = "black"),
     axis.ticks.x = element_line(color = "black"),
     plot.title = element_text(hjust = 0.5, face = "bold", size = 10.5),
+    plot.subtitle = element_text(hjust = 0.5),
 
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
     panel.grid = element_blank()
   ) +
   coord_fixed(ratio = ratio, clip = "off")
 
-# ggsave(paste0(result_dir, "TP_all_median_rank.pdf"), p_median_rank, width = 6, height = 8)
+# ggsave(paste0(result_dir, "TP_all_median_rank.pdf"), p_median_rank, width = 6, height = 6)
 
 ## 1.2 relative rank diff ----
 pw_stat_test <- all_result_df %>%
@@ -222,6 +213,7 @@ p_diff <- ggplot(all_result_df,
   theme_bw() +
   labs(
     title = "Relative Ranks Differences",
+    # subtitle = "(16 Cancer Types)",
     y = "Relative Rank",
     x = NULL
   ) +
@@ -240,9 +232,14 @@ p_diff <- ggplot(all_result_df,
     legend.text = element_text(size = 7),
     legend.title = element_text(size = 8, face = "bold"),
     plot.title = element_text(hjust = 0.5, face = "bold", size = 10.5),
+    plot.subtitle = element_text(hjust = 0.5),
     aspect.ratio = 1
   )
+# ggsave(paste0(result_dir, "median_rank_diff.pdf"), p_diff, width = 6, height = 6)
 
+
+
+## 1.3 merge plots ----
 p <- (p_median_rank | p_diff) +
   plot_annotation(
     title = "Relative Ranks for Cancer-specific Pathways (16 Cancer Types)",
@@ -250,131 +247,5 @@ p <- (p_median_rank | p_diff) +
       plot.title = element_text(hjust = 0.5, face = "bold", size = 12)
     )
   )
-
 ggsave(paste0(result_dir, "cancer_specific_ranks.pdf"), p, width = 12, height = 6)
 
-
-# ** 2. TP p values vs TN p values (similar to pvalue density, consider remove it) ----
-## 1.0 data preparation
-### TP_part
-# TP_all_pw <- read.csv("data/raw_data/pathway/TP/TP_pathway_all_cancers.csv")
-# TP_all_pw <- TP_all_pw %>% select(pathway, cancer) %>% distinct()
-
-path_name = "TP"
-cat("Start processing", path_name, "...\n")
-base_dir <- paste0("results/", path_name, "/")
-cancer_dirs <- list.dirs(base_dir, recursive = FALSE)
-cancer_dirs <- cancer_dirs[!grepl("slurm_logs", cancer_dirs)]
-method_order <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
-
-TP_result <- list()
-
-for (cancer_dir in cancer_dirs) {
-  cancer <- basename(cancer_dir)
-  message("Processing cancer: ", cancer)
-
-  # cancer_pw <- read.csv(paste0("data/raw_data/pathway/TP/cancer_specific/TP_", cancer, "_gene.csv"), header = TRUE)
-  # cancer_pw <- unique(cancer_pw$pathway)
-
-  for (method in method_order){
-    file_path <- file.path(cancer_dir, paste0("result/", cancer, "_", method, ".csv"))
-
-    if (file.exists(file_path)){
-      df <- read_csv(file_path, col_types = cols())
-      df$method = method
-      df$cancer = cancer
-
-      # df <- df %>%
-      #   arrange(p_value) %>%   # 确保顺序
-      #   mutate(
-      #     rank = rank(p_value, ties.method = "min", na.last = "keep"),
-      #     relative_rank = rank / nrow(df),
-      #     cancer = cancer,
-      #     method = method
-      #   )
-
-      TP_result[[paste(cancer, method, sep = "_")]] <- df
-
-    } else {
-      warning(paste("File not found:", file_path))
-    }
-  }
-}
-TP_result_df <- bind_rows(TP_result)
-TP_result_df$type = "TP"
-
-load("/scratch/project_2011179/code/miREA/analysis/2.2_negative_benchmark/result.RData")
-TN_result_df <- bind_rows(TN_results, .id = "method")
-TN_result_df$type = "TN"
-
-all_result_df <- rbind(
-  TP_result_df[, c("p_value", "type", "cancer", "method")],
-  TN_result_df[, c("p_value", "type", "cancer", "method")]
-)
-all_result_df$method <- factor(all_result_df$method, levels = method_order)
-
-all_result_df <- all_result_df %>%
-  arrange(p_value) %>%
-  mutate(rank = rank(p_value, ties.method = "min", na.last = "keep"),
-         relative_rank = rank / nrow(all_result_df))
-
-all_result_df$type <- factor(all_result_df$type, levels = c("TP", "TN"))
-
-## ** 2.2 relative rank diff ----
-pw_stat_test <- all_result_df %>%
-  group_by(method) %>%
-  wilcox_test(relative_rank ~ type) %>%
-  adjust_pvalue(method = "BH") %>%
-  add_significance()
-
-p_diff <- ggplot(all_result_df,
-                 aes(x = method, y = relative_rank, fill = type)) +
-  geom_boxplot(position = position_dodge(0.7), outlier.shape = NA) +
-  # geom_jitter(aes(color = is_cancer_pw),
-  #             position = position_dodge(0.8)) +
-
-  stat_pvalue_manual(
-    pw_stat_test,
-    label = "p.adj.signif",
-    x = "method",
-    group = "type",
-    y.position = max(all_result_df$relative_rank, na.rm = TRUE) + 0.05,
-    tip.length = 0,
-    inherit.aes = FALSE
-  ) +
-  scale_fill_manual(name = "Type", values = c("TP" = "#F4A7B9", "TN" = "#9CC9E8")) +
-  scale_color_manual(name = "Type",values = c("TP" = "#F4A7B9", "TN" = "#9CC9E8")) +
-  geom_vline(xintercept = 4.5, linetype = "dashed", color = "grey", linewidth = 1) +
-  theme_bw() +
-  labs(
-    title = "Relative Ranks Differences",
-    y = "Relative Rank",
-    x = "Method"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 30, hjust = 1, color = "black"),
-    axis.text.y = element_text(color = "black"),
-    axis.title = element_text(color = "black"),
-    axis.line = element_line(color = "black"),
-    panel.grid = element_blank(),
-    panel.border = element_rect(color = "black", linewidth = 0.75, fill = NA),
-    legend.position = c(0.02, 0.95),       # x, y ∈ [0, 1]
-    legend.justification = c(0,1),         # 以右下角为锚点
-    legend.background = element_rect(fill = alpha("white", 0.8),
-                                     # color = "black",
-                                     linewidth = 0.5),
-    legend.text = element_text(size = 6),
-    legend.title = element_text(size = 6, face = "bold"),
-    plot.title = element_text(hjust = 0.5, face = "bold"),
-    aspect.ratio = 1
-  )
-
-# p <- (p_median_rank | p_diff) +
-#   plot_annotation(
-#     title = "Relative Ranks for Cancer-specific Pathways (16 Cancer Types)",
-#     theme = theme(
-#       plot.title = element_text(hjust = 0.5, face = "bold", size = 16)
-#     )
-#   )
-
-ggsave(paste0(result_dir, "TN_ranks.pdf"), p_diff, width = 6, height = 6)

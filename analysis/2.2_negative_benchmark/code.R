@@ -1,5 +1,12 @@
 # This is the script for summarize negative benchmark results, where the randomized gene/miR/MGI data were used for TP pathways
 # FPR = number of pvalue < 0.05 / number of pathways (across all cancers)
+# Outputs include:
+# 1. FPR_ht.pdf: Figure 2B
+# 2. TN_pval_hist.pdf: Figure 2C
+# 3. TP_TN_pval_density: Figure S6
+
+setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
+
 library(dplyr)
 library(readr) # read_csv()
 library(purrr)
@@ -7,20 +14,14 @@ library(tidyr) # pivot_wider()
 library(ggplot2)
 library(ComplexHeatmap)
 library(tibble) # rownames_to_column()
-
-.libPaths(c("/projappl/project_2011179/rpackages_440", .libPaths()))  ## Our special case, please remove this line when using.
+# .libPaths(c("/projappl/project_2011179/rpackages_440", .libPaths()))  ## Our special case, please remove this line when using.
 library(gghalves)
-
-# 4. TN pvalue distribution
 library(patchwork)
 library(scales)
-
-# 5. TN-TP pvalue density
 library(coin) # Fisher-Pitman permutation test
 
-setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
 
-source("analysis/2.1_positive_benchmark/plot_benchmark.R")
+
 result_dir <- "analysis/2.2_negative_benchmark/"
 if (!dir.exists(result_dir)){
   dir.create(result_dir)
@@ -88,30 +89,7 @@ write.csv(summary_df, file = paste0(result_dir, "TN_summary_df.csv"), row.names 
 write.csv(summary_by_seed, file = paste0(result_dir, "TN_summary_by_seed.csv"), row.names = FALSE)
 write.csv(summary_by_cancer, file = paste0(result_dir, "TN_summary_by_cancer.csv"), row.names = FALSE)
 
-
-# 2. combined benchmark heatmap: TP + TN ----
-TP_input <- read.csv(paste0("analysis/2.1_positive_benchmark/", "TP", "_data_stat.csv"))
-cancer_order <- TP_input %>% arrange(desc(n_path)) %>% pull(cancer)
-
-TP_summary <- read.csv(paste0("analysis/2.1_positive_benchmark/", "TP", "_summary.csv"), header = TRUE)
-rownames(TP_summary) <- TP_summary$cancer
-TP_summary <- TP_summary[, -1]
-TP_matrix <- as.matrix(t(TP_summary))
-TP_matrix <- TP_matrix[,cancer_order]
-
-TN_summary <- read.csv(paste0(result_dir, "TN_summary_by_cancer.csv"), header = TRUE)
-rownames(TN_summary) <- TN_summary$cancer
-TN_summary <- TN_summary[, -1]
-TN_matrix <- as.matrix(t(TN_summary))
-TN_matrix <- TN_matrix[, cancer_order]
-
-TP_overall <- read.csv(paste0("analysis/2.1_positive_benchmark/", "TP", "_overall_performance.csv"))
-TN_overall <- read.csv(paste0(result_dir, "TN_summary_by_seed.csv"))
-
-benchmark_ht <- plot_benchmark_combined(TP_matrix, TN_matrix, TP_input, TP_overall, TN_overall, plot_path = paste0(result_dir, "/combined_benchmark.pdf"))
-
-
-# 3. TN boxplot: each dot is a seed ----
+# 2. TN boxplot: each dot is a seed ----
 summary <- read.csv(paste0(result_dir, "TN_summary_by_seed.csv"))
 # median_df <- summary %>% group_by(method) %>% summarise(med = median(FPR, na.rm = TRUE))
 method_order <- unique(summary$method)
@@ -143,16 +121,11 @@ p <- ggplot(summary,
   labs(
     title = "False Positive Rates Across 16 Cancer Types and 30 Seeds",
     y = "False Positive Rate",
-    x = "Method",
+    #x = "Method",
+    x = NULL,
     fill = "Method", color = "Method"
   ) +
   scale_y_continuous(limits = c(0, 0.15), breaks = seq(0,0.15,0.03), expand = c(0,0))+
-  # geom_text(data = median_df,
-  #           aes(x = method, y = med,
-  #               label = sprintf("%.3f", med)),
-  #           vjust = -0.7,
-  #           size = 3.5,
-  #           inherit.aes = FALSE) +
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
@@ -169,9 +142,9 @@ p <- ggplot(summary,
     aspect.ratio = 1
   )
 
-ggsave(paste0(result_dir, "FPR_ht_black.pdf"), p, width = 7, height = 7)
+ggsave(paste0(result_dir, "FPR_ht.pdf"), p, width = 7, height = 7)
 
-# 4. TN pvalue histgram ----
+# 3. TN pvalue histogram ----
 cat("Start processing", path_name, "...\n")
 base_dir <- paste0("results/", path_name, "/")
 seed_dirs <- list.dirs(base_dir, recursive = FALSE)
@@ -180,7 +153,7 @@ seeds <- seeds[seeds != "slurm_logs"]
 cancer_dirs <- list.dirs(seed_dirs, recursive = FALSE)
 cancers <- unique(basename(cancer_dirs))
 
-TN_results <- list()  # 最终要汇总的list
+TN_results <- list()
 # seed - method
 # build TN_results and TP_results list: wach sub-element is a dataframe, corresponds to one method, for results in all cancers
 for (seed in seeds){
@@ -287,9 +260,7 @@ p_all <- wrap_plots(plot_list, nrow = 3) +
 
 ggsave(paste0(result_dir, "TN_pval_hist.pdf"), p_all, width = 10, height = 10)
 
-# 5. pvalue density TN & TP----
-
-
+# 4. pvalue density TN & TP----
 # build TN_results and TP_results list: wach sub-element is a dataframe, corresponds to one method, for results in all cancers
 ## load data
 cancer_dirs <- list.dirs("results/TP/", recursive = FALSE)
@@ -350,7 +321,7 @@ plot_list <- lapply(methods, function(method) {
     scale_fill_manual(values = c("TP" = "#99000d", "TN" = "#084594")) + # "TP" = "#EDB2BF", "TN" = "#B2D0ED"
     theme_minimal(base_size = 12) +
     theme(
-      panel.background = element_rect(fill = scales::alpha(fill_col[method], 0.1), color = NA), # use method color as background fill
+      #panel.background = element_rect(fill = scales::alpha(fill_col[method], 0.1), color = NA), # use method color as background fill
       panel.grid = element_blank(),
       axis.line = element_line(color = "black", linewidth = 0.5),
       aspect.ratio = 1,
@@ -382,4 +353,28 @@ p_all <- wrap_plots(plot_list, nrow = 3, guides = "collect") +
   ) &
   labs(x = "p-value", y = "density")
 
+
 ggsave(paste0(result_dir, "TP_TN_pval_density.pdf"), width = 10, height = 10)
+
+# # combined benchmark heatmap: TP + TN ----
+# TP_input <- read.csv(paste0("analysis/2.1_positive_benchmark/", "TP", "_data_stat.csv"))
+# cancer_order <- TP_input %>% arrange(desc(n_path)) %>% pull(cancer)
+#
+# TP_summary <- read.csv(paste0("analysis/2.1_positive_benchmark/", "TP", "_summary.csv"), header = TRUE)
+# rownames(TP_summary) <- TP_summary$cancer
+# TP_summary <- TP_summary[, -1]
+# TP_matrix <- as.matrix(t(TP_summary))
+# TP_matrix <- TP_matrix[,cancer_order]
+#
+# TN_summary <- read.csv(paste0(result_dir, "TN_summary_by_cancer.csv"), header = TRUE)
+# rownames(TN_summary) <- TN_summary$cancer
+# TN_summary <- TN_summary[, -1]
+# TN_matrix <- as.matrix(t(TN_summary))
+# TN_matrix <- TN_matrix[, cancer_order]
+#
+# TP_overall <- read.csv(paste0("analysis/2.1_positive_benchmark/", "TP", "_overall_performance.csv"))
+# TN_overall <- read.csv(paste0(result_dir, "TN_summary_by_seed.csv"))
+#
+# benchmark_ht <- plot_benchmark_combined(TP_matrix, TN_matrix, TP_input, TP_overall, TN_overall, plot_path = paste0(result_dir, "/combined_benchmark.pdf"))
+#
+

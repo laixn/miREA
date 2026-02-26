@@ -1,4 +1,6 @@
 # This is the script to generate true positive rates heatmap across 16 cancers
+# Generates TPR_ht.pdf: Figure 2A.
+
 setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
 library(dplyr)
 library(readr)
@@ -355,21 +357,9 @@ if (exists("ha_bottom") && !is.null(ha_bottom)) {
                       at = as.integer(n_MGI_range))
   lgd_DEprop <- Legend(title = "prop_DEMGIs", col_fun = DEprop_fun,
                        labels_gp = gpar(fontsize = 7), title_gp = gpar(fontsize = 8, fontface = "bold")
-  ) #at = c(min(data_annot$DEprop), as.integer(median(data_annot$DEprop)), max(data_annot$DEprop))
+  )
 }
 
-# lgd_method <- Legend(
-#   title = "Method",
-#   at = names(fill_col),
-#   labels = names(fill_col),
-#   legend_gp = gpar(fill = fill_col,col = NA),
-#   type = "points",
-#   pch = 21, # 21 background = NA
-#   size = unit(4, "mm"),
-#   background = NA,
-#   labels_gp = gpar(fontsize = 8),
-#   title_gp = gpar(fontsize = 9, fontface = "bold")
-# )
 
 legend_list <- c(list(lgd_method_type, lgd_input_data),
                  if (exists("lgd_n_MGI")) list(lgd_n_MGI) else list(),
