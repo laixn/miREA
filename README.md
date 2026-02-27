@@ -23,7 +23,7 @@ miREA is implemented in R. Required R packages include (but may not be limited t
 
 Please follow the following steps to run miREA for enrichment analysis:
 
-*Please refer to analysis/4_case_study/example.R as an example for cancer hallmarks enrichment based on bladder urothelial carcinoma*
+*Please refer to ```analysis/4_case_study/example.R``` as a detailed example for cancer hallmarks enrichment based on bladder urothelial carcinoma data.*
 1. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
 2. Load all functions in R/ and library packages needed.
    ```r
@@ -32,8 +32,19 @@ Please follow the following steps to run miREA for enrichment analysis:
    source(R/lib.R)
    ```
 3. **Generate input data**: run ```get_all_input_data()``` to generate *a list named input_data*, which is required as input for miREA.
+   ```r
+   input_data <- get_all_input_data(methods, pathway, mir_DEdata, gene_DEdata, background_MGI, background_GGI, GGI_source, gene_mat, mir_mat, scoreFun)
+   ```
 4. **Enrichment analysis**: run ```miREA()``` to conduct enrichment analysis under predefined methods, which returns to *a list named result*, containing enrichment results for all selected methods.
+   ```r
+   result <- miREA(methods, input_data, background, minSize, maxSize, pvalueType, pAdjMethod, pvalueCutoff, iter, ncores)
+   ```
 5. **Visualization**: run ```plot_summary()```, ```plot_heatmap()```, ```plot_heatmap_sankey()``` to get PDF plots, which will be save at plot_path you specified.
+   ```r
+   summary_plot <- plot_summary(result, penrichCutoff, plot_path, fill_col)
+   ht_plot <- plot_heatmap(method, result, input_data, n_mir_heatmap, n_pathway, plot_path, penrichCutoff, height, width, gene_annot, mir_annot, annot_color)
+   ht_sankey_plot <- plot_heatmap_sankey(method, result, input_data, n_mir_heatmap, n_mir_sankey, n_pathway, plot_path, penrichCutoff, height, width, sankey_prop, gene_annot, mir_annot, annot_color)
+   ```
 
 ---
 
