@@ -1,5 +1,5 @@
 # miREA: a network-based tool for edge-based microRNA-oriented enrichment analysis
-[![Static Badge](https://img.shields.io/badge/ZENODO-10.5281/zenodo.17804306-red)](https://zenodo.org/records/17804306)
+[![Static Badge](https://img.shields.io/badge/ZENODO-10.5281/zenodo.18803208-red)](https://zenodo.org/records/18803209)
 
 We present miRNA-oriented Enrichment Analysis (**miREA**) framework, which integrates miRNA–gene interaction (**MGI**) networks with miRNA and gene transcriptomic data to improve functional interpretation of miRNAs.
 
@@ -72,7 +72,7 @@ miREA returns results containing:
 * a list named result for the enrichment result, including parameters, valid methods, time for different methods, and results containing a dataframe for each approach.
 * visualization pdf plots for methods comparison, and heatmap-sankey plot for each approach to discovery miRNA-gene-pathway regulatory mechanisms.
 
-All raw data, processed data, and original results for the various cancer types and pathway sets have been deposited at [![Static Badge](https://img.shields.io/badge/ZENODO-grey)]([https://zenodo.org/records/17804306]).
+All raw data, processed data, and original results for the various cancer types and pathway sets have been deposited at [![Static Badge](https://img.shields.io/badge/ZENODO-grey)](https://zenodo.org/records/18803209).
 
 ---
 
