@@ -24,12 +24,27 @@ miREA is implemented in R. Required R packages include (but may not be limited t
 Please follow the following steps to run miREA for enrichment analysis:
 
 *Please refer to ```analysis/4_case_study/example.R``` as a detailed example for cancer hallmarks enrichment based on bladder urothelial carcinoma data.*
-1. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
-2. Load all functions in R/ and library packages needed.
+1. Load all functions in R/ and library packages needed.
    ```r
    setwd("[directory of miREA]") # set working directory
    load(function.RData) # it contains all functions included in the R/. You could also source .R files you need in the R/.
    source(R/lib.R)
+   ```
+2. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
+   ```r
+   # example
+   methods <- default.method_list
+   pathway <- read.csv("data/raw_data/pathway/hallmark/hallmark_gene.csv", header = TRUE)
+   mir_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEmiR/", cancer, "_DEmiR.csv"))
+   gene_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEG/", cancer, "_DEG.csv"))
+   mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
+   gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
+   load("data/raw_data/background/background_MGI.RData")
+   background_GGI = NULL
+   GGI_source = "Omnipath"
+   gene_mat <- read.csv(paste0("data/raw_data/cancer_data/paired/", cancer, "_gene_TP.csv"), header = TRUE, check.names = FALSE)
+   mir_mat <- read.csv(paste0("data/raw_data/cancer_data/paired/", cancer, "_mir_TP.csv"), header = TRUE, check.names = FALSE)
+   scoreFun = "rank"
    ```
 3. **Generate input data**: run ```get_all_input_data()``` to generate *a list named input_data*, which is required as input for miREA.
    ```r
