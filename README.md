@@ -34,6 +34,7 @@ Please follow the following steps to run miREA for enrichment analysis:
 2. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
    ```r
    # example
+   cancer <- "BLCA"
    methods <- default.method_list
    pathway <- read.csv("data/raw_data/pathway/hallmark/hallmark_gene.csv", header = TRUE)
    mir_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEmiR/", cancer, "_DEmiR.csv"))
