@@ -1,4 +1,5 @@
 # miREA: a network-based tool for edge-based microRNA-oriented enrichment analysis
+[![Static Badge](https://img.shields.io/badge/Preprint-BioRxiv-darkred)](https://doi.org/10.64898/2026.02.27.708509)
 [![Static Badge](https://img.shields.io/badge/ZENODO-10.5281/zenodo.18803208-red)](https://zenodo.org/records/18803209)
 
 We present miRNA-oriented Enrichment Analysis (**miREA**) framework, which integrates miRNA–gene interaction (**MGI**) networks with miRNA and gene transcriptomic data to improve functional interpretation of miRNAs.
@@ -118,8 +119,19 @@ miREA/
 ---
 
 ## Citation
+If you find our work useful, please consider citing it:
 
+Zhesi Zhang, Xin Lai. a network-based tool for microRNA-oriented enrichment analysis. 
+Submitted (2026).
+
+```bash
+@article{Zhang_miREA_2026,
+  title={miREA: a network-based tool for microRNA-oriented enrichment analysis},
+  author={Zhesi Zhang, Xin Lai},
+  journal={Preprint},
+  doi={10.64898/2026.02.27.708509},
+  year={2026}}
+```
 ---
-
-## Contact
+© [Lai Lab](https://sites.google.com/view/lai-lab) - This code is made available under the GPLv3 License and is available for non-commercial academic purposes.
 
