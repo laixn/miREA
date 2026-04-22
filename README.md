@@ -29,7 +29,7 @@ Please follow the following steps to run miREA for enrichment analysis:
 1. Load all functions in R/ and library packages needed.
    ```r
    setwd("[directory of miREA]") # set working directory
-   load(function.RData) # it contains all functions included in the R/. You could also source .R files you need in the R/.
+   load("function.RData") # it contains all functions included in the R/. You could also source .R files you need in the R/.
    source(R/lib.R)
    ```
 2. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
@@ -40,7 +40,7 @@ Please follow the following steps to run miREA for enrichment analysis:
    pathway <- read.csv("data/raw_data/pathway/hallmark/hallmark_gene.csv", header = TRUE)
    mir_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEmiR/", cancer, "_DEmiR.csv"))
    gene_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEG/", cancer, "_DEG.csv"))
-   mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
+   mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj) #install and load dplyr to ensure %>% works
    gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
    load("data/raw_data/background/background_MGI.RData")
    background_GGI = NULL
