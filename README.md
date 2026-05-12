@@ -1,5 +1,5 @@
 # miREA: a network-based tool for edge-based microRNA-oriented enrichment analysis
-[![Static Badge](https://img.shields.io/badge/Preprint-BioRxiv-darkred)](https://doi.org/10.64898/2026.02.27.708509)
+[![Static Badge](https://img.shields.io/badge/Preprint-bioRxiv-darkred)](https://doi.org/10.64898/2026.02.27.708509)
 [![Static Badge](https://img.shields.io/badge/ZENODO-10.5281/zenodo.18803208-red)](https://zenodo.org/records/18803209)
 
 We present miRNA-oriented Enrichment Analysis (**miREA**) framework, which integrates miRNA–gene interaction (**MGI**) networks with miRNA and gene transcriptomic data to improve functional interpretation of miRNAs.
