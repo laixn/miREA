@@ -128,7 +128,7 @@ Submitted (2026).
 @article{Zhang_miREA_2026,
   title={miREA: a network-based tool for microRNA-oriented enrichment analysis},
   author={Zhesi Zhang, Xin Lai},
-  journal={Preprint},
+  journal={bioRxiv},
   doi={10.64898/2026.02.27.708509},
   year={2026}}
 ```
