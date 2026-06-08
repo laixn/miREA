@@ -36,7 +36,7 @@ Please follow the following steps to run miREA for enrichment analysis:
    ```r
    # example
    cancer <- "BLCA"
-   methods <- default.method_list
+   methods <- setdiff(default.method_list, "Edge_Topology")
    pathway <- read.csv("data/raw_data/pathway/hallmark/hallmark_gene.csv", header = TRUE)
    mir_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEmiR/", cancer, "_DEmiR.csv"))
    gene_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEG/", cancer, "_DEG.csv"))
