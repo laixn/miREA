@@ -43,9 +43,10 @@ Please follow the following steps to run miREA for enrichment analysis:
    
    pathway <- read.csv("data/raw_data/pathway/hallmark/hallmark_gene.csv", header = TRUE)
    load("data/raw_data/background/background_MGI.RData") # You can specify your own background_MGI here, if any.
-   background_GGI = NULL # You can specify your own background_GGI here, if any.
-   GGI_source = "Omnipath" # supported: Omnipath, Reactome
+   background_GGI = NULL # You can specify your own background_GGI here, if any. Otherwise, specify GGI_source to implement default one.
+   GGI_source = "Omnipath" # Supported: Omnipath, Reactome
 
+   # gene/miR differential expression analysis results: mir_DEdata and gene_DEdata
    cancer <- "BLCA"
    scoreFun = "rank"
    mir_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEmiR/", cancer, "_DEmiR.csv"))
@@ -53,7 +54,7 @@ Please follow the following steps to run miREA for enrichment analysis:
    mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
    gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
 
-   # gene_mat and mir_mat are used for correlation analysis
+   # [gene/miR, samples] expression matrix: gene_mat and mir_mat are used for correlation analysis
    gene_mat <- read.csv(paste0("data/raw_data/cancer_data/paired/", cancer, "_gene_TP.csv"), header = TRUE, check.names = FALSE)
    mir_mat <- read.csv(paste0("data/raw_data/cancer_data/paired/", cancer, "_mir_TP.csv"), header = TRUE, check.names = FALSE)
    
