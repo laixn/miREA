@@ -57,8 +57,9 @@ Please follow the following steps to run miREA for enrichment analysis:
    ```r
    result <- miREA(methods, input_data, background, minSize, maxSize, pvalueType, pAdjMethod, pvalueCutoff, iter, ncores)
    ```
-5. **Visualization**: run ```plot_summary()```, ```plot_heatmap()```, ```plot_heatmap_sankey()``` to get PDF plots, which will be save at plot_path you specified.
+5. **Visualization**: run ```plot_summary()```, ```plot_heatmap()```, ```plot_heatmap_sankey()``` to get PDF plots, which will be saved at plot_path you specified.
    ```r
+   plot_path <- "[directory to save the plots]"
    summary_plot <- plot_summary(result, penrichCutoff, plot_path, fill_col)
    ht_plot <- plot_heatmap(method, result, input_data, n_mir_heatmap, n_pathway, plot_path, penrichCutoff, height, width, gene_annot, mir_annot, annot_color)
    ht_sankey_plot <- plot_heatmap_sankey(method, result, input_data, n_mir_heatmap, n_mir_sankey, n_pathway, plot_path, penrichCutoff, height, width, sankey_prop, gene_annot, mir_annot, annot_color)
