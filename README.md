@@ -35,19 +35,28 @@ Please follow the following steps to run miREA for enrichment analysis:
 2. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
    ```r
    # example
-   cancer <- "BLCA"
+   # We support 4 node-based methods and 5 edge-based methods in total.
+   # Please select the most appropriate method(s) by considering both your dataset characteristics and the method performance reported in Figure 3 of the manuscript.
+   # The Edge_Topology method is excluded here due to its excessive computational time.
+   
    methods <- setdiff(default.method_list, "Edge_Topology")
+   
    pathway <- read.csv("data/raw_data/pathway/hallmark/hallmark_gene.csv", header = TRUE)
+   load("data/raw_data/background/background_MGI.RData") # You can specify your own background_MGI here, if any.
+   background_GGI = NULL # You can specify your own background_GGI here, if any.
+   GGI_source = "Omnipath" # supported: Omnipath, Reactome
+
+   cancer <- "BLCA"
+   scoreFun = "rank"
    mir_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEmiR/", cancer, "_DEmiR.csv"))
    gene_DEdata <- read.csv(paste0("data/raw_data/cancer_data/DEG/", cancer, "_DEG.csv"))
-   mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj) #install and load dplyr to ensure %>% works
+   mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
    gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
-   load("data/raw_data/background/background_MGI.RData")
-   background_GGI = NULL
-   GGI_source = "Omnipath"
+
+   # gene_mat and mir_mat are used for correlation analysis
    gene_mat <- read.csv(paste0("data/raw_data/cancer_data/paired/", cancer, "_gene_TP.csv"), header = TRUE, check.names = FALSE)
    mir_mat <- read.csv(paste0("data/raw_data/cancer_data/paired/", cancer, "_mir_TP.csv"), header = TRUE, check.names = FALSE)
-   scoreFun = "rank"
+   
    ```
 3. **Generate input data**: run ```get_all_input_data()``` to generate *a list named input_data*, which is required as input for miREA.
    ```r
@@ -55,6 +64,10 @@ Please follow the following steps to run miREA for enrichment analysis:
    ```
 4. **Enrichment analysis**: run ```miREA()``` to conduct enrichment analysis under predefined methods, which returns to *a list named result*, containing enrichment results for all selected methods.
    ```r
+   background <- list()
+   if ("TG" %in% names(input_data$pathway)){ background[["TG"]] <- unique(input_data$pathway$TG$gene) }
+   if ("MiR" %in% names(input_data$pathway)){ background[["MiR"]] <- unique(input_data$pathway$MiR$miRNA) }
+   if ("background_MGI" %in% names(input_data)){ background[["Edge"]] <- unique(paste0(input_data$background_MGI$miRNA, ":", input_data$background_MGI$gene)) }
    result <- miREA(methods, input_data, background, minSize, maxSize, pvalueType, pAdjMethod, pvalueCutoff, iter, ncores)
    ```
 5. **Visualization**: run ```plot_summary()```, ```plot_heatmap()```, ```plot_heatmap_sankey()``` to get PDF plots, which will be saved at plot_path you specified.
