@@ -7,7 +7,7 @@
 #' @param method compulsory, see default.method_list for all supportive methods. You could either input one method, or a vector contains several methods you want to try.
 #' @param pathway compulsory. It should be a two-column pathway, containing pathway and gene.
 #' @param mir_DEdata: compulsory, should be a four-column dataframe, containing miRNA, log2FC, stat, padj
-#' @param gene_DEdata: optional, except for MiR_ based methods, should be a four-column dataframe, containing gene, log2FC, stat, padj
+#' @param gene_DEdata: optional, except for TG-ORA, MiR-ORA, and MiR-Score methods, should be a four-column dataframe, containing gene, log2FC, stat, padj
 #' @param background_MGI: optional, but if doesn't include, we would load our predefined background. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene
 #' @param background_GGI: optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, we would use GGI_source to determine the background GGIs.
 #' @param GGI_source: optional, select from "Omnipath" or "Reactome".if you don't have specified background_GGI and neither GGI_source. The default Omnipath will be used.
