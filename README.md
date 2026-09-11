@@ -148,5 +148,5 @@ Submitted (2026).
   year={2026}}
 ```
 ---
-© [Lai Lab](https://sites.google.com/view/lai-lab) - This code is made available under the GPLv3 License and is available for non-commercial academic purposes.
+© [Lai Lab](https://sites.google.com/view/lai-lab) - This code is made available under the GPLv3 License.
 
