@@ -547,6 +547,7 @@ get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun
 
 
 calc_MGI_corr <- function(dict, mir_mat, gene_mat) {
+  reticulate::py_require(c("numpy", "scipy"))
   # ensure that mir_mat and gene_mat have their names as rownames
   if (!is.numeric(mir_mat[[1]]) && !is.integer(mir_mat[[1]])) {
     rownames(mir_mat) <- mir_mat[[1]]
