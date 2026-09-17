@@ -30,7 +30,7 @@ Please follow the following steps to run miREA for enrichment analysis:
    ```r
    setwd("[directory of miREA]") # set working directory
    load("function.RData") # it contains all functions included in the R/. You could also source .R files you need in the R/.
-   source(R/lib.R)
+   source("R/lib.R")
    ```
 2. Prepare raw data that will be used as input for getting miREA input data (see details at ```get_all_input_data()``` function).
    ```r
