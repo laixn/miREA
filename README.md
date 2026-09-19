@@ -27,7 +27,7 @@ Please follow the following steps to run miREA for enrichment analysis:
 
 *Please refer to ```analysis/4_case_study/example.R``` as an example for cancer hallmarks enrichment based on bladder urothelial carcinoma data across all miREA methods.*
 
-*Please refer to tutorial/ for more detailed per-method enrichment analysis implementations.*
+*Please refer to ```tutorial/``` for more detailed per-method enrichment analysis implementations.*
 
 1. Load all functions in R/ and library packages needed.
    ```r
