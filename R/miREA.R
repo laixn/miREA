@@ -144,10 +144,18 @@ miREA <- function(methods, input_data, background = NULL,
       }
     }
   } else if (is.integer(ncores) || is.numeric(ncores)){
+    if (length(ncores) != 1 || 
+        is.na(ncores) ||
+        !is.finite(ncores) ||
+        ncores < 1 ||
+        ncores != as.integer(ncores)){
+      stop("ncores must be a positive integer.")
+    }
     ncores <- as.integer(ncores)
     ncores <- setNames(as.list(rep(ncores, length(methods_ncores))), methods_ncores)
   } else if (is.null(ncores)){
-    ncores <- setNames(as.list(rep(ncores, length(methods_ncores))), methods_ncores)
+    warning("You didn't specify number of cores [ncores]. Use unparallel computing instead.\n")
+    ncores <- setNames(as.list(rep(1L, length(methods_ncores))), methods_ncores)
   }
 
 
