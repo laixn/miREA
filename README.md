@@ -20,12 +20,13 @@ miREA is designed to address the intrinsic many-to-many regulatory interactions 
 ---
 
 ## Usage
-miREA is implemented in R. Required R packages include (but may not be limited to):
+miREA is implemented in R. You can find load all required R packages by ```source("R/lib.R")```. Required R packages include (but may not be limited to):
 * dplyr (1.14), tidyr (1.3.1), tidyverse (2.0.0), stringr (1.5.1), conflicted (1.2.0), igraph (2.1.4), V8 (6.0.1), data.table (1.16.4), Matrix (1.7.2), parallel (4.4.2), reticulate (1.40.0), ComplexHeatmap (2.22.0), RColorBrewer (1.1.3), grid (4.4.2), circlize (0.4.16), gridExtra (2.3), patchwork (1.3.0), scales (1.3.0), tibble (3.2.1), ggalluvial (0.12.5), ggplot2 (3.5.1), ggnewscale (0.5.0), colorspace (2.1.1), reshape2 (1.4.4)
 
 Please follow the following steps to run miREA for enrichment analysis:
 
-*Please refer to ```analysis/4_case_study/example.R``` as a detailed example for cancer hallmarks enrichment based on bladder urothelial carcinoma data.*
+*Please refer to ```analysis/4_case_study/example.R``` as an example for cancer hallmarks enrichment based on bladder urothelial carcinoma data across all miREA methods.*
+*Please refer to tutorial/ for more detailed per-method enrichment analysis implementations.*
 1. Load all functions in R/ and library packages needed.
    ```r
    setwd("[directory of miREA]") # set working directory
