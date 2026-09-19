@@ -1,0 +1,56 @@
+---
+title: "Edge-Topology"
+author: "Zhesi"
+date: "2026-09-18"
+output: html_document
+---
+
+This is the tutorial to implement Edge-Topology enrichment analysis method.\
+Before running, please set up your working directory.
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/scratch/project_2011179/code/github/")  # Please change your woking directory here.
+```
+
+Note: in .R script, please set your working directory by `setwd("[your directory]")`.
+
+**Required inputs:**\
+**1. background_MGI:** A two-column data frame with column names miRNA and gene.\
+**2. Background GGI:**\
+**(1) background_GGI:** An optional two-column data frame containing source and target genes.\
+**(2) GGI_source:** If background_GGI is not provided, specify either "Omnipath" or "Reactome" to use the corresponding default background GGI network.\
+**3. pathway:** A two-column data frame with column names pathway and gene.\
+**4. pathway_GGI:** A three-column data frame containing pathway, source gene and target gene.\
+**5. mir_DEdata:** A four-column data frame containing miRNA, log2FoldChange, stat, and padj.\
+**6. gene_DEdata:** A four-column data frame containing gene, log2FoldChange, stat, and padj.\
+**7. mir_mat:** A raw miRNA expression matrix, with each row representing a miRNA and each column representing a sample.\
+**8. gene_mat:** A raw gene expression matrix, with each row representing a gene and each column representing a sample.\
+**9. ncores:** Number of CPU cores. Check your available CPU cores and specify an integer greater than 1 to enable parallel computing.\
+**10. Other parameters:** For additional parameters and their descriptions, please refer to R/miREA.R or R/Enrichment_Edge-Topology.R.
+
+### Run through miREA().
+
+**Note:** The following example (BLCA enrichment analysis of 10 cancer hallmark pathways) takes approximately 65 minutes to run. To reduce the run time, please consider specifying multiple CPU cores for parallel computing.
+
+```{r}
+load("function.RData") # it contains all functions included in the R/.
+source("R/lib.R")
+methods <- "Edge_Topology"
+
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
+gene_DEdata <- read.csv("data/raw_data/cancer_data/DEG/BLCA_DEG.csv")
+gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
+gene_mat <- read.csv("data/raw_data/cancer_data/paired/BLCA_gene_TP.csv", header = TRUE, check.names = FALSE)
+mir_mat <- read.csv("data/raw_data/cancer_data/paired/BLCA_mir_TP.csv", header = TRUE, check.names = FALSE)
+
+path_name <-  "hallmark"  # or "Reactome"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+GGI_source <- "Omnipath" # or "Reactome"
+
+input_data <- get_all_input_data(methods = methods, pathway = pathway, mir_DEdata = mir_DEdata, gene_DEdata = gene_DEdata, gene_mat = gene_mat, mir_mat = mir_mat)
+result <- miREA(methods = methods, input_data = input_data, ncores = 1)
+```
+
+It will generate a list named result, which contains the enrichment analysis result (`result$result$Edge_Topology`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).

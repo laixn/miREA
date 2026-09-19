@@ -1,0 +1,146 @@
+---
+title: "Edge-2Ddist"
+author: "Zhesi"
+date: "2026-09-18"
+output: html_document
+---
+
+This is the tutorial to implement Edge-2Ddist enrichment analysis method.\
+Before running, please set up your working directory.
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/scratch/project_2011179/code/github/")  # Please change your woking directory here.
+```
+
+Note: in .R script, please set your working directory by `setwd("[your directory]")`.
+
+You can run Edge-2Ddist enrichment analysis in three ways:\
+**A.** run through integrated miREA() function.\
+**B.** run by generating MGI data through miRNA, gene differential expression analysis result and miRNA, gene expression matrix with common samples.\
+**C.** run by providing self-defined MGI data. This is suitable when you want to measure MGI into two quantitative perspecitives.\
+In the following tutorial, we will go through each accordingly.
+
+**Required input:**\
+**1. background_MGI:** A two-column data frame with column names miRNA and gene.\
+**2. pathway:** A two-column data frame with column names pathway and gene.\
+**3. mir_DEdata (required for A, B):** A four-column data frame containing miRNA, log2FoldChange, stat, and padj.\
+**4. gene_DEdata (required for A, B):** A four-column data frame containing gene, log2FoldChange, stat, and padj.\
+**5. mir_mat (required for A, B):** A raw miRNA expression matrix, with each row representing a miRNA and each column representing a sample.\
+**6. gene_mat (required for A, B):** A raw gene expression matrix, with each row representing a gene and each column representing a sample.\
+**7. MGI2D (required for C):** A five-column dataframe containing MGI, miRNA, gene, cor(x), and ranknormratio(y).
+**8. ncores:** Number of CPU cores. Check your available CPU cores and specify an integer greater than 1 to enable parallel computing.\
+**9. Other parameters:** For additional parameters and their descriptions, please refer to R/miREA.R or R/Enrichment_Edge-2Ddist.R.
+
+
+### A. run through miREA().
+
+```{r}
+load("function.RData") # it contains all functions included in the R/.
+source("R/lib.R")
+source("/scratch/project_2011179/code/github/R/miREA.R")
+methods <- "Edge_2Ddist"
+
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
+gene_DEdata <- read.csv("data/raw_data/cancer_data/DEG/BLCA_DEG.csv")
+gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
+gene_mat <- read.csv("data/raw_data/cancer_data/paired/BLCA_gene_TP.csv", header = TRUE, check.names = FALSE)
+mir_mat <- read.csv("data/raw_data/cancer_data/paired/BLCA_mir_TP.csv", header = TRUE, check.names = FALSE)
+
+path_name <-  "hallmark"  # or "Reactome"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+input_data <- get_all_input_data(methods = methods, pathway = pathway, mir_DEdata = mir_DEdata, gene_DEdata = gene_DEdata, gene_mat = gene_mat, mir_mat = mir_mat)
+result <- miREA(methods = methods, input_data = input_data)
+```
+
+It will generate a list named result, which contains the enrichment analysis result (`result$result$Edge_2Ddist`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
+
+### B. run by generating MGI data through DE and expression data.
+```{r}
+# load functions
+source("R/Enrichment_Edge-2Ddist.R")
+source("R/get_input_data.R")  # calculate MGI strength score
+source("R/global_variable.R")
+source("R/lib.R")
+
+# load data
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+gene_DEdata <- read.csv("data/raw_data/cancer_data/DEG/BLCA_DEG.csv")
+gene_mat <- read.csv("data/raw_data/cancer_data/paired/BLCA_gene_TP.csv", header = TRUE, check.names = FALSE)
+mir_mat <- read.csv("data/raw_data/cancer_data/paired/BLCA_mir_TP.csv", header = TRUE, check.names = FALSE)
+
+path_name <-  "hallmark"  # or "Reactome"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+background_MGI <- read.csv("data/raw_data/background/background_MGI.csv")
+
+mir_DEdata <- data.table::as.data.table(mir_DEdata)
+mir_DEdata <- mir_DEdata[, .(miRNA, log2FoldChange, stat, padj)]
+colnames(mir_DEdata) <- c("miRNA", "mirLogFC", "mirStat", "mirPadj")
+gene_DEdata <- data.table::as.data.table(gene_DEdata)
+gene_DEdata <- gene_DEdata[, .(gene, log2FoldChange, stat, padj)]
+colnames(gene_DEdata) <- c("gene", "geneLogFC", "geneStat", "genePadj")
+
+background_MGI <- data.table::as.data.table(background_MGI)
+pathway <- data.table::as.data.table(pathway)
+
+## build pathway MGI list
+pathway_genes <- pathway[, .(genes = list(gene)), by = pathway]
+pathway_list <- lapply(seq_len(nrow(pathway_genes)), function(i) {
+  pw <- pathway_genes$pathway[i]
+  genes <- pathway_genes$genes[[i]]
+  background_MGI[gene %in% genes, .(pathway = pw, miRNA, gene)]
+})
+pathway_MGI <- unique(rbindlist(pathway_list))
+
+## build MGI dict and calculate MGI strength score
+dict <- merge(background_MGI, mir_DEdata[, .(miRNA, mirLogFC, mirPadj)], by = "miRNA", all = FALSE)
+dict <- merge(dict, gene_DEdata[, .(gene, geneLogFC, genePadj)], by = "gene", all = FALSE)
+
+cor <- data.table::as.data.table(calc_MGI_corr(dict = dict, mir_mat = mir_mat, gene_mat = gene_mat))
+dict <- merge(dict, cor, by = c("miRNA", "gene"), all = FALSE)
+dict <- na.omit(dict)
+data.table::setcolorder(dict, c("miRNA", "gene", "cor", "corPadj", "mirLogFC", "mirPadj", "geneLogFC", "genePadj"))
+dict[, ratio := (geneLogFC / mirLogFC) * ((1-genePadj)/(1+mirPadj))]
+dict[, normratio := ranknorm(ratio)]
+dict[, MGI := paste0(miRNA, ":", gene)]
+dict <- unique(dict, by = "MGI")
+MGI2D <- as.data.frame(dict[, .(MGI, miRNA, gene, cor, normratio)])
+
+## enrichment analysis
+result <- Edge_2Ddist(MGI2D = MGI2D, pathway = pathway_MGI, pvalueCutoff = 1, ncores = parallel::detectCores() - 1) # ncores = 1
+```
+
+### C. run by providing self-defined interested MGI list.
+```{r}
+# load functions
+source("R/Enrichment_Edge-2Ddist.R")
+source("R/global_variable.R")
+source("R/lib.R")
+
+# load data
+path_name <-  "hallmark"  # or "Reactome"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+background_MGI <- read.csv("data/raw_data/background/background_MGI.csv")
+
+background_MGI <- data.table::as.data.table(background_MGI)
+pathway <- data.table::as.data.table(pathway)
+
+## build pathway MGI list
+pathway_genes <- pathway[, .(genes = list(gene)), by = pathway]
+pathway_list <- lapply(seq_len(nrow(pathway_genes)), function(i) {
+  pw <- pathway_genes$pathway[i]
+  genes <- pathway_genes$genes[[i]]
+  background_MGI[gene %in% genes, .(pathway = pw, miRNA, gene)]
+})
+pathway_MGI <- unique(rbindlist(pathway_list))
+
+## specify MGI dataframe
+MGI <- c("hsa-let-7c-3p:CASZ1", "hsa-let-7c-3p:E2F3", "hsa-let-7c-3p:PTPRS", "hsa-let-7c-5p:ASB16", "hsa-let-7c-5p:DIABLO", "hsa-let-7c-5p:GMNN", "hsa-miR-1-3p:BCAP29", "hsa-miR-1-3p:CENPL", "hsa-miR-1-3p:CLPP", "hsa-miR-1-3p:ELF5")
+miRs <- sub(":.*", "", MGI)
+genes <- sub(".*:", "", MGI)
+MGI2D <- data.frame(MGI = MGI, miRNA = miRs, gene = genes, x = 1:length(MGI), y = length(MGI):1)
+
+## enrichment analysis
+result <- Edge_2Ddist(MGI2D = MGI2D, pathway = pathway_MGI, pvalueCutoff = 1, ncores = parallel::detectCores() - 1) # ncores = 1
+```

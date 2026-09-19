@@ -1,0 +1,104 @@
+---
+title: "TG-ORA"
+author: "Zhesi"
+date: "2026-09-18"
+output: html_document
+---
+
+This is the tutorial to implement TG-ORA enrichment analysis method.\
+Before running, please set up your working directory
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/scratch/project_2011179/code/github/")  # Please change your woking directory here.
+```
+
+Note: in .R script, please set your working directory by `setwd("[your directory]")`.
+
+You can run TG-ORA enrichment analysis in three ways:\
+**A.** run through integrated miREA() function.\
+**B.** run by providing input gene list through miRNA differential expression analysis result.\
+**C.** run by specifying an interested miRNA list.\
+In the following tutorial, we will go through each accordingly.
+
+**Required input:**\
+**1. background_MGI:** A two-column data frame with column names miRNA and gene.\
+**2. pathway:** A two-column data frame with column names pathway and gene.\
+**3. mir_DEdata (required in A, B):** A four-column data frame containing miRNA, log2FoldChange, stat, and padj.\
+**4. miR (required in C):** a character vector containing miRNAs of interest.
+
+### A. run through miREA().
+
+```{r}
+load("function.RData") # it contains all functions included in the R/.
+source("R/lib.R")
+methods <- "TG_ORA"
+
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
+
+path_name <- "Reactome" # or "hallmark"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+input_data <- get_all_input_data(methods = methods, pathway = pathway, mir_DEdata = mir_DEdata)
+result <- miREA(methods = methods, input_data = input_data)
+```
+
+It will generate a list named result, which contains the enrichment analysis result (`result$result$TG_ORA`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
+
+### B. run by providing miRNA differential expression analysis result.
+
+Load miRNA differential expression analysis result, identify DEmiRs, and define input gene list as DEmiRs' target genes.
+
+```{r}
+# load functions
+source("R/Enrichment_TG_based.R")
+source("R/global_variable.R")
+source("R/lib.R")
+
+# load MGI background and pathway gene set
+background_MGI <- read.csv("data/raw_data/background/background_MGI.csv")
+path_name <- "Reactome" # or "hallmark"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+
+background_MGI <- data.table::as.data.table(background_MGI)
+pathway <- data.table::as.data.table(pathway)
+
+# generate TG from miRNA DE data
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+mir_DEdata <- data.table::as.data.table(mir_DEdata)
+
+DEmiRs <- mir_DEdata[abs(log2FoldChange) > 1 & padj < 0.05, unique(miRNA)]
+TG <- background_MGI[miRNA %in% DEmiRs, unique(gene)]
+
+# run TG-ORA
+result <- TG_ORA(TG = TG, pathway = pathway, pvalueCutoff = 1)
+```
+
+### C. run by specifying an interested miRNA list.
+
+if you have a list of interested miRNA directly, you could transform interested miRNAs to their target genes as input gene list.
+
+```{r}
+# load functions
+source("R/Enrichment_TG_based.R")
+source("R/global_variable.R")
+source("R/lib.R")
+
+# load MGI background and pathway gene set
+background_MGI <- read.csv("data/raw_data/background/background_MGI.csv")
+path_name <- "Reactome" # or "hallmark"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+
+background_MGI <- data.table::as.data.table(background_MGI)
+pathway <- data.table::as.data.table(pathway)
+
+# generate TG from a list of miRNAs
+##  example
+miRs <- c("hsa-miR-210-3p", "hsa-miR-139-3p", "hsa-miR-96-5p", "hsa-miR-195-5p", "hsa-miR-30a-3p", "hsa-miR-28-3p", "hsa-miR-18a-5p", "hsa-miR-143-3p", "hsa-miR-1307-5p", "hsa-miR-17-5p", "hsa-miR-30c-2-3p", "hsa-miR-183-5p", "hsa-miR-141-3p", "hsa-miR-130b-3p", "hsa-miR-139-5p", "hsa-miR-145-3p", "hsa-miR-33a-5p", "hsa-miR-19a-3p", "hsa-miR-30e-3p", "hsa-miR-1-3p", "hsa-miR-671-5p", "hsa-miR-28-5p",   "hsa-miR-93-5p", "hsa-miR-519a-5p", "hsa-miR-20a-5p", "hsa-miR-26a-5p", "hsa-miR-3199",  "hsa-miR-425-5p", "hsa-miR-516a-5p", "hsa-miR-590-5p" )
+TG <- background_MGI[miRNA %in% miRs, unique(gene)]
+
+# run TG-ORA
+result <- TG_ORA(TG = TG, pathway = pathway, pvalueCutoff = 1)
+```

@@ -1,0 +1,120 @@
+---
+title: "TG-Score"
+author: "Zhesi"
+date: "2026-09-18"
+output: html_document
+---
+
+This is the tutorial to implement TG-Score enrichment analysis method.\
+Before running, please set up your working directory
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/scratch/project_2011179/code/github/")  # Please change your woking directory here.
+```
+
+Note: in .R script, please set your working directory by `setwd("[your directory]")`.
+
+You can run TG-Score enrichment analysis in three ways:\
+**A.** run through integrated miREA() function.\
+**B.** run by providing input gene list through miRNA differential expression analysis result.\
+**C.** run by specifying an interested miRNA list.\
+In the following tutorial, we will go through each accordingly.
+
+**Required input:**\
+**1. background_MGI:** A two-column data frame with column names miRNA and gene.\
+**2. pathway:** A two-column data frame with column names pathway and gene.\
+**3. gene_DEdata:** A four-column data frame containing gene, log2FoldChange, stat, and padj.\
+**4. mir_DEdata (required in A, B):** A four-column data frame containing miRNA, log2FoldChange, stat, and padj.\
+**5. miR (required in C):** a character vector containing miRNAs of interest.
+
+### A. run through miREA().
+
+```{r}
+load("function.RData") # it contains all functions included in the R/.
+source("R/lib.R")
+
+methods <- "TG_Score"
+
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
+gene_DEdata <- read.csv("data/raw_data/cancer_data/DEG/BLCA_DEG.csv")
+gene_DEdata <- gene_DEdata %>% select(gene, log2FoldChange, stat, padj)
+
+path_name <- "Reactome" # or "hallmark"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+input_data <- get_all_input_data(methods = methods, pathway = pathway, mir_DEdata = mir_DEdata, gene_DEdata = gene_DEdata)
+result <- miREA(methods = methods, input_data = input_data)
+```
+
+It will generate a list named result, which contains the enrichment analysis result (`result$result$TG_Score`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
+
+### B. run by providing miRNA differential expression analysis result.
+
+Load miRNA differential expression analysis result, identify DEmiRs, transform to DEmiRs' target genes and rank the TG list by genes' differential expression analysis statistics.
+
+```{r}
+# load functions
+source("R/Enrichment_TG_based.R")
+source("R/global_variable.R")
+source("R/lib.R")
+
+# load MGI background and pathway gene set
+background_MGI <- read.csv("data/raw_data/background/background_MGI.csv")
+path_name <- "Reactome" # or "hallmark"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+
+background_MGI <- data.table::as.data.table(background_MGI)
+pathway <- data.table::as.data.table(pathway)
+
+# load miR and gene DE data
+mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
+mir_DEdata <- data.table::as.data.table(mir_DEdata)
+gene_DEdata <- read.csv("data/raw_data/cancer_data/DEG/BLCA_DEG.csv")
+gene_DEdata <- data.table::as.data.table(gene_DEdata)
+
+# build geneList (ranked DEmiRs' target genes list)
+DEmiRs <- mir_DEdata[abs(log2FoldChange) > 1 & padj < 0.05, unique(miRNA)]
+TG <- background_MGI[miRNA %in% DEmiRs, unique(gene)]
+geneList <- gene_DEdata[gene %in% TG,
+                    setNames(stat, gene)]
+geneList <- sort(geneList, decreasing = TRUE)
+
+# run TG-Score
+result <- TG_Score(geneList = geneList, pathway = pathway, pvalueCutoff = 1)
+```
+
+### C. run by specifying an interested miRNA list.
+
+if you have a list of interested miRNA directly, you could transform interested miRNAs to their target genes as input gene list.
+
+```{r}
+# load functions
+source("R/Enrichment_TG_based.R")
+source("R/global_variable.R")
+source("R/lib.R")
+
+# load MGI background and pathway gene set
+background_MGI <- read.csv("data/raw_data/background/background_MGI.csv")
+path_name <- "Reactome" # or "hallmark"
+pathway <- read.csv(paste0("data/raw_data/pathway/", path_name, "/", path_name, "_gene.csv"), header = TRUE)
+
+background_MGI <- data.table::as.data.table(background_MGI)
+pathway <- data.table::as.data.table(pathway)
+
+# load gene DE data
+gene_DEdata <- read.csv("data/raw_data/cancer_data/DEG/BLCA_DEG.csv")
+gene_DEdata <- data.table::as.data.table(gene_DEdata)
+
+# generate ranked target gene list from a list of miRNAs
+##  example
+miRs <- c("hsa-miR-210-3p", "hsa-miR-139-3p", "hsa-miR-96-5p", "hsa-miR-195-5p", "hsa-miR-30a-3p", "hsa-miR-28-3p", "hsa-miR-18a-5p", "hsa-miR-143-3p", "hsa-miR-1307-5p", "hsa-miR-17-5p", "hsa-miR-30c-2-3p", "hsa-miR-183-5p", "hsa-miR-141-3p", "hsa-miR-130b-3p", "hsa-miR-139-5p", "hsa-miR-145-3p", "hsa-miR-33a-5p", "hsa-miR-19a-3p", "hsa-miR-30e-3p", "hsa-miR-1-3p", "hsa-miR-671-5p", "hsa-miR-28-5p",   "hsa-miR-93-5p", "hsa-miR-519a-5p", "hsa-miR-20a-5p", "hsa-miR-26a-5p", "hsa-miR-3199",  "hsa-miR-425-5p", "hsa-miR-516a-5p", "hsa-miR-590-5p" )
+TG <- background_MGI[miRNA %in% miRs, unique(gene)]
+geneList <- gene_DEdata[gene %in% TG,
+                    setNames(stat, gene)]
+geneList <- sort(geneList, decreasing = TRUE)
+
+# run TG-Score
+result <- TG_Score(geneList = geneList, pathway = pathway, pvalueCutoff = 1)
+```
