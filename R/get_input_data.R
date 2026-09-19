@@ -42,14 +42,14 @@ get_all_input_data <- function(methods, pathway,
   result <- list()
 
   # check background_MGI
-  if (sum_MiR + sum_Edge > 0){
+  # if (sum_MiR + sum_Edge > 0){
     if (is.null(background_MGI)){
       warning("You didn't specify background_MGI. Read the default one instead.\n")
       load("data/raw_data/background/background_MGI.RData")
     }
     colnames(background_MGI)[1:2] <- c("miRNA", "gene")
 
-  }
+  #}
 
   # check background_GGI
   if (length(intersect(target_method, methods)) != 0){
@@ -81,19 +81,22 @@ get_all_input_data <- function(methods, pathway,
   mir_DEdata <- data.table::as.data.table(mir_DEdata)
 
   # ensure that mir_mat and gene_mat have their names as rownames
-  if (!is.numeric(mir_mat[[1]]) && !is.integer(mir_mat[[1]])) {
-    # we suppose the first column is miRNA name in that case.
-    colnames(mir_mat)[1] <- "miRNA"
-    mir_mat <- mir_mat %>% distinct(.[1], .keep_all = TRUE) # only keep the first appearance if duplicated values.
-    rownames(mir_mat) <- mir_mat[[1]]
-    mir_mat <- mir_mat[, -1, drop = FALSE]
+  if (!is.null(mir_mat) && !is.null(gene_mat)){
+    if (!is.numeric(mir_mat[[1]]) && !is.integer(mir_mat[[1]])) {
+      # we suppose the first column is miRNA name in that case.
+      colnames(mir_mat)[1] <- "miRNA"
+      mir_mat <- mir_mat %>% distinct(.[1], .keep_all = TRUE) # only keep the first appearance if duplicated values.
+      rownames(mir_mat) <- mir_mat[[1]]
+      mir_mat <- mir_mat[, -1, drop = FALSE]
+    }
+    if (!is.numeric(gene_mat[[1]]) && !is.integer(gene_mat[[1]])) {
+      colnames(gene_mat)[1] <- "gene"
+      gene_mat <- gene_mat %>% distinct(.[1], .keep_all = TRUE)
+      rownames(gene_mat) <- gene_mat[[1]]
+      gene_mat <- gene_mat[, -1, drop = FALSE]
+    }
   }
-  if (!is.numeric(gene_mat[[1]]) && !is.integer(gene_mat[[1]])) {
-    colnames(gene_mat)[1] <- "gene"
-    gene_mat <- gene_mat %>% distinct(.[1], .keep_all = TRUE)
-    rownames(gene_mat) <- gene_mat[[1]]
-    gene_mat <- gene_mat[, -1, drop = FALSE]
-  }
+  
 
   raw_data <- list(
     methods = methods,
@@ -163,7 +166,7 @@ get_all_input_data <- function(methods, pathway,
 # pathway
 # scoreFun: Edge_Score
 
-# gene_DEdata: except for MiR_ORA and MiR_Score, should be four-column dataframe, containing gene, log2FC, stat, padj
+# gene_DEdata: except for TG_ORA, MiR_ORA and MiR_Score, should be four-column dataframe, containing gene, log2FC, stat, padj
 # mir_DEdata: compulsory, should be four-column dataframe, containing miRNA, log2FC, stat, padj
 # gene_mat: only needed for Edge_ method
 # mir_mat: only needed for Edge_ method
@@ -179,9 +182,10 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
   sum_TG <- sum(grepl("TG_", methods))
   sum_MiR <- sum(grepl("MiR_", methods))
   sum_Edge <- sum(grepl("Edge_", methods))
+  no_gene_DEdata <- c("TG_ORA", "MiR_ORA", "MiR_Score")
   DE_method <- c("Edge_ORA", "Edge_Network")
   score_method <- c("Edge_Score", "Edge_2Ddist", "Edge_Topology")
-  if ((sum_TG != 0 || sum_Edge != 0) && is.null(gene_DEdata)){
+  if (length(setdiff(methods, no_gene_DEdata)) > 0 && is.null(gene_DEdata)) {
     stop("Please make sure you have input gene_DEdata!")
   }
   if (sum_Edge != 0 && (is.null(gene_mat) || is.null(mir_mat))){
@@ -191,9 +195,9 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
     warning("You didn't specify scoreFun for transform expression score, set 'rank' automatically.\n")
     scoreFun = "rank"
   }
-  if (sum_Edge != 0 && is.null(background_MGI)){
+  if (is.null(background_MGI)){ # sum_Edge != 0 && 
     warning("You didn't specify background_MGI. Read the default one instead.\n")
-    load("data/raw_data/background/background_mirv22_geneHGNC.RData")
+    load("data/raw_data/background/background_MGI.RData")
   }
 
   if (!is.null(gene_DEdata)){
@@ -321,7 +325,8 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
 
 get_pathway_data <- function(methods, pathway, background_MGI){
   colnames(pathway)[1:2] <- c("pathway", "gene")
-  sum_TG <- sum(grepl("TG_", methods))
+  #sum_TG <- sum(grepl("TG_", methods))
+  sum_TG <- sum(grepl("TG_|^Edge_Network$", methods)) # Edge-Network needs pathway gene set to map GGI.
   sum_MiR <- sum(grepl("MiR_", methods))
   sum_Edge <- sum(grepl("Edge_", methods))
 
