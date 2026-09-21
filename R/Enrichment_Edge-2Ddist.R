@@ -58,11 +58,11 @@ Edge_2Ddist <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pv
   pathway_counts <- table(pathway$pathway)
   if (!is.null(minSize)){
     pathways_to_remove_min <- names(pathway_counts[pathway_counts < minSize])
-    pathway <- pathway[!pathway$pathway %in% pathways_to_remove_min, ]
+    pathway <- pathway[!(pathway %in% pathways_to_remove_min), ]
   }
   if (!is.null(maxSize)){
     pathways_to_remove_max <- names(pathway_counts[pathway_counts > maxSize])
-    pathway <- pathway[!pathway$pathway %in% pathways_to_remove_max, ]
+    pathway <- pathway[!(pathway %in% pathways_to_remove_max), ]
   }
 
   n_pathway <- length(unique(pathway$pathway))
