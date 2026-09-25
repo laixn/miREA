@@ -151,5 +151,4 @@ Submitted (2026).
   year={2026}}
 ```
 ---
-© [Lai Lab](https://sites.google.com/view/lai-lab) - This code is made available under the GPLv3 License.
-
+©[Lai Lab](https://sites.google.com/view/lai-lab) - This code is available under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0) license.
