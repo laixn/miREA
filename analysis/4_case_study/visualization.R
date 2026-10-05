@@ -21,7 +21,7 @@ plot_path <- "analysis/4_case_study/plot/"
 cancer = "BLCA"
 path_name = "hallmark"
 penrichCutoff = 0.05
-methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
+methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network")
 
 ### 1. summary and heatmap ----
 # load result
@@ -58,7 +58,7 @@ ht_sankey_plot <- plot_heatmap_sankey(method = "Edge_Network", result = result, 
 
 summary_plot <- plot_summary(result = result, penrichCutoff = penrichCutoff, plot_path = plot_path,
                              fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-                                          "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
+                                          "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
                                           "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072"))
 
 data <- input_data$data$data

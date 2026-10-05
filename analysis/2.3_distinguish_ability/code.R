@@ -18,10 +18,10 @@ if (!dir.exists(result_dir)){
   dir.create(result_dir)
 }
 fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-             "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#9AA4D6",
+             "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#9AA4D6",
              "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072")
 
-method_order <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
+method_order <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network")
 
 # path_name = "TN"
 # 1. TP pathways vs other cancers' TP pathways ----

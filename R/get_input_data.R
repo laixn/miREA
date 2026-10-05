@@ -13,7 +13,7 @@
 #' @param GGI_source: optional, select from "Omnipath" or "Reactome".if you don't have specified background_GGI and neither GGI_source. The default Omnipath will be used.
 #' @param gene_mat: optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be raw gene expression matrix, where each row is a gene, and each column represents a sample.
 #' @param mir_mat: optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be raw miRNA expression matrix, where each row is a miRNA, and each column represents a sample.
-#' @param scoreFun: optional, needed for Edge_Score, Edge_2Ddist, Edge_Topology. See default.scoreFun for all supportive methods.
+#' @param scoreFun: optional, needed for Edge_Score1D, Edge_Score2D, Edge_Topology. See default.scoreFun for all supportive methods.
 #' @note gene_mat and mir_mat should have same sample name format. If the number of shared samples below 50 % of the minimum of gene samples and miRNA samples, a warning would happen to remind you recheck them.
 
 #' @return A list that contains all the data formats needed for miREA.
@@ -28,7 +28,7 @@ get_all_input_data <- function(methods, pathway,
   sum_MiR <- sum(grepl("MiR_", methods))
   sum_Edge <- sum(grepl("Edge_", methods))
   target_method <- c("Edge_Topology", "Edge_Network")
-  score_method <- c("Edge_Score", "Edge_2Ddist", "Edge_Topology")
+  score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
   colnames(pathway)[1:2] <- c("pathway", "gene")
   # check scoreFun
   if (length(intersect(score_method, methods)) > 0 && is.null(scoreFun)){
@@ -161,16 +161,16 @@ get_all_input_data <- function(methods, pathway,
 # gene_DEdata: TG_ORA, TG_Score
 # mir_DEdata: MiR_ORA, MiR_Score
 # background_MGI: could be either two-column dataframe, or a character vector with format [miRNA]:[gene]
-#                 Edge_ORA, Edge_Score, Edge_TopoDE, Edge_network
+#                 Edge_ORA, Edge_Score1D, Edge_TopoDE, Edge_network
 # background_GGI
 # pathway
-# scoreFun: Edge_Score
+# scoreFun: Edge_Score1D
 
 # gene_DEdata: except for TG_ORA, MiR_ORA and MiR_Score, should be four-column dataframe, containing gene, log2FC, stat, padj
 # mir_DEdata: compulsory, should be four-column dataframe, containing miRNA, log2FC, stat, padj
 # gene_mat: only needed for Edge_ method
 # mir_mat: only needed for Edge_ method
-# scoreFun: only needed for Edge_Score, Edge_2Ddist, Edge_TopoScore, Edge_TopoScore_weight, choose one from rank, sigmoid, normalize
+# scoreFun: only needed for Edge_Score1D, Edge_Score2D, Edge_TopoScore, Edge_TopoScore_weight, choose one from rank, sigmoid, normalize
 # background_MGI: only needed for Edge_ method
 # will return a list, contains the input of each method
 get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
@@ -184,7 +184,7 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
   sum_Edge <- sum(grepl("Edge_", methods))
   no_gene_DEdata <- c("TG_ORA", "MiR_ORA", "MiR_Score")
   DE_method <- c("Edge_ORA", "Edge_Network")
-  score_method <- c("Edge_Score", "Edge_2Ddist", "Edge_Topology")
+  score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
   if (length(setdiff(methods, no_gene_DEdata)) > 0 && is.null(gene_DEdata)) {
     stop("Please make sure you have input gene_DEdata!")
   }
@@ -303,8 +303,8 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
       setorder(dict, strength)
       dict <- unique(dict, by = "MGI")
 
-      if ("Edge_Score" %in% methods) {
-        result[["Edge_Score"]] <- setNames(as.numeric(dict$strength), dict$MGI)
+      if ("Edge_Score1D" %in% methods) {
+        result[["Edge_Score1D"]] <- setNames(as.numeric(dict$strength), dict$MGI)
       }
 
       if ("Edge_Topology" %in% methods) {
@@ -314,8 +314,8 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
       # if ("Edge_manova" %in% methods) {
       #   result[["Edge_manova"]] <- as.data.frame(dict[, .(MGI, miRNA, gene, normcor, normratio, cor, ratio)])
       # }
-      if ("Edge_2Ddist" %in% methods) {
-        result[["Edge_2Ddist"]] <- as.data.frame(dict[, .(MGI, miRNA, gene, cor, normratio)])
+      if ("Edge_Score2D" %in% methods) {
+        result[["Edge_Score2D"]] <- as.data.frame(dict[, .(MGI, miRNA, gene, cor, normratio)])
       }
     }
   }

@@ -1,11 +1,11 @@
 ---
-title: "Edge-2Ddist"
+title: "Edge-Score2D"
 author: "Zhesi"
 date: "2026-09-18"
 output: html_document
 ---
 
-This is the tutorial to implement Edge-2Ddist enrichment analysis method.\
+This is the tutorial to implement Edge-Score2D enrichment analysis method.\
 Before running, please set up your working directory.
 
 ```{r setup, include=FALSE}
@@ -14,7 +14,7 @@ knitr::opts_knit$set(root.dir = "/scratch/project_2011179/code/github/")  # Plea
 
 Note: in .R script, please set your working directory by `setwd("[your directory]")`.
 
-You can run Edge-2Ddist enrichment analysis in three ways:\
+You can run Edge-Score2D enrichment analysis in three ways:\
 **A.** run through integrated miREA() function.\
 **B.** run by generating MGI data through miRNA, gene differential expression analysis result and miRNA, gene expression matrix with common samples.\
 **C.** run by providing self-defined MGI data. This is suitable when you want to measure MGI into two quantitative perspecitives.\
@@ -29,7 +29,7 @@ In the following tutorial, we will go through each accordingly.
 **6. gene_mat (required for A, B):** A raw gene expression matrix, with each row representing a gene and each column representing a sample.\
 **7. MGI2D (required for C):** A five-column dataframe containing MGI, miRNA, gene, cor(x), and ranknormratio(y).
 **8. ncores:** Number of CPU cores. Check your available CPU cores and specify an integer greater than 1 to enable parallel computing.\
-**9. Other parameters:** For additional parameters and their descriptions, please refer to R/miREA.R or R/Enrichment_Edge-2Ddist.R.
+**9. Other parameters:** For additional parameters and their descriptions, please refer to R/miREA.R or R/Enrichment_Edge-Score2D.R.
 
 
 ### A. run through miREA().
@@ -38,7 +38,7 @@ In the following tutorial, we will go through each accordingly.
 load("function.RData") # it contains all functions included in the R/.
 source("R/lib.R")
 source("/scratch/project_2011179/code/github/R/miREA.R")
-methods <- "Edge_2Ddist"
+methods <- "Edge_Score2D"
 
 mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
 mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
@@ -54,12 +54,12 @@ input_data <- get_all_input_data(methods = methods, pathway = pathway, mir_DEdat
 result <- miREA(methods = methods, input_data = input_data)
 ```
 
-It will generate a list named result, which contains the enrichment analysis result (`result$result$Edge_2Ddist`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
+It will generate a list named result, which contains the enrichment analysis result (`result$result$Edge_Score2D`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
 
 ### B. run by generating MGI data through DE and expression data.
 ```{r}
 # load functions
-source("R/Enrichment_Edge-2Ddist.R")
+source("R/Enrichment_Edge-Score2D.R")
 source("R/get_input_data.R")  # calculate MGI strength score
 source("R/global_variable.R")
 source("R/lib.R")
@@ -108,13 +108,13 @@ dict <- unique(dict, by = "MGI")
 MGI2D <- as.data.frame(dict[, .(MGI, miRNA, gene, cor, normratio)])
 
 ## enrichment analysis
-result <- Edge_2Ddist(MGI2D = MGI2D, pathway = pathway_MGI, pvalueCutoff = 1, ncores = parallel::detectCores() - 1) # ncores = 1
+result <- Edge_Score2D(MGI2D = MGI2D, pathway = pathway_MGI, pvalueCutoff = 1, ncores = parallel::detectCores() - 1) # ncores = 1
 ```
 
 ### C. run by providing self-defined interested MGI list.
 ```{r}
 # load functions
-source("R/Enrichment_Edge-2Ddist.R")
+source("R/Enrichment_Edge-Score2D.R")
 source("R/global_variable.R")
 source("R/lib.R")
 
@@ -142,5 +142,5 @@ genes <- sub(".*:", "", MGI)
 MGI2D <- data.frame(MGI = MGI, miRNA = miRs, gene = genes, x = 1:length(MGI), y = length(MGI):1)
 
 ## enrichment analysis
-result <- Edge_2Ddist(MGI2D = MGI2D, pathway = pathway_MGI, pvalueCutoff = 1, ncores = parallel::detectCores() - 1) # ncores = 1
+result <- Edge_Score2D(MGI2D = MGI2D, pathway = pathway_MGI, pvalueCutoff = 1, ncores = parallel::detectCores() - 1) # ncores = 1
 ```

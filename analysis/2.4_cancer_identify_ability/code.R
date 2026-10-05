@@ -25,7 +25,7 @@ if (!dir.exists(result_dir)){
 }
 
 fill_col = c("TG_Score" = "#07AEE3",
-             "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_Network" = "#FA8072")
+             "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Network" = "#FA8072")
 
 # 0. transform gene and miRNA names ----
 cosmic_gene <- read.csv("data/cancer_list/raw/cancerGeneList_COSMIC.csv")
@@ -125,8 +125,8 @@ for (path_name in paths){
     enrich_TG_Score <- result$result$TG_Score %>% filter(padj < 0.05)
     core_TG_Score <- unique(unlist(strsplit(enrich_TG_Score$core_enrichment, "/")))
 
-    enrich_Edge_Score <- result$result$Edge_Score %>% filter(padj < 0.05)
-    core_Edge_Score <- unique(unlist(strsplit(enrich_Edge_Score$core_enrichment, "/")))
+    enrich_Edge_Score1D <- result$result$Edge_Score1D %>% filter(padj < 0.05)
+    core_Edge_Score1D <- unique(unlist(strsplit(enrich_Edge_Score1D$core_enrichment, "/")))
 
     enrich_Edge_ORA <- result$result$Edge_ORA %>% filter(padj < 0.05)
     DEMGI = input_data$data$Edge_ORA
@@ -238,35 +238,35 @@ for (path_name in paths){
     }
 
 
-    # Edge_Score
-    if (nrow(enrich_Edge_Score) > 0){
-      split_list <- strsplit(core_Edge_Score, ":")
+    # Edge_Score1D
+    if (nrow(enrich_Edge_Score1D) > 0){
+      split_list <- strsplit(core_Edge_Score1D, ":")
       all_elements <- unlist(split_list)
-      core_miR_Edge_Score  <-unique(all_elements[grepl("^hsa-", all_elements)])
-      core_gene_Edge_Score <- unique(all_elements[!grepl("^hsa-", all_elements)])
+      core_miR_Edge_Score1D  <-unique(all_elements[grepl("^hsa-", all_elements)])
+      core_gene_Edge_Score1D <- unique(all_elements[!grepl("^hsa-", all_elements)])
 
-      CMC_miR <- unique(pathway_MGI %>% filter(miRNA %in% cancer_list$CMC_miR, pathway %in% enrich_Edge_Score$pathway) %>% pull(miRNA))
-      n_core_miR = length(core_miR_Edge_Score)
+      CMC_miR <- unique(pathway_MGI %>% filter(miRNA %in% cancer_list$CMC_miR, pathway %in% enrich_Edge_Score1D$pathway) %>% pull(miRNA))
+      n_core_miR = length(core_miR_Edge_Score1D)
       n_CMC = length(CMC_miR)
-      n_CMC_core = length(intersect(CMC_miR, core_miR_Edge_Score))
-      prop_inter_core = length(intersect(CMC_miR, core_miR_Edge_Score))/length(core_miR_Edge_Score)
-      prop_inter_CMC = length(intersect(CMC_miR, core_miR_Edge_Score))/length(CMC_miR)
+      n_CMC_core = length(intersect(CMC_miR, core_miR_Edge_Score1D))
+      prop_inter_core = length(intersect(CMC_miR, core_miR_Edge_Score1D))/length(core_miR_Edge_Score1D)
+      prop_inter_CMC = length(intersect(CMC_miR, core_miR_Edge_Score1D))/length(CMC_miR)
 
-      gene <- unique(pathway_MGI %>% filter(gene %in% cancer_list$oncoKB_gene, pathway %in% enrich_Edge_Score$pathway) %>% pull(gene))
-      n_core_gene = length(core_gene_Edge_Score)
+      gene <- unique(pathway_MGI %>% filter(gene %in% cancer_list$oncoKB_gene, pathway %in% enrich_Edge_Score1D$pathway) %>% pull(gene))
+      n_core_gene = length(core_gene_Edge_Score1D)
       n_oncoKB = length(gene)
-      n_oncoKB_core = length(intersect(gene, core_gene_Edge_Score))
+      n_oncoKB_core = length(intersect(gene, core_gene_Edge_Score1D))
       prop_oncoKB_inter_core = n_oncoKB_core / n_core_gene
       prop_inter_oncoKB = n_oncoKB_core / n_oncoKB
 
-      gene <- unique(pathway_MGI %>% filter(gene %in% cancer_list$COSMIC_gene, pathway %in% enrich_Edge_Score$pathway) %>% pull(gene))
+      gene <- unique(pathway_MGI %>% filter(gene %in% cancer_list$COSMIC_gene, pathway %in% enrich_Edge_Score1D$pathway) %>% pull(gene))
       n_COSMIC = length(gene)
-      n_COSMIC_core = length(intersect(gene, core_gene_Edge_Score))
+      n_COSMIC_core = length(intersect(gene, core_gene_Edge_Score1D))
       prop_COSMIC_inter_core = n_COSMIC_core / n_core_gene
       prop_inter_COSMIC = n_COSMIC_core / n_COSMIC
 
-      Edge_Score_row <- data.frame(
-        pathway = path_name, cancer = cancer, method = "Edge_Score", n_enrich_pw = nrow(enrich_Edge_Score),
+      Edge_Score1D_row <- data.frame(
+        pathway = path_name, cancer = cancer, method = "Edge_Score1D", n_enrich_pw = nrow(enrich_Edge_Score1D),
         n_core_miR = n_core_miR, n_CMC = n_CMC, n_CMC_core = n_CMC_core,
         prop_inter_core = prop_inter_core, prop_inter_CMC = prop_inter_CMC,
         n_core_gene = n_core_gene, n_oncoKB = n_oncoKB, n_oncoKB_core = n_oncoKB_core,
@@ -275,8 +275,8 @@ for (path_name in paths){
         prop_COSMIC_inter_core = prop_COSMIC_inter_core, prop_inter_COSMIC = prop_inter_COSMIC, stringsAsFactors = FALSE
       )
     } else {
-      Edge_Score_row <- data.frame(
-        pathway = path_name, cancer = cancer, method = "Edge_Score", n_enrich_pw = nrow(enrich_Edge_Score),
+      Edge_Score1D_row <- data.frame(
+        pathway = path_name, cancer = cancer, method = "Edge_Score1D", n_enrich_pw = nrow(enrich_Edge_Score1D),
         n_core_miR = NA, n_CMC = NA, n_CMC_core = NA,
         prop_inter_core = NA, prop_inter_CMC = NA,
         n_core_gene = NA, n_oncoKB = NA, n_oncoKB_core = NA,
@@ -335,7 +335,7 @@ for (path_name in paths){
       )
     }
 
-    df <- bind_rows(TG_Score_row, Edge_ORA_row, Edge_Score_row, Edge_Network_row)
+    df <- bind_rows(TG_Score_row, Edge_ORA_row, Edge_Score1D_row, Edge_Network_row)
     summary <- rbind(summary, df)
   }
 }
@@ -358,7 +358,7 @@ df_long <- summary %>%
     names_to = "Metric",
     values_to = "Value"
   )
-df_long$method <- factor(df_long$method, levels = c("TG_Score", "Edge_ORA", "Edge_Score", "Edge_Network"))
+df_long$method <- factor(df_long$method, levels = c("TG_Score", "Edge_ORA", "Edge_Score1D", "Edge_Network"))
 df_long$Metric <- factor(df_long$Metric,
                          levels = c("sqrt_CMC", "sqrt_oncoKB", "sqrt_COSMIC"),
                          labels = c("CMC (miRNAs)", "OncoKB (genes)", "COSMIC (genes)"))

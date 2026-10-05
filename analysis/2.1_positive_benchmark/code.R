@@ -18,10 +18,10 @@ plot_path <- paste0(result_dir, "TPR_ht.pdf")
 
 path_name = "TP"
 method_order <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score",
-                  "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
+                  "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network")
 
 fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-             "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#9AA4D6",
+             "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#9AA4D6",
              "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072")
 
 # 1. get summary table----
@@ -249,7 +249,7 @@ left_anno <- function(matrix){
   data_col <- c("DE" = "cornflowerblue", "Score" = "#FF99C0")
   # left method annotation ----
   annot_df <- data.frame(
-    method = c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network"),
+    method = c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network"),
     Type = c("Node", "Node","Node","Node","MGI","MGI","MGI","MGI","MGI"),
     Data = c("DE", "Score", "DE", "Score", "DE", "Score", "Score", "Score", "DE")
   )

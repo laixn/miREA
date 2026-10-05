@@ -1,11 +1,11 @@
 ---
-title: "Edge-Score"
+title: "Edge-Score1D"
 author: "Zhesi"
 date: "2026-09-18"
 output: html_document
 ---
 
-This is the tutorial to implement Edge-Score enrichment analysis method.\
+This is the tutorial to implement Edge-Score1D enrichment analysis method.\
 Before running, please set up your working directory.
 
 ```{r setup, include=FALSE}
@@ -14,7 +14,7 @@ knitr::opts_knit$set(root.dir = "/scratch/project_2011179/code/github/")  # Plea
 
 Note: in .R script, please set your working directory by `setwd("[your directory]")`.
 
-You can run Edge-Score enrichment analysis in three ways:\
+You can run Edge-Score1D enrichment analysis in three ways:\
 **A.** run through integrated miREA() function.\
 **B.** run by generating ranked MGI list through miRNA, gene differential expression analysis result and miRNA, gene expression matrix with common samples.\
 **C.** run by providing self-defined ranked MGI list.\
@@ -34,7 +34,7 @@ In the following tutorial, we will go through each accordingly.
 ```{r}
 load("function.RData") # it contains all functions included in the R/.
 source("R/lib.R")
-methods <- "Edge_Score"
+methods <- "Edge_Score1D"
 
 mir_DEdata <- read.csv("data/raw_data/cancer_data/DEmiR/BLCA_DEmiR.csv")
 mir_DEdata <- mir_DEdata %>% select(miRNA, log2FoldChange, stat, padj)
@@ -50,12 +50,12 @@ input_data <- get_all_input_data(methods = methods, pathway = pathway, mir_DEdat
 result <- miREA(methods = methods, input_data = input_data)
 ```
 
-It will generate a list named result, which contains the enrichment analysis result (`result$result$Edge_Score`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
+It will generate a list named result, which contains the enrichment analysis result (`result$result$Edge_Score1D`), calculation time (`result$time`), methods (`result$valid_methods`), and parameters (`result$parameter`).
 
 ### B. run by generating ranked MGI list through DE and expression data.
 ```{r}
 # load functions
-source("R/Enrichment_Edge-Score.R")
+source("R/Enrichment_Edge-Score1D.R")
 source("R/get_input_data.R")  # calculate MGI strength score
 source("R/global_variable.R")
 source("R/lib.R")
@@ -109,13 +109,13 @@ dict <- unique(dict, by = "MGI")
 MGIList <- setNames(as.numeric(dict$strength), dict$MGI)
 
 ## enrichment analysis
-result <- Edge_Score(MGIList = MGIList, pathway = pathway_MGI, pvalueCutoff = 1)
+result <- Edge_Score1D(MGIList = MGIList, pathway = pathway_MGI, pvalueCutoff = 1)
 ```
 
 ### C. run by providing self-defined interested MGI list.
 ```{r}
 # load functions
-source("R/Enrichment_Edge-Score.R")
+source("R/Enrichment_Edge-Score1D.R")
 source("R/global_variable.R")
 source("R/lib.R")
 
@@ -141,5 +141,5 @@ DEMGI <- c("hsa-let-7c-3p:CASZ1", "hsa-let-7c-3p:E2F3", "hsa-let-7c-3p:PTPRS", "
 MGIList <- setNames(length(DEMGI):1, DEMGI)
 
 ## enrichment analysis
-result <- Edge_Score(MGIList = MGIList, pathway = pathway_MGI, pvalueCutoff = 1)
+result <- Edge_Score1D(MGIList = MGIList, pathway = pathway_MGI, pvalueCutoff = 1)
 ```

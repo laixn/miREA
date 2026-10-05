@@ -22,7 +22,7 @@ plot_heatmap_sankey <- function(method, result, input_data, n_mir_heatmap = 20, 
                                 plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL, sankey_prop = 1.5,
                                 gene_annot = NULL, mir_annot = NULL, annot_color = "#A6DDBA"){
   # fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-  #              "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
+  #              "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
   #              "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072")
   if (length(method) != 1){
     stop("Please specify only ONE [method] each time!")

@@ -1,4 +1,4 @@
-#' Title: Edge-2Ddist
+#' Title: Edge-Score2D
 #' Description:
 #' @param MGI2D A five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).
 #' @param pathway A three-column dataframe contains pathway miRNA gene.
@@ -13,12 +13,12 @@
 #' @param iter Number of iterations for permutation test
 #' @param ncores Number of cores for calculating randomized r during the permutation test.
 #'
-#' @return a dataframe contains enrichment result for Edge-2Ddist
+#' @return a dataframe contains enrichment result for Edge-Score2D
 #' @examples
 #'
 
-Edge_2Ddist <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL){
-  cat("\n  Start Edge_2Ddist analysis ...\n")
+Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL){
+  cat("\n  Start Edge_Score2D analysis ...\n")
 
   data.table::setDT(MGI2D)
   MGI2D <- na.omit(MGI2D)
@@ -129,7 +129,7 @@ Edge_2Ddist <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pv
   r_random_list <- lapply(r_random_list, sort)
 
   cat("    Calculate pathway radius and siginificant level...\n")
-  result <- Edge_2Ddist_simple(MGI2D = MGI2D, r_random_list = r_random_list, pathway = pathway, iter = iter)
+  result <- Edge_Score2D_simple(MGI2D = MGI2D, r_random_list = r_random_list, pathway = pathway, iter = iter)
   result <- result %>%
     dplyr::mutate(padj = stats::p.adjust(p_value, method = pAdjMethod)) %>%
     dplyr::relocate(padj, .after = p_value) %>%
@@ -138,12 +138,12 @@ Edge_2Ddist <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pv
       padj <= pvalueCutoff) %>%
     arrange(padj, decrease = FALSE)
 
-  cat("  Edge-2Ddist analysis have finished!\n")
+  cat("  Edge-Score2D analysis have finished!\n")
   return(result)
 }
 
 
-Edge_2Ddist_simple <- function(MGI2D, r_random_list, pathway, iter){
+Edge_Score2D_simple <- function(MGI2D, r_random_list, pathway, iter){
   pathway_names <- unique(pathway$pathway)
   pathway_list <- split(pathway, pathway$pathway)
   ctx <- V8::v8()
@@ -159,7 +159,7 @@ Edge_2Ddist_simple <- function(MGI2D, r_random_list, pathway, iter){
 
     cat("      ", i, "/", length(pathway_names), ",", pathway_name, ":")
 
-    result <- Edge_2Ddist_single(MGI2D = MGI2D, PW = pw_single, r_random = r_random, ctx = ctx)
+    result <- Edge_Score2D_single(MGI2D = MGI2D, PW = pw_single, r_random = r_random, ctx = ctx)
 
     cat(round(result$p_value, 4), "\n")
 
@@ -171,7 +171,7 @@ Edge_2Ddist_simple <- function(MGI2D, r_random_list, pathway, iter){
 }
 
 
-Edge_2Ddist_single <- function(MGI2D, PW, r_random, ctx){
+Edge_Score2D_single <- function(MGI2D, PW, r_random, ctx){
   MGI2D <- na.omit(MGI2D)
   if (is.null(MGI2D)||!is.data.frame(MGI2D)){
     stop("Please make sure the input MGI2D is a dataframe!")

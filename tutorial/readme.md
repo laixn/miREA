@@ -1,5 +1,5 @@
 This tutorial aims to demonstrate how to use the miREA methods individually.
-miREA integrates 9 methods, namely TG-ORA, TG-Score, MiR-ORA, MiR-Score, Edge-ORA, Edge-Score, Edge-2Ddist, Edge-Topology, and Edge-Network.
+miREA integrates 9 methods, namely TG-ORA, TG-Score, MiR-ORA, MiR-Score, Edge-ORA, Edge-Score1D, Edge-Score2D, Edge-Topology, and Edge-Network.
 
 Each .rmd file named after a method contains a tutorial on how to use that method.
 

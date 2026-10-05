@@ -12,7 +12,7 @@ thres_dir <- paste0(result_dir, "threshold_result/")
 
 TN_summary_df <- read.csv("analysis/2.2_negative_benchmark/TN_summary_df.csv")
 
-score_methods <- c("Edge_Score", "Edge_2Ddist", "Edge_Topology")
+score_methods <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
 padj_thresholds <- c(0.1, 0.05, 0.2) # 0.05,
 logFC_thresholds <- c(0, 0.584962500721156, 1)
 
@@ -42,7 +42,7 @@ for (cancer in cancers){
       cat(seed,"/")
     }
     load(paste0("data/input_data/TN/", cancer, "_TN_", seed, "_input_data.RData"))
-    strength <- input_data_rand$data$Edge_Score
+    strength <- input_data_rand$data$Edge_Score1D
     data <- data.frame(MGI = names(strength), strength = strength, cancer = cancer, seed = seed, stringsAsFactors = FALSE)
     score_sum <- as.numeric(summary(data$strength))
     sd <- sd(data$strength)
@@ -63,7 +63,7 @@ summary <- left_join(score_summary_df, TN_summary, by = c("cancer", "seed"))
 # write.csv(score_summary_df, file = "analysis/2_benchmark/2.3.1_score_dist.csv", row.names = FALSE)
 write.csv(summary, file = paste0(result_dir, "score_dist_vs_FPR.csv"), row.names = FALSE)
 
-# ggplot(summary %>% filter(method == "Edge_2Ddist"), aes(x = sd, y = positive_rate)) +
+# ggplot(summary %>% filter(method == "Edge_Score2D"), aes(x = sd, y = positive_rate)) +
 #   geom_point(size = 2) +   # 散点
 #   geom_smooth(method = "lm", se = TRUE) +   # 回归线 + 95% CI
 #   theme_bw() +
@@ -73,7 +73,7 @@ write.csv(summary, file = paste0(result_dir, "score_dist_vs_FPR.csv"), row.names
 # pearson heatmap
 summary <- read.csv(paste0(result_dir, "score_dist_vs_FPR.csv"))
 x_cols <- c("sd", "range", "IQR", "MAD")
-y_cols <- c("Edge_Score", "Edge_2Ddist", "Edge_Topology")
+y_cols <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
 
 cor_pearson_mat <- matrix(NA, nrow = length(x_cols), ncol = length(y_cols),
                           dimnames = list(x_cols, y_cols))

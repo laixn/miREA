@@ -59,7 +59,7 @@ if (path_name == "Reactome"){
   GGI_source <- "Omnipath"
 }
 
-methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
+methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network")
 scoreFun = "rank"
 pvalueCutoff = 1
 minSize = NULL
@@ -180,7 +180,7 @@ cat("Step 4. Visualization...\n")
 cat("\n  === Start time:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "===\n")
 summary_plot <- plot_summary(result = result, penrichCutoff = 0.05, plot_path,
                              fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-                                          "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
+                                          "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
                                           "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072"))
 
 

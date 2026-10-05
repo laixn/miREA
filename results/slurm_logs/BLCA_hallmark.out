@@ -26,11 +26,11 @@ Start Enrichment analysis...
   Edge-ORA analysis have finished! 
     - Edge_ORA finished, time cost: 1.961 s. 
 
-  Start Edge-Score analysis ...
-  Edge-Score analysis have finished!
-    - Edge_Score finished, time cost: 35.831 s. 
+  Start Edge-Score1D analysis ...
+  Edge-Score1D analysis have finished!
+    - Edge_Score1D finished, time cost: 35.831 s. 
 
-  Start Edge_2Ddist analysis ...
+  Start Edge_Score2D analysis ...
     Generate random MGI set radius on 1 cores...
     Calculate pathway radius and siginificant level...
        1 / 10 , TISSUE INVASION AND METASTASIS :0 
@@ -43,8 +43,8 @@ Start Enrichment analysis...
        8 / 10 , REPLICATIVE IMMORTALITY :0.5425 
        9 / 10 , EVADING IMMUNE DESTRUCTION :0.1271 
        10 / 10 , GENOME INSTABILITY :1 
-  Edge-2Ddist analysis have finished!
-    - Edge_2Ddist finished, time cost: 9.063 s. 
+  Edge-Score2D analysis have finished!
+    - Edge_Score2D finished, time cost: 9.063 s. 
 
   Start Edge_MANOVA analysis ...
     - Edge_manova finished, time cost: 1.446 s. 
@@ -76,10 +76,10 @@ Step 4. Visualization...
   === Start time: 2025-11-29 02:09:03 ===
     Please check the summary plot and pvalue density plot at: results/hallmark/BLCA/plot/    Heatmap plot for Edge_ORA :
     Please check the heatmap & sankey plot for Edge_ORA at: results/hallmark/BLCA/plot/ 
-    Heatmap plot for Edge_Score :
-    Please check the heatmap & sankey plot for Edge_Score at: results/hallmark/BLCA/plot/ 
-    Heatmap plot for Edge_2Ddist :
-    Please check the heatmap & sankey plot for Edge_2Ddist at: results/hallmark/BLCA/plot/ 
+    Heatmap plot for Edge_Score1D :
+    Please check the heatmap & sankey plot for Edge_Score1D at: results/hallmark/BLCA/plot/ 
+    Heatmap plot for Edge_Score2D :
+    Please check the heatmap & sankey plot for Edge_Score2D at: results/hallmark/BLCA/plot/ 
     Heatmap plot for Edge_manova :
     Please check the heatmap & sankey plot for Edge_manova at: results/hallmark/BLCA/plot/ 
     Heatmap plot for Edge_Topology :

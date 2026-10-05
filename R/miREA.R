@@ -1,16 +1,16 @@
 #' Title: MGI edge-based MicroRNA-oriented Enrichment Analysis (miREA)
 #' Description: The main function to realize miREA which contains four node-based methods and five edge-based methods.
-#' @param methods Method used for enrichment analysis, see default.method_list for all supportive options. Methods could be several, like c("Edge_ORA", "Edge_Score").
+#' @param methods Method used for enrichment analysis, see default.method_list for all supportive options. Methods could be several, like c("Edge_ORA", "Edge_Score1D").
 #' @param input_data Input data list. Contains all kind of input data for all methods, including data, pathway, pathway_GGI, GGI, dict_MGI. 
 #'        Use get_all_input_data() function to generate. You could also generate it by yourself.
 #'          input_data$data: each sub-element is named by the method, containing the input data format.
 #'            TG_ORA: DEG, MiR_ORA: DEmiR, Edge_ORA: DEMGI, Edge_Network: DEMGI
 #'              All of them is a character vector, containing all selected differential expressed items (genes/miRNAs/MGI)
-#'            TG_Score: geneList, MiR_Score: miRList, Edge_Score: MGIList
+#'            TG_Score: geneList, MiR_Score: miRList, Edge_Score1D: MGIList
 #'              All of them is a named numeric vector, where the names are items (genes/miRNAs/MGI), corresponding value is their score, which is ranked by the score.
 #'            Edge_Topology: MGIdata
 #'              A five-column dataframe, containing MGI miRNA gene strength.
-#'            Edge_2Ddist: MGI2D
+#'            Edge_Score2D: MGI2D
 #'              A five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).
 #'          input_data$pathway: each sub-element is named by the object, which could be TG, MiR, and Edge.
 #'          input_data$pathway_GGI: a dataframe containing pathway and their directed GGI involved. Only useful when methods contain Edge_Topology and Edge_Network.
@@ -28,16 +28,16 @@
 #' The "pos" and "neg" score types are intended to be used for one-tailed tests
 #' (i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
 #' The "std" is used when interseted both positive and negative scores, which is the same with the original GSEA algorithm.
-#' Only used in Score-based method (Edge_2Ddist, Edge_TopoScore, TG_Score, MiR_Score).
+#' Only used in Score-based method (Edge_Score2D, Edge_TopoScore, TG_Score, MiR_Score).
 #' @param pAdjMethod The method used for multiple testing correction to adjust p-values and control the false discovery rate.
 #'        Use default.pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 #'        If you don't want any adjustment, please set pAdjMethod = "none".
 #' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 1.
 #' @param iter Number of iteractions when perform permutation test. Default iter is 1000.
-#' @param ncores Number of cores for parallel computing. Only useful if methods contain Edge_2Ddist, Edge_Topology, and Edge_Network.
+#' @param ncores Number of cores for parallel computing. Only useful if methods contain Edge_Score2D, Edge_Topology, and Edge_Network.
 #'        It accepts either a integer that is universal for all methods, or a list specify the number of cores for each method separately.
-#'        Our recommendation is to specify different nodes for each method. E.g., list(Edge_2Ddist = 4, Edge_Topology = 32, Edge_Network = 8).
+#'        Our recommendation is to specify different nodes for each method. E.g., list(Edge_Score2D = 4, Edge_Topology = 32, Edge_Network = 8).
 #'        If NULL, unparallel computing will be used.
 
 
@@ -127,7 +127,7 @@ miREA <- function(methods, input_data, background = NULL,
   }
 
   # check ncores
-  methods_ncores <- c("Edge_2Ddist", "Edge_Topology", "Edge_Network")
+  methods_ncores <- c("Edge_Score2D", "Edge_Topology", "Edge_Network")
   methods_ncores <- intersect(methods_ncores, methods)
   if (!is.null(ncores) && is.list(ncores)){
     missing_ncores <- setdiff(methods_ncores, names(ncores))
@@ -236,40 +236,40 @@ miREA <- function(methods, input_data, background = NULL,
     message("Edge_ORA error: ", e$message)
   })
   tryCatch({
-    if ("Edge_Score" %in% methods){
-      time_Edge_Score <- system.time({
-        result_Edge_Score <- Edge_Score(MGIList = input_data$data$Edge_Score, pathway = input_data$pathway$Edge, pvalueType = pvalueType$Edge,
+    if ("Edge_Score1D" %in% methods){
+      time_Edge_Score1D <- system.time({
+        result_Edge_Score1D <- Edge_Score1D(MGIList = input_data$data$Edge_Score1D, pathway = input_data$pathway$Edge, pvalueType = pvalueType$Edge,
                                         pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, minSize = minSize, maxSize = maxSize)
       })
-      #result_Edge_Score <- as.data.frame(result_Edge_Score)
-      time <- rbind(time, data.frame(method = "Edge_Score", time = time_Edge_Score[["elapsed"]], stringsAsFactors = FALSE))
-      all_result[["Edge_Score"]] <- result_Edge_Score
-      cat("    - Edge_Score finished, time cost:", time_Edge_Score[["elapsed"]],"s. \n")
+      #result_Edge_Score1D <- as.data.frame(result_Edge_Score1D)
+      time <- rbind(time, data.frame(method = "Edge_Score1D", time = time_Edge_Score1D[["elapsed"]], stringsAsFactors = FALSE))
+      all_result[["Edge_Score1D"]] <- result_Edge_Score1D
+      cat("    - Edge_Score1D finished, time cost:", time_Edge_Score1D[["elapsed"]],"s. \n")
     }
   }, error = function(e) {
-    message("Edge_Score error: ", e$message)
+    message("Edge_Score1D error: ", e$message)
   })
   tryCatch({
-    if ("Edge_2Ddist" %in% methods){
-      time_Edge_2Ddist <- system.time({
-        result_Edge_2Ddist <- Edge_2Ddist(MGI2D = input_data$data$Edge_2Ddist, pathway = input_data$pathway$Edge, background = background$Edge,
-                                          iter = iter, ncores = ncores$Edge_2Ddist, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, minSize = minSize, maxSize = maxSize)
+    if ("Edge_Score2D" %in% methods){
+      time_Edge_Score2D <- system.time({
+        result_Edge_Score2D <- Edge_Score2D(MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge, background = background$Edge,
+                                          iter = iter, ncores = ncores$Edge_Score2D, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, minSize = minSize, maxSize = maxSize)
       })
-      #result_Edge_2Ddist <- as.data.frame(result_Edge_2Ddist)
-      time <- rbind(time, data.frame(method = "Edge_2Ddist", time = time_Edge_2Ddist[["elapsed"]], stringsAsFactors = FALSE))
-      all_result[["Edge_2Ddist"]] <- result_Edge_2Ddist
-      cat("    - Edge_2Ddist finished, time cost:", time_Edge_2Ddist[["elapsed"]],"s. \n")
+      #result_Edge_Score2D <- as.data.frame(result_Edge_Score2D)
+      time <- rbind(time, data.frame(method = "Edge_Score2D", time = time_Edge_Score2D[["elapsed"]], stringsAsFactors = FALSE))
+      all_result[["Edge_Score2D"]] <- result_Edge_Score2D
+      cat("    - Edge_Score2D finished, time cost:", time_Edge_Score2D[["elapsed"]],"s. \n")
     }
   }, error = function(e) {
-    message("Edge_2Ddist error: ", e$message)
+    message("Edge_Score2D error: ", e$message)
   })
   tryCatch({
     if ("Edge_manova" %in% methods){
-      input <- input_data$data$Edge_2Ddist %>% dplyr::mutate(normcor = (1-cor)/2) %>% dplyr::select(MGI, miRNA, gene, normcor, normratio)
+      input <- input_data$data$Edge_Score2D %>% dplyr::mutate(normcor = (1-cor)/2) %>% dplyr::select(MGI, miRNA, gene, normcor, normratio)
       time_Edge_manova <- system.time({
         result_Edge_manova <- Edge_manova(MGI2D = input, pathway = input_data$pathway$Edge, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, minSize = minSize, maxSize = maxSize)
       })
-      #result_Edge_2Ddist <- as.data.frame(result_Edge_2Ddist)
+      #result_Edge_Score2D <- as.data.frame(result_Edge_Score2D)
       time <- rbind(time, data.frame(method = "Edge_manova", time = time_Edge_manova[["elapsed"]], stringsAsFactors = FALSE))
       all_result[["Edge_manova"]] <- result_Edge_manova
       cat("    - Edge_manova finished, time cost:", time_Edge_manova[["elapsed"]],"s. \n")

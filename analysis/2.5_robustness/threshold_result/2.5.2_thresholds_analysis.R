@@ -39,7 +39,7 @@ get_thresholds_test_data <- function(methods = c("Edge_ORA", "Edge_Network"),
   sum_MiR <- sum(grepl("MiR_", methods))
   sum_Edge <- sum(grepl("Edge_", methods))
   target_method <- c("Edge_Topology", "Edge_Network")
-  score_method <- c("Edge_Score", "Edge_2Ddist", "Edge_Topology")
+  score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
   colnames(pathway)[1:2] <- c("pathway", "gene")
 
   result <- list()

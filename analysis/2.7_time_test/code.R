@@ -7,9 +7,9 @@ setwd("/scratch/project_2011179/code/miREA/") # change your own directory here
 result_dir <- "analysis/2.7_time_test/"
 data_dir <- paste0(result_dir, "time_test_result/")
 
-methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
+methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network")
 fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-             "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
+             "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
              "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072")
 
 library(dplyr)
@@ -27,7 +27,7 @@ library(gghalves)
 summary <- data.frame(cancer = character(), path_name = character(), method = character(), ncores = integer(), time = numeric(), stringsAsFactors = FALSE)
 for (path_name in c("Reactome", "hallmark")){
   ncores <- c("1", "4", "8", "16", "32")
-  methods <- c("Edge_2Ddist", "Edge_Topology", "Edge_Network")
+  methods <- c("Edge_Score2D", "Edge_Topology", "Edge_Network")
   for (method in methods){
     base_dir <- paste0(data_dir, path_name, "/", method, "/BLCA/result/")
     for (ncore in ncores) {
@@ -51,7 +51,7 @@ df <- summary %>%
   mutate(
     ncores = factor(ncores, levels = c(1,4,8,16,32),
                     labels = c("1 core (unparallel)", "4 cores", "8 cores", "16 cores", "32 cores")),
-    method = factor(method, levels = c("Edge_2Ddist", "Edge_Topology", "Edge_Network"))
+    method = factor(method, levels = c("Edge_Score2D", "Edge_Topology", "Edge_Network"))
   )
 
 df_full <- df %>%
@@ -311,7 +311,7 @@ p_pr_hallmark <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
   ) +
   annotate("text",
            x = 1, y = minor_breaks[1],
-           label = "Number of CPU cores:\nEdge_2Ddist: 1\nEdge_Topology: 10\nEdge_Network: 8",
+           label = "Number of CPU cores:\nEdge_Score2D: 1\nEdge_Topology: 10\nEdge_Network: 8",
            hjust = 0, vjust = 0,
            size = 2.5,
            color = "black")
@@ -373,7 +373,7 @@ p_pr_reactome <- ggplot(pr_long, aes(y = time, x = method_numeric)) +
   ) +
   annotate("text",
            x = 1, y = minor_breaks[1],
-           label = "Number of CPU cores:\nEdge_2Ddist: 4\nEdge_Topology: 32\nEdge_Network: 8",
+           label = "Number of CPU cores:\nEdge_Score2D: 4\nEdge_Topology: 32\nEdge_Network: 8",
            hjust = 0, vjust = 0,
            size = 2.5,
            color = "black")

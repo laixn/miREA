@@ -14,7 +14,7 @@ library(tidyr)
 library(ggforce)  # geom_arc_bar 用于绘制饼图
 
 method_order <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score",
-                  "Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network")
+                  "Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network")
 metric_order <- c("TPR", "FPR", "median_rank", "sqrt_CMC", "sqrt_oncoKB", "sqrt_COSMIC", "hallmark_median_time", "Reactome_median_time") # "robustness",
 metric_name <- c("TPR\n(Sensitivity)", "FPR\n(Specificity)", "Median Rank\n(Distinguish Ability)",
                  "Geometric Median of CMC\n(miRNA Biological Interpretability)", "Geometric Median of OncoKB\n(Gene Biological Interpretability)",
@@ -73,7 +73,7 @@ d_interpretability <- d_interpretability_raw %>%
   select(method, sqrt_CMC, sqrt_oncoKB, sqrt_COSMIC)
 
 e_robustness <- data.frame(
-  method = c("Edge_ORA", "Edge_Score", "Edge_2Ddist", "Edge_Topology", "Edge_Network"),
+  method = c("Edge_ORA", "Edge_Score1D", "Edge_Score2D", "Edge_Topology", "Edge_Network"),
   robustness = c(FALSE, TRUE, TRUE, TRUE, FALSE)
 )
 

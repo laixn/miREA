@@ -13,7 +13,7 @@ cancer <- args[1]
 
 path_name = "TP"
 ncore <- 16
-ncores <- list("Edge_Topology" = ncore, "Edge_Network" = min(8, ncore), "Edge_2Ddist" = 1)
+ncores <- list("Edge_Topology" = ncore, "Edge_Network" = min(8, ncore), "Edge_Score2D" = 1)
 
 
 setwd("/scratch/project_2011179/code/miREA")
@@ -121,7 +121,7 @@ cat("Step 4. Visualization...\n")
 cat("\n  === Start time:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "===\n")
 summary_plot <- plot_summary(result = result, penrichCutoff = penrichCutoff, plot_path,
                              fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-                                          "Edge_ORA" = "#EDC194", "Edge_Score" = "#F09137", "Edge_2Ddist" = "#626FB3",
+                                          "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
                                           "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072"))
 
 

@@ -4,7 +4,7 @@
 "hallmark","MiR_ORA",0,10,0.903000000000006,0
 "hallmark","MiR_Score",0,10,1.04499999999999,0
 "hallmark","Edge_ORA",3,10,1.961,0.3
-"hallmark","Edge_Score",6,10,35.831,0.6
-"hallmark","Edge_2Ddist",6,10,9.06299999999999,0.6
+"hallmark","Edge_Score1D",6,10,35.831,0.6
+"hallmark","Edge_Score2D",6,10,9.06299999999999,0.6
 "hallmark","Edge_Topology",0,10,1812.121,0
 "hallmark","Edge_Network",5,10,214.159,0.5

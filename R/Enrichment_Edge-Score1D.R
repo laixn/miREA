@@ -1,4 +1,4 @@
-#' Title: Edge-Score (MiRNA-Gene Interaction Edge Score-based Analysis)
+#' Title: Edge-Score1D (MiRNA-Gene Interaction Edge Score-based Analysis)
 #' Description: Perform miRNA-gene interaction (MGI) enrichment analysis based on whether the pathway MGI are located unexpectedly forward towards the ranked MGI list.
 #' @param MGIList A named vector shows the ranked score of MGIs.
 #' @param pathway A three-column dataframe contains pathway, miRNA, gene.
@@ -13,11 +13,11 @@
 #' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.
 #' @param minSize The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.
 #' @param maxSize The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.
-#' @return A dataframe containing the enrichment result for Edge-Score.
+#' @return A dataframe containing the enrichment result for Edge-Score1D.
 
 
-Edge_Score <- function(MGIList,  pathway, pvalueType = "neg", pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL){
-  cat("\n  Start Edge-Score analysis ...\n")
+Edge_Score1D <- function(MGIList,  pathway, pvalueType = "neg", pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL){
+  cat("\n  Start Edge-Score1D analysis ...\n")
 
   if (is.null(MGIList)) {
     stop("A valid named vector MGIList contains the MGIs with their scores must be entered!")
@@ -42,8 +42,8 @@ Edge_Score <- function(MGIList,  pathway, pvalueType = "neg", pAdjMethod = "BH",
   gsea <- clusterProfiler::GSEA(geneList = MGIList, TERM2GENE = pathway, scoreType = pvalueType, pAdjustMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, minGSSize = minSize, maxGSSize = maxSize)
   gsea_result <- as.data.frame(gsea) %>% rename(pathway = ID, padj = p.adjust, p_value = pvalue)
 
-  cat("  Edge-Score analysis have finished!\n")
+  cat("  Edge-Score1D analysis have finished!\n")
 
-  # class(gsea_result) = "Edge_Score"
+  # class(gsea_result) = "Edge_Score1D"
   return(gsea_result)
 }
