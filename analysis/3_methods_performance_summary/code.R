@@ -125,7 +125,7 @@ write.csv(summary_table, file = "analysis/3_methods_performance_summary/summary.
 # 2. visualzation ----
 
 
-summary_table <- read.csv("analysis/0_methods_performance_summary/summary.csv")
+summary_table <- read.csv("analysis/3_methods_performance_summary/summary.csv")
 plot_data <- summary_table %>%
   pivot_longer(cols = metric_order, names_to = "metric", values_to = "value") %>%
   mutate(

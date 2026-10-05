@@ -24,27 +24,36 @@ library(patchwork)
 library(gghalves)
 
 # 1. test optimal number of cores on BLCA----
-summary <- data.frame(cancer = character(), path_name = character(), method = character(), ncores = integer(), time = numeric(), stringsAsFactors = FALSE)
-for (path_name in c("Reactome", "hallmark")){
-  ncores <- c("1", "4", "8", "16", "32")
-  methods <- c("Edge_Score2D", "Edge_Topology", "Edge_Network")
-  for (method in methods){
-    base_dir <- paste0(data_dir, path_name, "/", method, "/BLCA/result/")
-    for (ncore in ncores) {
-      # cancer <- basename(cancer_dir)
-      # cancers <- c(cancers, cancer)
-      file_path <- file.path(base_dir, paste0("time_", ncore, "_ncores.csv"))
+# If the raw per-core timing logs aren't present (they are not part of the Zenodo
+# data deposit, only time_test_BLCA.csv -- the already-aggregated result -- is),
+# skip regeneration and reuse the existing aggregated file instead of overwriting
+# it with an empty one.
+if (dir.exists(data_dir)) {
+  summary <- data.frame(cancer = character(), path_name = character(), method = character(), ncores = integer(), time = numeric(), stringsAsFactors = FALSE)
+  for (path_name in c("Reactome", "hallmark")){
+    ncores <- c("1", "4", "8", "16", "32")
+    methods <- c("Edge_Score2D", "Edge_Topology", "Edge_Network")
+    for (method in methods){
+      base_dir <- paste0(data_dir, path_name, "/", method, "/BLCA/result/")
+      for (ncore in ncores) {
+        # cancer <- basename(cancer_dir)
+        # cancers <- c(cancers, cancer)
+        file_path <- file.path(base_dir, paste0("time_", ncore, "_ncores.csv"))
 
-      if (file.exists(file_path)) {
-        df <- read.csv(file_path)
-        summary <- rbind(df, summary)
-      } else {
-        warning(paste("File not found:", file_path))
+        if (file.exists(file_path)) {
+          df <- read.csv(file_path)
+          summary <- rbind(df, summary)
+        } else {
+          warning(paste("File not found:", file_path))
+        }
       }
     }
   }
+  write.csv(summary, file = paste0(result_dir, "time_test_BLCA.csv"), row.names = FALSE)
+} else {
+  message("Raw per-core timing logs (", data_dir, ") not found; reusing existing time_test_BLCA.csv instead of regenerating it.")
+  summary <- read.csv(paste0(result_dir, "time_test_BLCA.csv"))
 }
-write.csv(summary, file = paste0(result_dir, "time_test_BLCA.csv"), row.names = FALSE)
 
 # plot
 df <- summary %>%

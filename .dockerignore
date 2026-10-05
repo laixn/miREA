@@ -1,0 +1,10 @@
+.git
+.Rproj.user
+data/
+analysis/
+results/
+Javascript/
+*.png
+*.pdf
+*.docx
+miREA.Rproj

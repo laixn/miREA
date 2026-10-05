@@ -1,0 +1,13 @@
+services:
+  mirea:
+    build: .
+    image: mirea:latest
+    ports:
+      - "8787:8787"
+    environment:
+      - PASSWORD=mirea   # RStudio Server login password (user: rstudio)
+      - DISABLE_AUTH=false
+    volumes:
+      # Mount the whole repo so data/ and analysis/ (not baked into the
+      # image) are available, and host edits to R/ are reflected live.
+      - .:/home/rstudio/miREA

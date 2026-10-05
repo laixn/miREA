@@ -210,6 +210,6 @@ sankey <- ggplot() +
   ) +
   scale_y_continuous(expand = c(0.02,0.02))
 
-ggsave(paste0(work_dir, "/plot/sankey.pdf"), sankey, width = 17, height = 8)
+ggsave(paste0(result_dir, "/plot/sankey.pdf"), sankey, width = 17, height = 8)
 
 
