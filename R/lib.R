@@ -1,9 +1,30 @@
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+cran_pkgs <- c(
+  "dplyr", "stringr", "conflicted",
+  "igraph", "V8", "data.table", "Matrix", "reticulate",
+  "circlize", "patchwork", "scales",
+  "tibble", "ggalluvial", "ggplot2", "ggnewscale", "reshape2"
+)
+bioc_pkgs <- c("clusterProfiler", "ComplexHeatmap", "miRBaseConverter")
+
+missing_cran <- cran_pkgs[!vapply(cran_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_cran) > 0) {
+  message("Installing missing CRAN packages: ", paste(missing_cran, collapse = ", "))
+  install.packages(missing_cran)
+}
+
+missing_bioc <- bioc_pkgs[!vapply(bioc_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_bioc) > 0) {
+  if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+  message("Installing missing Bioconductor packages: ", paste(missing_bioc, collapse = ", "))
+  BiocManager::install(missing_bioc, update = FALSE, ask = FALSE)
+}
+
 library(dplyr)
-library(tidyr)
-library(tidyverse)
 library(stringr) # deal with strings
 library(conflicted) # deal with conflicted functions
-# library(miRBaseConverter) # transform miRNA name version
+library(miRBaseConverter) # transform miRNA name version
 # library(HGNChelper) # transform HGNC symbol to the newest one.
 
 library(clusterProfiler) # enrichment analysis
@@ -19,10 +40,8 @@ library(reticulate) # load python
 
 ## visualization
 library(ComplexHeatmap)
-library(RColorBrewer)
 library(grid)
 library(circlize)
-library(gridExtra)
 library(patchwork)
 library(scales)
 library(tibble)
@@ -30,7 +49,6 @@ library(tibble)
 library(ggalluvial)
 library(ggplot2)
 library(ggnewscale)
-library(colorspace)
 
 library(reshape2)
 
