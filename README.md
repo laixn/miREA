@@ -6,7 +6,7 @@ We present miRNA-oriented Enrichment Analysis (**miREA**) framework, which integ
 
 miREA is designed to address the intrinsic many-to-many regulatory interactions of MGIs and reduce biases introduced by conventional node-centric enrichment aprroaches, by explicitly modeling **miRNA-gene regulatory networks**, **pathway topology**, and **expression-informed MGI edge scores**.
 
-![Workflow](figure1.png)
+![Workflow](Figure1.png)
 ---
 
 ## Key Features
@@ -20,8 +20,11 @@ miREA is designed to address the intrinsic many-to-many regulatory interactions 
 ---
 
 ## Usage
-miREA is implemented in R. You can find load all required R packages by ```source("R/lib.R")```. Required R packages include (but may not be limited to):
-* dplyr (1.14), tidyr (1.3.1), tidyverse (2.0.0), stringr (1.5.1), conflicted (1.2.0), igraph (2.1.4), V8 (6.0.1), data.table (1.16.4), Matrix (1.7.2), parallel (4.4.2), reticulate (1.40.0), ComplexHeatmap (2.22.0), RColorBrewer (1.1.3), grid (4.4.2), circlize (0.4.16), gridExtra (2.3), patchwork (1.3.0), scales (1.3.0), tibble (3.2.1), ggalluvial (0.12.5), ggplot2 (3.5.1), ggnewscale (0.5.0), colorspace (2.1.1), reshape2 (1.4.4)
+miREA is implemented in R. You can find load all required R packages by ```source("R/lib.R")```. 
+Our results were generated with the following R package versions:
+* dplyr (1.14), tidyr (1.3.1), tidyverse (2.0.0), stringr (1.5.1), conflicted (1.2.0), clusterProfiler (4.14.6), miRBaseConverter (1.34.0), igraph (2.1.4), V8 (6.0.1), data.table (1.16.4), Matrix (1.7.2), parallel (4.4.2), reticulate (1.40.0), ComplexHeatmap (2.22.0), RColorBrewer (1.1.3), grid (4.4.2), circlize (0.4.16), gridExtra (2.3), patchwork (1.3.0), scales (1.3.0), tibble (3.2.1), ggalluvial (0.12.5), ggplot2 (3.5.1), ggnewscale (0.5.0), colorspace (2.1.1), reshape2 (1.4.4)
+
+A Python environment with `numpy` and `scipy` is also required for correlation computation in ```get_input_data.R```; it is requested via `reticulate::py_require()` and, with reticulate (>= 1.40.0), is provisioned automatically.
 
 Please follow the following steps to run miREA for enrichment analysis:
 
