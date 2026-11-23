@@ -49,13 +49,13 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-  methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
-  gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
 )
 res <- Edge_Score1D(
-  MGIList = input_data$data$Edge_Score1D, pathway = input_data$pathway$Edge,
-  pvalueType = "neg", pvalueCutoff = 1, minSize = 2, maxSize = 5000
+    MGIList = input_data$data$Edge_Score1D, pathway = input_data$pathway$Edge,
+    pvalueType = "neg", pvalueCutoff = 1, minSize = 2, maxSize = 5000
 )
 head(res)
 }

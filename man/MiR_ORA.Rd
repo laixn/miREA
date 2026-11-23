@@ -44,12 +44,12 @@ data(toy_mir_DEdata)
 data(toy_gene_DEdata)
 data(background_MGI)
 input_data <- getAllInputData(
-  methods = "MiR_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
+    methods = "MiR_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- MiR_ORA(
-  DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),
-  pathway = input_data$pathway$MiR, pvalueCutoff = 1
+    DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),
+    pathway = input_data$pathway$MiR, pvalueCutoff = 1
 )
 head(res)
 }

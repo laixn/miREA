@@ -47,12 +47,12 @@ data(toy_mir_DEdata)
 data(toy_gene_DEdata)
 data(background_MGI)
 input_data <- getAllInputData(
-  methods = "MiR_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
+    methods = "MiR_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- MiR_Score(
-  miRList = input_data$data$MiR_Score, pathway = input_data$pathway$MiR,
-  pvalueType = "std", pvalueCutoff = 1
+    miRList = input_data$data$MiR_Score, pathway = input_data$pathway$MiR,
+    pvalueType = "std", pvalueCutoff = 1
 )
 head(res)
 }

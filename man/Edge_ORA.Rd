@@ -46,14 +46,14 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-  methods = "Edge_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
-  gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+    methods = "Edge_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
 )
 background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 res <- Edge_ORA(
-  DEMGI = input_data$data$Edge_ORA, background = background,
-  pathway = input_data$pathway$Edge, pvalueCutoff = 1
+    DEMGI = input_data$data$Edge_ORA, background = background,
+    pathway = input_data$pathway$Edge, pvalueCutoff = 1
 )
 head(res)
 }

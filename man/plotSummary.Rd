@@ -24,9 +24,9 @@ plotSummary(
 }
 \value{
 Invisibly, a list with the combined summary plot and the p-value density
-plot (\code{list(summary, pvalue)}). As a side effect, draws both plots in the current
-window if plot_path is NULL, or saves them as summary.pdf and pvalue_density.pdf
-at plot_path.
+  plot (`list(summary, pvalue)`). As a side effect, draws both plots in the current
+  window if plot_path is NULL, or saves them as summary.pdf and pvalue_density.pdf
+  at plot_path.
 }
 \description{
 Draws summary plots comparing enrichment results across the different
@@ -42,21 +42,21 @@ data(toy_mir_mat)
 data(background_MGI)
 methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA")
 input_data <- getAllInputData(
-  methods = methods, pathway = toy_pathway,
-  mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-  background_MGI = background_MGI,
-  gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+    methods = methods, pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
 )
 background <- list(
-  TG = unique(toy_pathway$gene),
-  MiR = unique(input_data$pathway$MiR$miRNA),
-  Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
+    TG = unique(toy_pathway$gene),
+    MiR = unique(input_data$pathway$MiR$miRNA),
+    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 )
 result <- miREA(
-  methods = methods, input_data = input_data, background = background,
-  minSize = NULL, maxSize = NULL,
-  pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
-  pvalueCutoff = 1
+    methods = methods, input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL,
+    pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
+    pvalueCutoff = 1
 )
 plotSummary(result, penrichCutoff = 1)
 }

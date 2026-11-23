@@ -96,22 +96,22 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-  methods = default_method_list, pathway = toy_pathway,
-  mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-  background_MGI = background_MGI, GGI_source = "Reactome",
-  gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
-  scoreFun = "rank"
+    methods = default_method_list, pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI, GGI_source = "Reactome",
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+    scoreFun = "rank"
 )
 background <- list(
-  TG = unique(toy_pathway$gene),
-  MiR = unique(input_data$pathway$MiR$miRNA),
-  Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
+    TG = unique(toy_pathway$gene),
+    MiR = unique(input_data$pathway$MiR$miRNA),
+    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 )
 result <- miREA(
-  methods = default_method_list, input_data = input_data, background = background,
-  minSize = NULL, maxSize = NULL,
-  pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
-  pAdjMethod = "BH", pvalueCutoff = 1, iter = 20, ncores = 1
+    methods = default_method_list, input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL,
+    pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
+    pAdjMethod = "BH", pvalueCutoff = 1, iter = 20, ncores = 1
 )
 result$valid_methods
 }

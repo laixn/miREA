@@ -47,12 +47,12 @@ data(toy_mir_DEdata)
 data(toy_gene_DEdata)
 data(background_MGI)
 input_data <- getAllInputData(
-  methods = "TG_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
+    methods = "TG_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- TG_Score(
-  geneList = input_data$data$TG_Score, pathway = input_data$pathway$TG,
-  pvalueType = "std", pvalueCutoff = 1
+    geneList = input_data$data$TG_Score, pathway = input_data$pathway$TG,
+    pvalueType = "std", pvalueCutoff = 1
 )
 head(res)
 }

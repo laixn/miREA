@@ -75,10 +75,10 @@ the function's previous plain-list return value.
 
 \examples{
 res <- miREAResult(
-  result = list(TG_ORA = data.frame(pathway = "PW1", padj = 0.01)),
-  time = data.frame(method = "TG_ORA", time = 0.1),
-  valid_methods = "TG_ORA",
-  parameter = list(n_pathway = 1)
+    result = list(TG_ORA = data.frame(pathway = "PW1", padj = 0.01)),
+    time = data.frame(method = "TG_ORA", time = 0.1),
+    valid_methods = "TG_ORA",
+    parameter = list(n_pathway = 1)
 )
 res
 res$valid_methods

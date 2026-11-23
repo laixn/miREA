@@ -39,10 +39,10 @@ zenodo_dir <- "/scratch/project_2011179/code/miREA_zenodo/data/raw_data/cancer_d
 ## columns are needed here. Rows with NA padj (DESeq2 independent filtering) are
 ## already excluded, matching `results(dds)` with NAs dropped.
 full_gene_DEdata <- fread(file.path(zenodo_dir, "DEG/BLCA_DEG.csv"),
-  select = c("gene", "log2FoldChange", "stat", "padj")
+    select = c("gene", "log2FoldChange", "stat", "padj")
 )
 full_mir_DEdata <- fread(file.path(zenodo_dir, "DEmiR/BLCA_DEmiR.csv"),
-  select = c("miRNA", "log2FoldChange", "stat", "padj")
+    select = c("miRNA", "log2FoldChange", "stat", "padj")
 )
 
 ## paired/BLCA_{gene,mir}_TP.csv: raw counts, tumor samples only (unnamed first
@@ -74,10 +74,10 @@ pathway_mirs <- intersect(pathway_mirs, full_mir_DEdata$miRNA)
 ## expected and harmless: those genes just won't carry DE info downstream.
 missing_from_DEdata <- setdiff(pathway_genes, full_gene_DEdata$gene)
 if (length(missing_from_DEdata) > 0) {
-  message(
-    length(missing_from_DEdata), " pathway gene(s) have no DESeq2 result (independent filtering): ",
-    paste(missing_from_DEdata, collapse = ", ")
-  )
+    message(
+        length(missing_from_DEdata), " pathway gene(s) have no DESeq2 result (independent filtering): ",
+        paste(missing_from_DEdata, collapse = ", ")
+    )
 }
 
 toy_gene_DEdata <- as.data.frame(full_gene_DEdata[full_gene_DEdata$gene %in% pathway_genes, ])
