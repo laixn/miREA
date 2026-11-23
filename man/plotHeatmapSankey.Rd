@@ -42,9 +42,9 @@ plotHeatmapSankey(
 
 \item{penrichCutoff}{The threshold for deciding enrichment of pathways. Default is 0.05.}
 
-\item{height}{The height of the plot. If not, it will be set to default values.}
+\item{height}{The height of the plot, in cm. If not, it will be set to default values.}
 
-\item{width}{The width of the plot. If not, it will be set to default values.}
+\item{width}{The width of the plot, in cm. If not, it will be set to default values.}
 
 \item{sankey_prop}{The ratio of the height of Sankey diagram and heatmap. Default is 1.5.}
 
@@ -71,7 +71,10 @@ correlation, for the heatmap/Sankey annotation. If NULL (the default), falls bac
 `input_data$threshold$corPadjCutoff`, or 0.05 if that is absent.}
 }
 \value{
-A heatmap-sankey plot either in the current window, or saved as heatmap_sankey_[method].pdf in the plot_path.
+Invisibly returns `list(ht_list, legend_list)` (the drawn
+       [ComplexHeatmap::HeatmapList-class] and its annotation legends), whether or not
+       `plot_path` is supplied. If `plot_path` is supplied, the plot is additionally saved as
+       `heatmap_sankey_[method].pdf` at that path and a message reports the file location.
 }
 \description{
 Draws a heatmap of the miRNA-gene-pathway enrichment result for one

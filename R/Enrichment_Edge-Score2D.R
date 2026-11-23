@@ -87,15 +87,7 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
 
 
   ### filtering pathway size
-  pathway_counts <- table(pathway$pathway)
-  if (!is.null(minSize)){
-    pathways_to_remove_min <- names(pathway_counts[pathway_counts < minSize])
-    pathway <- pathway[!(pathway %in% pathways_to_remove_min), ]
-  }
-  if (!is.null(maxSize)){
-    pathways_to_remove_max <- names(pathway_counts[pathway_counts > maxSize])
-    pathway <- pathway[!(pathway %in% pathways_to_remove_max), ]
-  }
+  pathway <- filter_pathway_by_size(pathway, minSize, maxSize)
 
   n_pathway <- length(unique(pathway$pathway))
   if (n_pathway == 0) {

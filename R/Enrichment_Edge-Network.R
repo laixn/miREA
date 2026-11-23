@@ -138,19 +138,7 @@ edge_network_prepare_pathway <- function(pathway_gene, pathway_MGI, pathway_GGI,
   MGISize <- pathway_MGI %>% group_by(pathway) %>%
     summarise(n_MGI = n()) %>% ungroup()
 
-  pathway_counts <- table(pathway$pathway)
-  # NOTE: `pathway` has a column also named "pathway", so `pathway$pathway`
-  # inside `pathway[...]` gets NSE-resolved against the *column* (an atomic
-  # vector) first, raising "$ operator is invalid for atomic vectors". Use
-  # the bare column reference instead.
-  if (!is.null(minSize)){
-    pathways_to_remove_min <- names(pathway_counts[pathway_counts < minSize])
-    pathway <- pathway[!pathway %in% pathways_to_remove_min, ]
-  }
-  if (!is.null(maxSize)){
-    pathways_to_remove_max <- names(pathway_counts[pathway_counts > maxSize])
-    pathway <- pathway[!pathway %in% pathways_to_remove_max, ]
-  }
+  pathway <- filter_pathway_by_size(pathway, minSize, maxSize)
 
   list(pathway = pathway, pathway_gene = pathway_gene, pathway_GGI = pathway_GGI,
        MGI = MGI, GGI = GGI, MGISize = MGISize)

@@ -95,20 +95,7 @@ Edge_Topology <- function(MGI, pvalueType = "neg",
     mutate(MGI = paste0(miRNA,":",gene)) %>%
     filter(MGI %in% background)
   ## filtering pathway size
-  pathway_counts <- table(pathway$pathway)
-
-  # NOTE: `pathway` (the data.table) has a column also named "pathway", so
-  # `pathway$pathway` inside `pathway[...]` gets NSE-resolved against the
-  # *column* (an atomic vector) first, raising "$ operator is invalid for
-  # atomic vectors". Use the bare column reference instead.
-  if (!is.null(minSize)){
-    pathways_to_remove_min <- names(pathway_counts[pathway_counts < minSize])
-    pathway <- pathway[!pathway %in% pathways_to_remove_min, ]
-  }
-  if (!is.null(maxSize)){
-    pathways_to_remove_max <- names(pathway_counts[pathway_counts > maxSize])
-    pathway <- pathway[!pathway %in% pathways_to_remove_max, ]
-  }
+  pathway <- filter_pathway_by_size(pathway, minSize, maxSize)
 
   n_pathway <- length(unique(pathway$pathway))
   if (n_pathway == 0) {

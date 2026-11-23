@@ -68,3 +68,83 @@ test_that("plotHeatmap()/plotHeatmapSankey() inherit thresholds from input_data$
   expect_no_error(plotHeatmap(method = "Edge_ORA", result = result_strict, input_data = input_data_notthr,
                                 penrichCutoff = 1))
 })
+
+test_that("plotHeatmap()/plotHeatmapSankey() always invisibly return list(ht_list, legend_list)", {
+  input_data <- getAllInputData(
+    methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  background <- list(Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+  result <- miREA(
+    methods = "Edge_ORA", input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+  )
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  res_window <- plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data, penrichCutoff = 1)
+  expect_type(res_window, "list")
+  expect_equal(names(res_window), c("ht_list", "legend_list"))
+
+  plot_dir <- withr::local_tempdir()
+  res_saved <- plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data,
+                            penrichCutoff = 1, plot_path = plot_dir)
+  expect_type(res_saved, "list")
+  expect_equal(names(res_saved), c("ht_list", "legend_list"))
+  expect_true(file.exists(file.path(plot_dir, "heatmap_Edge_ORA.pdf")))
+
+  sankey_dir <- withr::local_tempdir()
+  res_sankey <- plotHeatmapSankey(method = "Edge_ORA", result = result, input_data = input_data,
+                                   penrichCutoff = 1, plot_path = sankey_dir)
+  expect_type(res_sankey, "list")
+  expect_equal(names(res_sankey), c("ht_list", "legend_list"))
+  expect_true(file.exists(file.path(sankey_dir, "heatmap_sankey_Edge_ORA.pdf")))
+})
+
+test_that("plotHeatmap()/plotHeatmapSankey() close the pdf device they open (on.exit/dev.off)", {
+  input_data <- getAllInputData(
+    methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  background <- list(Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+  result <- miREA(
+    methods = "Edge_ORA", input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+  )
+
+  n_devices_before <- length(dev.list())
+  plot_dir <- withr::local_tempdir()
+  plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data,
+              penrichCutoff = 1, plot_path = plot_dir)
+  expect_equal(length(dev.list()), n_devices_before)
+})
+
+test_that("plotHeatmap() derives legend titles from names(gene_annot)/names(mir_annot)", {
+  input_data <- getAllInputData(
+    methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  background <- list(Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+  result <- miREA(
+    methods = "Edge_ORA", input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+  )
+
+  some_genes <- unique(input_data$data$data$gene)[seq_len(3)]
+  some_mirs <- unique(input_data$data$data$miRNA)[seq_len(3)]
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  res <- plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data, penrichCutoff = 1,
+                      gene_annot = list(TP53_pathway = some_genes), mir_annot = list(let7_family = some_mirs))
+
+  lgd_titles <- vapply(res$legend_list, function(lgd) lgd@grob$children[[1]]$label, character(1))
+  expect_true(any(grepl("TP53_pathway", lgd_titles)))
+  expect_true(any(grepl("let7_family", lgd_titles)))
+})

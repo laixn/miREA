@@ -192,4 +192,8 @@ test_that("miREA() continues running other methods after one method errors, and 
 
   expect_false("TG_ORA" %in% result$valid_methods)
   expect_true(all(c("Edge_Score2D", "Edge_Topology") %in% result$valid_methods))
+
+  expect_true("TG_ORA" %in% names(result$failed_methods))
+  expect_type(result$failed_methods[["TG_ORA"]], "character")
+  expect_false("TG_ORA" %in% names(result$result))
 })

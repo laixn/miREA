@@ -137,21 +137,11 @@ getAllInputData <- function(methods, pathway,
 
   # ensure that mir_mat and gene_mat have their names as rownames
   if (!is.null(mir_mat) && !is.null(gene_mat)){
-    if (!is.numeric(mir_mat[[1]]) && !is.integer(mir_mat[[1]])) {
-      # we suppose the first column is miRNA name in that case.
-      colnames(mir_mat)[1] <- "miRNA"
-      mir_mat <- mir_mat %>% distinct(.[1], .keep_all = TRUE) # only keep the first appearance if duplicated values.
-      rownames(mir_mat) <- mir_mat[[1]]
-      mir_mat <- mir_mat[, -1, drop = FALSE]
-    }
-    if (!is.numeric(gene_mat[[1]]) && !is.integer(gene_mat[[1]])) {
-      colnames(gene_mat)[1] <- "gene"
-      gene_mat <- gene_mat %>% distinct(.[1], .keep_all = TRUE)
-      rownames(gene_mat) <- gene_mat[[1]]
-      gene_mat <- gene_mat[, -1, drop = FALSE]
-    }
+    aligned <- align_expr_mat_samples(mir_mat, gene_mat, rename_id_cols = TRUE, dedup = TRUE, check_samples = FALSE)
+    mir_mat <- aligned$mir_mat
+    gene_mat <- aligned$gene_mat
   }
-  
+
 
   raw_data <- list(
     methods = methods,
@@ -433,15 +423,7 @@ get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
   }
   if (any(score_method %in% methods)){
     dict[, ratio := (geneLogFC / mirLogFC) * ((1-genePadj)/(1+mirPadj))]
-    if (scoreFun == "rank") {
-      dict[, normratio := ranknorm(ratio)]
-    } else if (scoreFun == "sigmoid") {
-      dict[, normratio := sigmoid(ratio)]
-    } else if (scoreFun == "normalize") {
-      dict[, normratio := max_min(ratio)]
-    } else {
-      dict[, normratio := NA_real_]
-    }
+    dict[, normratio := apply_scoreFun(ratio, scoreFun)]
     dict[, `:=`( # `:=`() form modifies multiple columns; infix `:=` modifies a single column
       strength = cor * normratio,
       MGI = paste0(miRNA, ":", gene)
@@ -596,27 +578,10 @@ get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun
     message("The methods you have selected don't need dict_MGI data. Skip the get_dict_MGI process.\n")
     return(NULL)
   } else{
-    # ensure that mir_mat and gene_mat have their names as rownames
-    if (!is.numeric(mir_mat[[1]]) && !is.integer(mir_mat[[1]])) {
-      rownames(mir_mat) <- mir_mat[[1]]
-      mir_mat <- mir_mat[, -1, drop = FALSE]
-    }
-    if (!is.numeric(gene_mat[[1]]) && !is.integer(gene_mat[[1]])) {
-      rownames(gene_mat) <- gene_mat[[1]]
-      gene_mat <- gene_mat[, -1, drop = FALSE]
-    }
-
-    # check shared samples
-    common_samples <- intersect(colnames(mir_mat), colnames(gene_mat))
-    if (length(common_samples) == 0) {
-      stop("No matched samples between miRNA expression and gene expression profiles,
-         please ensure mir_mat and gene_mat have shared colnames as sample names!")
-    }
-    if (length(common_samples) < min(ncol(mir_mat), ncol(gene_mat)) * 0.5) {
-      warning("The number of matched samples between mir_mat and gene_mat is:", length(common_samples),
-              ", which is below 50% of the total number of samples.
-            We suggest to double check the colnames of miRNA and gene expression profiles have shared colnames as sample names!")
-    }
+    aligned <- align_expr_mat_samples(mir_mat, gene_mat)
+    mir_mat <- aligned$mir_mat
+    gene_mat <- aligned$gene_mat
+    common_samples <- aligned$common_samples
 
     colnames(pathway_MGI)[seq_len(3)] <- c("pathway", "miRNA", "gene")
     pathway_MGI <- data.table::as.data.table(pathway_MGI)
@@ -649,15 +614,7 @@ get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun
     # dict[, corPadj := p.adjust(pvalue, method = "BH")]
 
     dict[, ratio := (geneLogFC/mirLogFC) * ((1-genePadj)/(1+mirPadj))]
-    if (scoreFun == "rank") {
-      dict[, normratio := ranknorm(ratio)]
-    } else if (scoreFun == "sigmoid") {
-      dict[, normratio := sigmoid(ratio)]
-    } else if (scoreFun == "normalize") {
-      dict[, normratio := max_min(ratio)]
-    } else {
-      dict[, normratio := NA_real_]
-    }
+    dict[, normratio := apply_scoreFun(ratio, scoreFun)]
 
     dict[, strength := cor * normratio]
     dict[, MGI := paste0(miRNA, ":", gene)]
@@ -672,6 +629,53 @@ get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun
 
 
 
+#' @noRd
+align_expr_mat_rownames <- function(mat, id_col_name = NULL, dedup = FALSE) {
+  if (!is.numeric(mat[[1]]) && !is.integer(mat[[1]])) {
+    # we suppose the first column is the miRNA/gene name in that case.
+    if (!is.null(id_col_name)) colnames(mat)[1] <- id_col_name
+    if (dedup) mat <- mat %>% distinct(.[1], .keep_all = TRUE) # only keep the first appearance if duplicated values.
+    rownames(mat) <- mat[[1]]
+    mat <- mat[, -1, drop = FALSE]
+  }
+  mat
+}
+
+#' @noRd
+align_expr_mat_samples <- function(mir_mat, gene_mat, rename_id_cols = FALSE, dedup = FALSE, check_samples = TRUE) {
+  mir_mat <- align_expr_mat_rownames(mir_mat, id_col_name = if (rename_id_cols) "miRNA" else NULL, dedup = dedup)
+  gene_mat <- align_expr_mat_rownames(gene_mat, id_col_name = if (rename_id_cols) "gene" else NULL, dedup = dedup)
+
+  common_samples <- NULL
+  if (check_samples) {
+    common_samples <- intersect(colnames(mir_mat), colnames(gene_mat))
+    if (length(common_samples) == 0) {
+      stop("No matched samples between miRNA expression and gene expression profiles,
+         please ensure mir_mat and gene_mat have shared colnames as sample names!")
+    }
+    if (length(common_samples) < min(ncol(mir_mat), ncol(gene_mat)) * 0.5) {
+      warning("The number of matched samples between mir_mat and gene_mat is:", length(common_samples),
+              ", which is below 50% of the total number of samples.
+            We suggest to double check the colnames of miRNA and gene expression profiles have shared colnames as sample names!")
+    }
+  }
+
+  list(mir_mat = mir_mat, gene_mat = gene_mat, common_samples = common_samples)
+}
+
+#' @noRd
+apply_scoreFun <- function(ratio, scoreFun) {
+  if (scoreFun == "rank") {
+    ranknorm(ratio)
+  } else if (scoreFun == "sigmoid") {
+    sigmoid(ratio)
+  } else if (scoreFun == "normalize") {
+    max_min(ratio)
+  } else {
+    NA_real_
+  }
+}
+
 #' @param dict data.frame/data.table with at least `miRNA` and `gene` columns naming the pairs to correlate.
 #' @param mir_mat miRNA-by-sample expression matrix (or data.frame with miRNA names in the first column).
 #' @param gene_mat gene-by-sample expression matrix (or data.frame with gene names in the first column).
@@ -682,27 +686,10 @@ get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun
 #' `dict` inputs (e.g. whole-pathway background correlation for `Edge_Topology`).
 #' @noRd
 calc_MGI_corr <- function(dict, mir_mat, gene_mat) {
-  # ensure that mir_mat and gene_mat have their names as rownames
-  if (!is.numeric(mir_mat[[1]]) && !is.integer(mir_mat[[1]])) {
-    rownames(mir_mat) <- mir_mat[[1]]
-    mir_mat <- mir_mat[, -1, drop = FALSE]
-  }
-  if (!is.numeric(gene_mat[[1]]) && !is.integer(gene_mat[[1]])) {
-    rownames(gene_mat) <- gene_mat[[1]]
-    gene_mat <- gene_mat[, -1, drop = FALSE]
-  }
-
-  # check shared samples
-  common_samples <- intersect(colnames(mir_mat), colnames(gene_mat))
-  if (length(common_samples) == 0) {
-    stop("No matched samples between miRNA expression and gene expression profiles,
-         please ensure mir_mat and gene_mat have shared colnames as sample names!")
-  }
-  if (length(common_samples) < min(ncol(mir_mat), ncol(gene_mat)) * 0.5) {
-    warning("The number of matched samples between mir_mat and gene_mat is:", length(common_samples),
-            ", which is below 50% of the total number of samples.
-            We suggest to double check the colnames of miRNA and gene expression profiles have shared colnames as sample names!")
-  }
+  aligned <- align_expr_mat_samples(mir_mat, gene_mat)
+  mir_mat <- aligned$mir_mat
+  gene_mat <- aligned$gene_mat
+  common_samples <- aligned$common_samples
 
   # build mat that have both miRNA and gene with only shared samples.
   mir_sub <- mir_mat[, common_samples, drop = FALSE]

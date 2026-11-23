@@ -38,9 +38,9 @@ plotHeatmap(
 
 \item{penrichCutoff}{The threshold for deciding enrichment of pathways. Default is 0.05.}
 
-\item{height}{The height of the plot. If not, it will be set to default values.}
+\item{height}{The height of the plot, in cm. If not, it will be set to default values.}
 
-\item{width}{The width of the plot. If not, it will be set to default values.}
+\item{width}{The width of the plot, in cm. If not, it will be set to default values.}
 
 \item{gene_annot}{A list contains the annotations of genes, where each sub-element denotes a character vector containing a list of genes. It will generate a annotation bar on the top of the heatmap to show whether the genes hit in the annotation list. Default is NULL, which means no annotation bar will be generated.}
 
@@ -64,7 +64,10 @@ for the heatmap annotation. If NULL (the default), falls back to
 `input_data$threshold$corPadjCutoff`, or 0.05 if that is absent.}
 }
 \value{
-A heatmap plot either in the current window, or saved as heatmap_[method].pdf in the plot_path.
+Invisibly returns `list(ht_list, legend_list)` (the drawn
+       [ComplexHeatmap::HeatmapList-class] and its annotation legends), whether or not
+       `plot_path` is supplied. If `plot_path` is supplied, the heatmap is additionally
+       saved as `heatmap_[method].pdf` at that path and a message reports the file location.
 }
 \description{
 Draws a heatmap of the miRNA-gene-pathway enrichment result for one

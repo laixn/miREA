@@ -53,11 +53,12 @@
 
 #' @return A [miREAResult-class] object containing the per-method result tables
 #' (`result`), per-method elapsed time (`time`), the methods that completed
-#' without error (`valid_methods`), and the call parameters (`parameter`).
+#' without error (`valid_methods`), the methods that errored along with their
+#' error message (`failed_methods`), and the call parameters (`parameter`).
 #' `parameter$DE_threshold` records the `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/
 #' `corPadjCutoff` values used to build `input_data` (see [getAllInputData()]),
 #' or `NULL` if `input_data` does not carry a `threshold` element.
-#' Supports `$` access to these four fields for backward compatibility.
+#' Supports `$` access to these fields for backward compatibility.
 #' @references Zhang Z, Lai X (2026). miREA: a network-based tool for
 #' microRNA-oriented enrichment analysis. bioRxiv. \doi{10.64898/2026.02.27.708509}
 #' @examples
@@ -97,6 +98,7 @@ miREA <- function(methods, input_data, background = NULL,
   message("Start Enrichment analysis...")
   message("=== Start time: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " ===")
   all_result <- list()
+  failed_methods <- list()
   time <- data.frame(method = character(), time = numeric(), stringsAsFactors = FALSE)
   n_pathway <- length(unique(input_data$pathway[[1]]$pathway))
 
@@ -104,7 +106,9 @@ miREA <- function(methods, input_data, background = NULL,
   for (m in names(method_calls)) {
     if (!m %in% methods) next
     run <- run_miREA_method(m, method_calls[[m]])
-    if (!is.null(run)) {
+    if (!is.null(run$error)) {
+      failed_methods[[m]] <- run$error
+    } else {
       all_result[[m]] <- run$result
       time <- rbind(time, data.frame(method = m, time = run$elapsed, stringsAsFactors = FALSE))
     }
@@ -114,6 +118,7 @@ miREA <- function(methods, input_data, background = NULL,
   message("=== End time: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " ===")
 
   miREAResult(result = all_result, time = time, valid_methods = names(all_result),
+              failed_methods = failed_methods,
               parameter = list(method = methods, n_pathway = n_pathway, minSize = minSize, maxSize = maxSize, pvalueType = pvalueType, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, iter = iter, ncores = ncores, seed = seed, DE_threshold = input_data[["threshold"]]))
 }
 
@@ -275,9 +280,9 @@ run_miREA_method <- function(name, call_fn) {
       result <- call_fn()
     })[["elapsed"]]
     message("    - ", name, " finished, time cost: ", elapsed, " s. ")
-    list(result = result, elapsed = elapsed)
+    list(result = result, elapsed = elapsed, error = NULL)
   }, error = function(e) {
-    warning(name, " failed: ", e$message)
-    NULL
+    message("    - ", name, " failed: ", e$message)
+    list(result = NULL, elapsed = NA_real_, error = e$message)
   })
 }

@@ -196,6 +196,24 @@ coerce_expr_mat <- function(x, assay = 1) {
 }
 
 #' @noRd
+filter_pathway_by_size <- function(pathway, minSize = NULL, maxSize = NULL) {
+  pathway_counts <- table(pathway$pathway)
+  # NOTE: `pathway` has a column also named "pathway", so `pathway$pathway`
+  # inside `pathway[...]` gets NSE-resolved against the *column* (an atomic
+  # vector) first, raising "$ operator is invalid for atomic vectors". Use
+  # the bare column reference instead.
+  if (!is.null(minSize)){
+    pathways_to_remove_min <- names(pathway_counts[pathway_counts < minSize])
+    pathway <- pathway[!pathway %in% pathways_to_remove_min, ]
+  }
+  if (!is.null(maxSize)){
+    pathways_to_remove_max <- names(pathway_counts[pathway_counts > maxSize])
+    pathway <- pathway[!pathway %in% pathways_to_remove_max, ]
+  }
+  pathway
+}
+
+#' @noRd
 coerce_pathway <- function(pathway) {
   if (!methods::is(pathway, "GeneSetCollection")) return(pathway)
   if (!requireNamespace("GSEABase", quietly = TRUE)) {

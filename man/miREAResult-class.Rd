@@ -10,7 +10,7 @@
 \alias{as.data.frame,miREAResult-method}
 \title{S4 class for miREA() results}
 \usage{
-miREAResult(result, time, valid_methods, parameter)
+miREAResult(result, time, valid_methods, failed_methods = list(), parameter)
 
 \S4method{$}{miREAResult}(x, name)
 
@@ -27,15 +27,18 @@ miREAResult(result, time, valid_methods, parameter)
 
 \item{valid_methods}{Character vector of methods that completed without error.}
 
+\item{failed_methods}{Named list mapping each method that errored to its error message.
+Defaults to an empty list.}
+
 \item{parameter}{A list of the parameters [miREA()] was called with.}
 
 \item{x}{A [miREAResult-class] object.}
 
 \item{name}{The slot to access: one of `"result"`, `"time"`,
-`"valid_methods"`, `"parameter"`.}
+`"valid_methods"`, `"failed_methods"`, `"parameter"`.}
 
 \item{i}{The slot to access: one of `"result"`, `"time"`,
-`"valid_methods"`, `"parameter"`.}
+`"valid_methods"`, `"failed_methods"`, `"parameter"`.}
 
 \item{j}{Not used.}
 
@@ -64,6 +67,8 @@ the function's previous plain-list return value.
 \item{\code{time}}{A data.frame recording the elapsed time (in seconds) for each method.}
 
 \item{\code{valid_methods}}{Character vector of methods that completed without error.}
+
+\item{\code{failed_methods}}{Named list mapping each method that errored to its error message.}
 
 \item{\code{parameter}}{A list of the parameters [miREA()] was called with.}
 }}
