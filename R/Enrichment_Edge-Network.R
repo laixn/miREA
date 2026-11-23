@@ -36,8 +36,11 @@
 #'        distribution), and `p_empirical` (the empirical permutation
 #'        p-value, `(nMoreExtreme + 1) / (iter + 1)`).
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat)
+#' data(toy_pathway)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_DEdata)
+#' data(toy_gene_mat)
+#' data(toy_mir_mat)
 #' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "Edge_Network", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
@@ -61,15 +64,17 @@ Edge_Network <- function(DEMGI,
                          MGI, GGI,
                          pAdjMethod = "BH", pvalueCutoff = 0.05,
                          minSize = NULL, maxSize = NULL,
-                         iter = 1000, ncores = NULL, BPPARAM = NULL, seed = NULL){
+                         iter = 1000, ncores = NULL, BPPARAM = NULL, seed = NULL) {
   message("\n  Start Edge-Network analysis ...")
   if (is.null(DEMGI)) {
     stop("A valid character DEMGI vector contains the differential expressed MGI must be entered!")
   }
 
-  if (!pAdjMethod %in% default_pAdjMethod){
-    stop("Invalid pAdjMethod: ", pAdjMethod,
-         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
+  if (!pAdjMethod %in% default_pAdjMethod) {
+    stop(
+      "Invalid pAdjMethod: ", pAdjMethod,
+      "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ",")
+    )
   }
 
   prepped <- edge_network_prepare_pathway(pathway_gene, pathway_MGI, pathway_GGI, MGI, GGI, minSize, maxSize)
@@ -89,7 +94,8 @@ Edge_Network <- function(DEMGI,
       nMoreExtreme = integer(), p_empirical = numeric(), padj = numeric(),
       contribute_edge = character(), n_contribute_edge = integer(),
       stringsAsFactors = FALSE
-    ))}
+    ))
+  }
 
   built <- edge_network_build_graph(pathway = pathway, pathway_gene = pathway_gene, MGI = MGI, GGI = GGI, DEMGI = DEMGI)
 
@@ -99,7 +105,7 @@ Edge_Network <- function(DEMGI,
     iter = iter, seed = seed
   )
 
-  if (is.null(BPPARAM) && (is.null(ncores) || ncores == 1)){
+  if (is.null(BPPARAM) && (is.null(ncores) || ncores == 1)) {
     ncores <- 1
     message("You are use unparallel computing. It could cause huge amount of time.
             \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that).\n")
@@ -134,14 +140,18 @@ edge_network_prepare_pathway <- function(pathway_gene, pathway_MGI, pathway_GGI,
   colnames(pathway_MGI)[seq_len(3)] <- c("pathway", "miRNA", "gene")
   colnames(MGI)[seq_len(2)] <- c("miRNA", "gene")
   pathway <- pathway_MGI %>%
-    mutate(MGI = paste0(miRNA,":",gene))
-  MGISize <- pathway_MGI %>% group_by(pathway) %>%
-    summarise(n_MGI = n()) %>% ungroup()
+    mutate(MGI = paste0(miRNA, ":", gene))
+  MGISize <- pathway_MGI %>%
+    group_by(pathway) %>%
+    summarise(n_MGI = n()) %>%
+    ungroup()
 
   pathway <- filter_pathway_by_size(pathway, minSize, maxSize)
 
-  list(pathway = pathway, pathway_gene = pathway_gene, pathway_GGI = pathway_GGI,
-       MGI = MGI, GGI = GGI, MGISize = MGISize)
+  list(
+    pathway = pathway, pathway_gene = pathway_gene, pathway_GGI = pathway_GGI,
+    MGI = MGI, GGI = GGI, MGISize = MGISize
+  )
 }
 
 #' @noRd
@@ -152,7 +162,7 @@ edge_network_build_graph <- function(pathway, pathway_gene, MGI, GGI, DEMGI) {
   GGI$type <- "GGI"
   all_edges <- dplyr::distinct(rbind(MGI, GGI)) %>%
     dplyr::mutate(edge = paste0(from, ":", to))
-  all_edges$weight <- 1  ### set weight as 1
+  all_edges$weight <- 1 ### set weight as 1
 
   graph <- igraph::graph_from_data_frame(all_edges, directed = TRUE)
   edge_ids <- paste0(all_edges$from, ":", all_edges$to)
@@ -164,12 +174,13 @@ edge_network_build_graph <- function(pathway, pathway_gene, MGI, GGI, DEMGI) {
   isolated_edges <- base::setdiff(DEMGI, pathway$MGI)
   isolated_df <- data.frame(
     miRNA = sub(":.*", "", isolated_edges),
-    gene  = sub(".*:", "", isolated_edges),
+    gene = sub(".*:", "", isolated_edges),
     stringsAsFactors = FALSE
   )
   pathway_genes <- unique(pathway_gene$gene)
   connect_genes <- unique(orig_edges_df$from[
-    orig_edges_df$type == "GGI" & orig_edges_df$to %in% pathway_genes])
+    orig_edges_df$type == "GGI" & orig_edges_df$to %in% pathway_genes
+  ])
 
   DEMGI_out <- isolated_df %>%
     filter(!(gene %in% connect_genes)) %>%
@@ -177,18 +188,20 @@ edge_network_build_graph <- function(pathway, pathway_gene, MGI, GGI, DEMGI) {
     pull(MGI)
   DEMGI_connect <- setdiff(isolated_edges, DEMGI_out)
   DEMGI_in <- setdiff(DEMGI, isolated_edges)
-  if (length(DEMGI_in) + length(DEMGI_connect) == 0){
+  if (length(DEMGI_in) + length(DEMGI_connect) == 0) {
     stop("All DEMGIs are not included in any pathway. Edge_Network doesn't work in this situation. Please try other methods.\n")
   }
 
-  list(graph = graph, all_edges = all_edges, edge_ids = edge_ids,
-       DEMGI_out = DEMGI_out, DEMGI_in = DEMGI_in, DEMGI_connect = DEMGI_connect)
+  list(
+    graph = graph, all_edges = all_edges, edge_ids = edge_ids,
+    DEMGI_out = DEMGI_out, DEMGI_in = DEMGI_in, DEMGI_connect = DEMGI_connect
+  )
 }
 
 #' @noRd
 edge_network_build_restart_matrix <- function(edge_ids, all_edges, pathway, DEMGI,
-                                               DEMGI_out, DEMGI_in, DEMGI_connect,
-                                               iter, seed) {
+                                              DEMGI_out, DEMGI_in, DEMGI_connect,
+                                              iter, seed) {
   message("    Build restart list...")
   restart_list <- as.integer(edge_ids %in% DEMGI)
   names(restart_list) <- edge_ids
@@ -199,7 +212,7 @@ edge_network_build_restart_matrix <- function(edge_ids, all_edges, pathway, DEMG
   MGI_pw_indices <- which(all_edges$type == "MGI" & edge_ids %in% pathway$MGI) # all MGIs that in the randomization range
   MGI_connect_indices <- setdiff(which(all_edges$type == "MGI"), c(MGI_out_indices, MGI_pw_indices))
 
-  draw_random_restart <- function(i){
+  draw_random_restart <- function(i) {
     new_restart <- rep(0, length(edge_ids))
     new_restart[MGI_out_indices] <- 1 # fixed DEMGI that outside the pathways as 1
     selected_pw_indices <- sample(MGI_pw_indices, num_DE_in, replace = FALSE)
@@ -215,10 +228,10 @@ edge_network_build_restart_matrix <- function(edge_ids, all_edges, pathway, DEMG
   }
 
   restart_matrix <- cbind(restart_list, random_restarts)
-  colnames(restart_matrix) <- c('OBS', paste0("P", seq(iter)))
+  colnames(restart_matrix) <- c("OBS", paste0("P", seq(iter)))
 
   restart_matrix <- as(Matrix::Matrix(restart_matrix, sparse = TRUE), "dgCMatrix")
-  message("      Size of sparse restart_matrix: ", object.size(restart_matrix)/(1024*1024), " MB.")
+  message("      Size of sparse restart_matrix: ", object.size(restart_matrix) / (1024 * 1024), " MB.")
   restart_matrix
 }
 
@@ -239,21 +252,23 @@ edge_network_build_transition_matrix <- function(graph, all_edges) {
   cols_to_fix <- which(colnames(transition_matrix) %in% ggi_nodes & Matrix::colSums(transition_matrix) == 0)
 
   if (length(cols_to_fix) > 0) {
-    diag_fix <- Matrix::sparseMatrix(i = cols_to_fix,
-                                     j = cols_to_fix,
-                                     x = rep(1, length(cols_to_fix)),
-                                     dims = dim(transition_matrix),
-                                     dimnames = dimnames(transition_matrix))
+    diag_fix <- Matrix::sparseMatrix(
+      i = cols_to_fix,
+      j = cols_to_fix,
+      x = rep(1, length(cols_to_fix)),
+      dims = dim(transition_matrix),
+      dimnames = dimnames(transition_matrix)
+    )
     transition_matrix <- transition_matrix + diag_fix
   }
-  message("      Size of transition_matrix: ", object.size(transition_matrix)/(1024*1024), " MB.")
+  message("      Size of transition_matrix: ", object.size(transition_matrix) / (1024 * 1024), " MB.")
   gc()
   transition_matrix
 }
 
 #' @noRd
 edge_network_make_rwr <- function(transition_matrix) {
-  function(seed.vec){
+  function(seed.vec) {
     alpha <- 0.5
     delta <- 1e-6
     max_steps <- 100
@@ -291,7 +306,7 @@ edge_network_run_rwr <- function(transition_matrix, restart_matrix, BPPARAM) {
   perm_mat <- restart_matrix[, -1, drop = FALSE]
   n_cols <- ncol(perm_mat)
 
-  obs_score <- run_rwr(obs_vec)  # calculate the observation scores
+  obs_score <- run_rwr(obs_vec) # calculate the observation scores
 
   # divide the permutation columns into one block per worker, where each
   # column of a block represents a single permutation
@@ -316,7 +331,7 @@ edge_network_pathway_scores <- function(pathway, pathway_GGI, obs_score, perm_sc
 
   obs_dt <- data.table(edge = rownames(obs_score), score = as.numeric(obs_score))
   setkey(obs_dt, edge)
-  obs_result <- pw_dt[,.(score = sum(obs_dt[edge,score])), by = pathway]
+  obs_result <- pw_dt[, .(score = sum(obs_dt[edge, score])), by = pathway]
 
   # get top contributed MGIs
   edge_score <- merge(pw_dt, obs_dt, by = "edge", all.x = TRUE)
@@ -342,7 +357,7 @@ edge_network_pathway_scores <- function(pathway, pathway_GGI, obs_score, perm_sc
 
   # matrix-multiply across all permutation columns at once
   perm_scores <- perm_scores[match(colnames(P), rownames(perm_scores)), , drop = FALSE]
-  perm_result_mat <- P %*% perm_scores  # pathways x iterations
+  perm_result_mat <- P %*% perm_scores # pathways x iterations
 
   # convert back to data.table
   # Matrix::summary() only returns the stored (non-zero) entries of the sparse
@@ -350,20 +365,22 @@ edge_network_pathway_scores <- function(pathway, pathway_GGI, obs_score, perm_sc
   # zero are legitimately missing from perm_coo, not numerically negligible.
   # edge_network_finalize_results() accounts for this explicitly via n_iter,
   # rather than assuming perm_result contains every (pathway, iter) pair.
-  perm_coo <- Matrix::summary(perm_result_mat)  # i,j,x
+  perm_coo <- Matrix::summary(perm_result_mat) # i,j,x
   perm_result <- data.table(
     pathway = rownames(perm_result_mat)[perm_coo$i],
     iter = colnames(perm_result_mat)[perm_coo$j],
     score = perm_coo$x
   )
 
-  list(obs_result = obs_result, contributing_mgi = contributing_mgi, perm_result = perm_result,
-       n_iter = ncol(perm_result_mat))
+  list(
+    obs_result = obs_result, contributing_mgi = contributing_mgi, perm_result = perm_result,
+    n_iter = ncol(perm_result_mat)
+  )
 }
 
 #' @noRd
 edge_network_finalize_results <- function(obs_result, perm_result, contributing_mgi,
-                                           MGISize, pAdjMethod, pvalueCutoff, n_iter) {
+                                          MGISize, pAdjMethod, pvalueCutoff, n_iter) {
   # perm_result only stores the non-zero permutation scores (see
   # edge_network_pathway_scores()); reconstruct each pathway's true null
   # distribution (length n_iter, zero-padded) one pathway at a time so the
@@ -373,7 +390,7 @@ edge_network_finalize_results <- function(obs_result, perm_result, contributing_
   score_list <- split(perm_result$score, perm_result$pathway)
   obs_score_by_pathway <- setNames(obs_result$score, obs_result$pathway)
 
-  pathway_stats <- rbindlist(lapply(all_pathways, function(pw){
+  pathway_stats <- rbindlist(lapply(all_pathways, function(pw) {
     stored <- score_list[[pw]]
     if (is.null(stored)) stored <- numeric(0)
     full <- c(stored, rep(0, n_iter - length(stored)))
@@ -400,15 +417,19 @@ edge_network_finalize_results <- function(obs_result, perm_result, contributing_
       sprintf("%.4f", max(full)),
       sep = ","
     )
-    data.table(pathway = pw, rand_score_dist = rand_score_dist,
-               z = z, p_value = p_value, nMoreExtreme = nMoreExtreme, p_empirical = p_empirical)
+    data.table(
+      pathway = pw, rand_score_dist = rand_score_dist,
+      z = z, p_value = p_value, nMoreExtreme = nMoreExtreme, p_empirical = p_empirical
+    )
   }))
 
   final <- merge(obs_result, pathway_stats, by = "pathway")
   final[, padj := p.adjust(p_value, method = pAdjMethod)]
   final <- merge(final, contributing_mgi, by = "pathway", all.x = TRUE)
   final <- merge(MGISize, final, by = "pathway")
-  final <- final %>% dplyr::filter(p_value <= pvalueCutoff, padj <= pvalueCutoff) %>%
-    dplyr::arrange(padj) %>% dplyr::relocate(rand_score_dist, .after = score)
+  final <- final %>%
+    dplyr::filter(p_value <= pvalueCutoff, padj <= pvalueCutoff) %>%
+    dplyr::arrange(padj) %>%
+    dplyr::relocate(rand_score_dist, .after = score)
   final
 }

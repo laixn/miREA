@@ -1,5 +1,7 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     background_MGI, package = "miREA")
+  background_MGI,
+  package = "miREA"
+)
 
 test_that("Edge_ORA, Edge_Score1D, Edge_Score2D return enrichment results for the signal pathway", {
   input_data <- getAllInputData(
@@ -10,18 +12,24 @@ test_that("Edge_ORA, Edge_Score1D, Edge_Score2D return enrichment results for th
   )
   background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 
-  ora <- Edge_ORA(DEMGI = input_data$data$Edge_ORA, background = background,
-                   pathway = input_data$pathway$Edge, pvalueCutoff = 1)
+  ora <- Edge_ORA(
+    DEMGI = input_data$data$Edge_ORA, background = background,
+    pathway = input_data$pathway$Edge, pvalueCutoff = 1
+  )
   expect_s3_class(ora, "data.frame")
   expect_true(nrow(ora) > 0)
 
-  score1d <- Edge_Score1D(MGIList = input_data$data$Edge_Score1D, pathway = input_data$pathway$Edge,
-                           pvalueType = "neg", pvalueCutoff = 1)
+  score1d <- Edge_Score1D(
+    MGIList = input_data$data$Edge_Score1D, pathway = input_data$pathway$Edge,
+    pvalueType = "neg", pvalueCutoff = 1
+  )
   expect_s3_class(score1d, "data.frame")
   expect_true(nrow(score1d) > 0)
 
-  score2d <- Edge_Score2D(MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-                           background = background, iter = 20, ncores = 1, pvalueCutoff = 1)
+  score2d <- Edge_Score2D(
+    MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
+    background = background, iter = 20, ncores = 1, pvalueCutoff = 1
+  )
   expect_s3_class(score2d, "data.frame")
   expect_true(nrow(score2d) > 0)
 })
@@ -89,8 +97,10 @@ test_that("Edge_ORA errors when background is not supplied", {
 
 test_that("Edge_ORA errors when all DEMGI are filtered out by the background", {
   expect_error(
-    Edge_ORA(DEMGI = "nonexistent-mir:nonexistent-gene", background = "other-mir:other-gene",
-             pathway = toy_pathway),
+    Edge_ORA(
+      DEMGI = "nonexistent-mir:nonexistent-gene", background = "other-mir:other-gene",
+      pathway = toy_pathway
+    ),
     "No valid DEMGI input"
   )
 })
@@ -105,16 +115,20 @@ test_that("Edge_ORA filters DEMGI entries missing from the background with a mes
   background_full <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
   background_partial <- setdiff(background_full, demgi[1])
   expect_message(
-    res <- Edge_ORA(DEMGI = demgi, background = background_partial,
-                     pathway = input_data$pathway$Edge, pvalueCutoff = 1),
+    res <- Edge_ORA(
+      DEMGI = demgi, background = background_partial,
+      pathway = input_data$pathway$Edge, pvalueCutoff = 1
+    ),
     "not included in the background"
   )
   expect_s3_class(res, "data.frame")
 })
 
 test_that("Edge_Topology rejects invalid pAdjMethod/pvalueType", {
-  args <- list(MGI = data.frame(), background = character(),
-               pathway = data.frame(), pathway_GGI = data.frame(), dict_MGI = data.frame())
+  args <- list(
+    MGI = data.frame(), background = character(),
+    pathway = data.frame(), pathway_GGI = data.frame(), dict_MGI = data.frame()
+  )
   expect_error(do.call(Edge_Topology, c(args, list(pAdjMethod = "bogus"))), "Invalid pAdjMethod")
   expect_error(do.call(Edge_Topology, c(args, list(pvalueType = "bogus"))), "Invalid pvalueType")
 })
@@ -199,19 +213,27 @@ test_that("Edge_Topology_single warns on multi-pathway input and handles PW_GGI=
 
 test_that("Edge_Score2D rejects invalid MGI2D/background inputs", {
   expect_error(
-    Edge_Score2D(MGI2D = data.frame(MGI = character(), miRNA = character(), gene = character(),
-                                     x = numeric(), y = numeric()),
-                 pathway = toy_pathway, background = "a:b"),
+    Edge_Score2D(
+      MGI2D = data.frame(
+        MGI = character(), miRNA = character(), gene = character(),
+        x = numeric(), y = numeric()
+      ),
+      pathway = toy_pathway, background = "a:b"
+    ),
     "No valid MGI pairs"
   )
   expect_error(
-    Edge_Score2D(MGI2D = data.frame(MGI = "a:b", miRNA = "a", gene = "b", x = 0.1, y = 0.1),
-                 pathway = toy_pathway, background = NULL),
+    Edge_Score2D(
+      MGI2D = data.frame(MGI = "a:b", miRNA = "a", gene = "b", x = 0.1, y = 0.1),
+      pathway = toy_pathway, background = NULL
+    ),
     "background must be supplied"
   )
   expect_error(
-    Edge_Score2D(MGI2D = data.frame(MGI = "a:b", miRNA = "a", gene = "b", x = 0.1, y = 0.1),
-                 pathway = toy_pathway, background = "other:pair"),
+    Edge_Score2D(
+      MGI2D = data.frame(MGI = "a:b", miRNA = "a", gene = "b", x = 0.1, y = 0.1),
+      pathway = toy_pathway, background = "other:pair"
+    ),
     "No valid MGI input"
   )
 })

@@ -89,8 +89,12 @@ The main entry point for miREA, implementing four node-based methods and
 five edge-based methods for miRNA-oriented enrichment analysis.
 }
 \examples{
-data(toy_pathway); data(toy_gene_DEdata); data(toy_mir_DEdata)
-data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+data(toy_pathway)
+data(toy_gene_DEdata)
+data(toy_mir_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
+data(background_MGI)
 input_data <- getAllInputData(
   methods = default_method_list, pathway = toy_pathway,
   mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,

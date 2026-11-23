@@ -15,8 +15,12 @@
 #'
 #' @return A dataframe containing the enrichment result for Edge-ORA.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+#' data(toy_pathway)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_DEdata)
+#' data(toy_gene_mat)
+#' data(toy_mir_mat)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "Edge_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
 #'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
@@ -29,32 +33,40 @@
 #' )
 #' head(res)
 #' @export
-Edge_ORA <- function(DEMGI, background = NULL, pathway, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL){
+Edge_ORA <- function(DEMGI, background = NULL, pathway, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL) {
   message("\n  Start Edge-ORA analysis ...")
 
   if (is.null(DEMGI) || length(DEMGI) == 0) {
-    stop("A valid character vector contains the differential expressed MGI must be entered! ",
-         "DEMGI is empty: no MGI passed the upstream differential-expression filters.")
+    stop(
+      "A valid character vector contains the differential expressed MGI must be entered! ",
+      "DEMGI is empty: no MGI passed the upstream differential-expression filters."
+    )
   }
 
-  if (!pAdjMethod %in% default_pAdjMethod){
-    stop("Invalid pAdjMethod: ", pAdjMethod,
-         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
+  if (!pAdjMethod %in% default_pAdjMethod) {
+    stop(
+      "Invalid pAdjMethod: ", pAdjMethod,
+      "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ",")
+    )
   }
 
-  if (is.null(background)){
-    stop("background must be supplied: a character vector of MGIs in '[miRNA]:[gene]' ",
-         "format. miREA does not ship a bundled default background; see the package ",
-         "vignette for how to build one from background_MGI, or download the full ",
-         "background used in the miREA manuscript from its Zenodo deposit.")
+  if (is.null(background)) {
+    stop(
+      "background must be supplied: a character vector of MGIs in '[miRNA]:[gene]' ",
+      "format. miREA does not ship a bundled default background; see the package ",
+      "vignette for how to build one from background_MGI, or download the full ",
+      "background used in the miREA manuscript from its Zenodo deposit."
+    )
   }
 
   # filtering DEMGIs in the background
   if (all(DEMGI %in% background) == FALSE) {
-    message(paste(length(DEMGI[!DEMGI %in% background]), "of", length(DEMGI),
-        "miRNAs are not included in the background. Those are: \n",
-        paste(DEMGI[!DEMGI %in% background], collapse = " "),
-        "\n Those miRNAs are deleted. "))
+    message(paste(
+      length(DEMGI[!DEMGI %in% background]), "of", length(DEMGI),
+      "miRNAs are not included in the background. Those are: \n",
+      paste(DEMGI[!DEMGI %in% background], collapse = " "),
+      "\n Those miRNAs are deleted. "
+    ))
     DEMGI <- DEMGI[DEMGI %in% background]
     if (length(DEMGI) == 0) {
       stop("No valid DEMGI input from background list!")
@@ -64,7 +76,7 @@ Edge_ORA <- function(DEMGI, background = NULL, pathway, pAdjMethod = "BH", pvalu
   # filtering pathway in the background
   colnames(pathway)[seq_len(3)] <- c("pathway", "miRNA", "gene")
   pathway <- pathway %>%
-    dplyr::mutate(MGI = paste0(miRNA,":",gene)) %>%
+    dplyr::mutate(MGI = paste0(miRNA, ":", gene)) %>%
     dplyr::filter(MGI %in% background) %>%
     dplyr::select(pathway, MGI)
 
@@ -76,5 +88,3 @@ Edge_ORA <- function(DEMGI, background = NULL, pathway, pAdjMethod = "BH", pvalu
 
   return(ora_result) # a dataframe
 }
-
-

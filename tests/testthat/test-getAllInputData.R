@@ -1,5 +1,7 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     background_MGI, package = "miREA")
+  background_MGI,
+  package = "miREA"
+)
 
 test_that("getAllInputData() builds all expected components for the full method list", {
   input_data <- getAllInputData(
@@ -95,16 +97,20 @@ test_that("getAllInputData() records the DE thresholds it used, and they actuall
 })
 
 test_that("standardize_DEdata() errors (does not guess by position) when column names aren't recognized", {
-  df <- data.frame(V1 = c("g1", "g2"), V2 = c(1, -2), V3 = c(3, -3), V4 = c(0.01, 0.2),
-                    stringsAsFactors = FALSE)
+  df <- data.frame(
+    V1 = c("g1", "g2"), V2 = c(1, -2), V3 = c(3, -3), V4 = c(0.01, 0.2),
+    stringsAsFactors = FALSE
+  )
   expect_error(miREA:::standardize_DEdata(df, "gene"), "recognizable logFC/stat/padj columns")
 })
 
 test_that("standardize_DEdata() ignores extra columns and is idempotent on already-standardized input", {
   # extra columns beyond the 4 needed ones (as in full DESeq2::results()/limma::topTable() output)
-  df <- data.frame(gene = c("g1", "g2"), log2FoldChange = c(1, -2), extra1 = c("x", "y"),
-                    stat = c(3, -3), extra2 = c(TRUE, FALSE), padj = c(0.01, 0.2),
-                    stringsAsFactors = FALSE)
+  df <- data.frame(
+    gene = c("g1", "g2"), log2FoldChange = c(1, -2), extra1 = c("x", "y"),
+    stat = c(3, -3), extra2 = c(TRUE, FALSE), padj = c(0.01, 0.2),
+    stringsAsFactors = FALSE
+  )
   out <- miREA:::standardize_DEdata(df, "gene")
   expect_equal(colnames(out), c("gene", "geneLogFC", "geneStat", "genePadj"))
   expect_equal(out$gene, c("g1", "g2"))
@@ -116,9 +122,11 @@ test_that("standardize_DEdata() ignores extra columns and is idempotent on alrea
 })
 
 test_that("standardize_DEdata() matches DESeq2::results()-style columns by name, with ID from rownames", {
-  df <- data.frame(baseMean = c(10, 20), log2FoldChange = c(1, -2), lfcSE = c(0.1, 0.2),
-                    stat = c(3, -3), pvalue = c(0.02, 0.3), padj = c(0.01, 0.2),
-                    row.names = c("g1", "g2"))
+  df <- data.frame(
+    baseMean = c(10, 20), log2FoldChange = c(1, -2), lfcSE = c(0.1, 0.2),
+    stat = c(3, -3), pvalue = c(0.02, 0.3), padj = c(0.01, 0.2),
+    row.names = c("g1", "g2")
+  )
   out <- miREA:::standardize_DEdata(df, "gene")
   expect_equal(colnames(out), c("gene", "geneLogFC", "geneStat", "genePadj"))
   expect_equal(out$gene, c("g1", "g2"))
@@ -128,9 +136,11 @@ test_that("standardize_DEdata() matches DESeq2::results()-style columns by name,
 })
 
 test_that("standardize_DEdata() matches limma::topTable()-style columns by name, with ID from rownames", {
-  df <- data.frame(logFC = c(1, -2), AveExpr = c(5, 6), t = c(3, -3),
-                    P.Value = c(0.02, 0.3), adj.P.Val = c(0.01, 0.2), B = c(0.5, -0.5),
-                    row.names = c("g1", "g2"))
+  df <- data.frame(
+    logFC = c(1, -2), AveExpr = c(5, 6), t = c(3, -3),
+    P.Value = c(0.02, 0.3), adj.P.Val = c(0.01, 0.2), B = c(0.5, -0.5),
+    row.names = c("g1", "g2")
+  )
   out <- miREA:::standardize_DEdata(df, "gene")
   expect_equal(colnames(out), c("gene", "geneLogFC", "geneStat", "genePadj"))
   expect_equal(out$gene, c("g1", "g2"))

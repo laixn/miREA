@@ -75,8 +75,11 @@ Random Walk with Restart (RWR), by evaluating how relevant the
 differentially expressed MGI set is to the pathway MGI set.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-data(toy_gene_mat); data(toy_mir_mat)
+data(toy_pathway)
+data(toy_mir_DEdata)
+data(toy_gene_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
   methods = "Edge_Network", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,

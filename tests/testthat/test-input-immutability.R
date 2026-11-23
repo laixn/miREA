@@ -1,16 +1,18 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     background_MGI, package = "miREA")
+  background_MGI,
+  package = "miREA"
+)
 
 test_that("getAllInputData() does not modify its data.frame inputs", {
   pathway_df <- toy_pathway
-  bg_df      <- background_MGI
-  gene_df    <- toy_gene_DEdata
-  mir_df     <- toy_mir_DEdata
+  bg_df <- background_MGI
+  gene_df <- toy_gene_DEdata
+  mir_df <- toy_mir_DEdata
 
   pathway_snapshot <- pathway_df
-  bg_snapshot      <- bg_df
-  gene_snapshot    <- gene_df
-  mir_snapshot     <- mir_df
+  bg_snapshot <- bg_df
+  gene_snapshot <- gene_df
+  mir_snapshot <- mir_df
 
   invisible(getAllInputData(
     methods = "Edge_ORA", pathway = pathway_df, mir_DEdata = mir_df, gene_DEdata = gene_df,
@@ -25,14 +27,14 @@ test_that("getAllInputData() does not modify its data.frame inputs", {
 
 test_that("getAllInputData() does not modify its data.table inputs", {
   pathway_dt <- data.table::as.data.table(toy_pathway)
-  bg_dt      <- data.table::as.data.table(background_MGI)
-  gene_dt    <- data.table::as.data.table(toy_gene_DEdata)
-  mir_dt     <- data.table::as.data.table(toy_mir_DEdata)
+  bg_dt <- data.table::as.data.table(background_MGI)
+  gene_dt <- data.table::as.data.table(toy_gene_DEdata)
+  mir_dt <- data.table::as.data.table(toy_mir_DEdata)
 
   pathway_snapshot <- data.table::copy(pathway_dt)
-  bg_snapshot      <- data.table::copy(bg_dt)
-  gene_snapshot    <- data.table::copy(gene_dt)
-  mir_snapshot     <- data.table::copy(mir_dt)
+  bg_snapshot <- data.table::copy(bg_dt)
+  gene_snapshot <- data.table::copy(gene_dt)
+  mir_snapshot <- data.table::copy(mir_dt)
 
   invisible(getAllInputData(
     methods = "Edge_ORA", pathway = pathway_dt, mir_DEdata = mir_dt, gene_DEdata = gene_dt,
@@ -54,13 +56,15 @@ test_that("Edge_Score2D() does not modify its data.table inputs", {
   )
   background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 
-  MGI2D_dt    <- data.table::as.data.table(input_data$data$Edge_Score2D)
-  pathway_dt  <- data.table::as.data.table(input_data$pathway$Edge)
-  MGI2D_snapshot   <- data.table::copy(MGI2D_dt)
+  MGI2D_dt <- data.table::as.data.table(input_data$data$Edge_Score2D)
+  pathway_dt <- data.table::as.data.table(input_data$pathway$Edge)
+  MGI2D_snapshot <- data.table::copy(MGI2D_dt)
   pathway_snapshot <- data.table::copy(pathway_dt)
 
-  invisible(Edge_Score2D(MGI2D = MGI2D_dt, pathway = pathway_dt, background = background,
-                         iter = 20, ncores = 1, pvalueCutoff = 1))
+  invisible(Edge_Score2D(
+    MGI2D = MGI2D_dt, pathway = pathway_dt, background = background,
+    iter = 20, ncores = 1, pvalueCutoff = 1
+  ))
 
   expect_identical(MGI2D_dt, MGI2D_snapshot)
   expect_identical(pathway_dt, pathway_snapshot)
@@ -75,15 +79,15 @@ test_that("Edge_Topology() does not modify its data.table inputs", {
   )
   background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 
-  MGI_dt         <- data.table::as.data.table(input_data$data$Edge_Topology)
-  pathway_dt     <- data.table::as.data.table(input_data$pathway$Edge)
+  MGI_dt <- data.table::as.data.table(input_data$data$Edge_Topology)
+  pathway_dt <- data.table::as.data.table(input_data$pathway$Edge)
   pathway_GGI_dt <- data.table::as.data.table(input_data$pathway_GGI)
-  dict_MGI_dt    <- data.table::as.data.table(input_data$dict_MGI)
+  dict_MGI_dt <- data.table::as.data.table(input_data$dict_MGI)
 
-  MGI_snapshot         <- data.table::copy(MGI_dt)
-  pathway_snapshot     <- data.table::copy(pathway_dt)
+  MGI_snapshot <- data.table::copy(MGI_dt)
+  pathway_snapshot <- data.table::copy(pathway_dt)
   pathway_GGI_snapshot <- data.table::copy(pathway_GGI_dt)
-  dict_MGI_snapshot    <- data.table::copy(dict_MGI_dt)
+  dict_MGI_snapshot <- data.table::copy(dict_MGI_dt)
 
   invisible(Edge_Topology(
     MGI = MGI_dt, background = background, pathway = pathway_dt, pathway_GGI = pathway_GGI_dt,

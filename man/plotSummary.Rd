@@ -31,8 +31,12 @@ miREA methods: a positive-rate/PCA/pairwise-overlap panel, and a p-value
 density plot.
 }
 \examples{
-data(toy_pathway); data(toy_gene_DEdata); data(toy_mir_DEdata)
-data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+data(toy_pathway)
+data(toy_gene_DEdata)
+data(toy_mir_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
+data(background_MGI)
 methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA")
 input_data <- getAllInputData(
   methods = methods, pathway = toy_pathway,

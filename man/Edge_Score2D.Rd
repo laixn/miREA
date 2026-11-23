@@ -66,8 +66,12 @@ edge score (expression correlation and differential-expression-informed ratio),
 using a permutation test against randomized correlation values.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+data(toy_pathway)
+data(toy_mir_DEdata)
+data(toy_gene_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
+data(background_MGI)
 input_data <- getAllInputData(
   methods = "Edge_Score2D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,

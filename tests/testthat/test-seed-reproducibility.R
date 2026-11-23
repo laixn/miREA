@@ -1,5 +1,7 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     background_MGI, package = "miREA")
+  background_MGI,
+  package = "miREA"
+)
 
 test_that("Edge_Score2D: same seed gives identical results, seed=NULL gives different results", {
   input_data <- getAllInputData(
@@ -11,8 +13,10 @@ test_that("Edge_Score2D: same seed gives identical results, seed=NULL gives diff
   background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 
   run <- function(seed) {
-    Edge_Score2D(MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-                 background = background, iter = 30, ncores = 1, pvalueCutoff = 1, seed = seed)
+    Edge_Score2D(
+      MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
+      background = background, iter = 30, ncores = 1, pvalueCutoff = 1, seed = seed
+    )
   }
 
   expect_identical(run(42), run(42))
@@ -104,8 +108,10 @@ test_that("Edge_Score2D/Edge_Topology/Edge_Network's internal seed does not leak
   # call) still matches expected_draw1.
   set.seed(123)
   draw1 <- runif(1)
-  Edge_Score2D(MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-               background = background, iter = 30, ncores = 1, pvalueCutoff = 1, seed = 999)
+  Edge_Score2D(
+    MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
+    background = background, iter = 30, ncores = 1, pvalueCutoff = 1, seed = 999
+  )
   draw2 <- runif(1)
 
   expect_identical(draw1, expected_draw1)

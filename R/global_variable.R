@@ -57,9 +57,11 @@ default_pathway_list <- c("Reactome", "hallmark", "TP")
 #' @examples
 #' default_TP_cancer
 #' @export
-default_TP_cancer <- c("BLCA", "BRCA", "CESC", "COAD", "ESCA", "KIRC",
-                      "KIRP", "LIHC", "LUAD", "LUSC", "PAAD", "PRAD",
-                      "READ", "STAD", "THCA", "UCEC")
+default_TP_cancer <- c(
+  "BLCA", "BRCA", "CESC", "COAD", "ESCA", "KIRC",
+  "KIRP", "LIHC", "LUAD", "LUSC", "PAAD", "PRAD",
+  "READ", "STAD", "THCA", "UCEC"
+)
 
 #' Supported GSEA score types
 #'
@@ -89,8 +91,10 @@ default_GGI_source <- c("Omnipath", "Reactome")
 #' @noRd
 fetch_background_GGI_omnipath <- function() {
   if (!requireNamespace("OmnipathR", quietly = TRUE)) {
-    stop("Package 'OmnipathR' is required to fetch a default background_GGI from Omnipath. ",
-         "Please install OmnipathR, or supply background_GGI directly.")
+    stop(
+      "Package 'OmnipathR' is required to fetch a default background_GGI from Omnipath. ",
+      "Please install OmnipathR, or supply background_GGI directly."
+    )
   }
   # Returns Omnipath's full interaction set, with no license/source filtering:
   # Omnipath aggregates many underlying databases under different licenses,
@@ -99,26 +103,30 @@ fetch_background_GGI_omnipath <- function() {
   # themselves (e.g. via OmnipathR::resource_info()) and supply the result
   # via background_GGI.
   interactions <- tryCatch(
-    OmnipathR::import_all_interactions(),
+    OmnipathR::all_interactions(),
     error = function(e) {
-      stop("Failed to fetch a default background_GGI from Omnipath (", conditionMessage(e), "). ",
-           "Please supply background_GGI directly instead.")
+      stop(
+        "Failed to fetch a default background_GGI from Omnipath (", conditionMessage(e), "). ",
+        "Please supply background_GGI directly instead."
+      )
     }
   )
 
-  interactions <- interactions[, c("source_genesymbol", "target_genesymbol", "is_directed",
-                                    "is_stimulation", "is_inhibition", "n_references")]
+  interactions <- interactions[, c(
+    "source_genesymbol", "target_genesymbol", "is_directed",
+    "is_stimulation", "is_inhibition", "n_references"
+  )]
   interactions <- interactions[interactions$n_references != 0, ]
   interactions <- interactions[!grepl(",", interactions$source_genesymbol) &
-                                  !grepl("_", interactions$source_genesymbol) &
-                                  !grepl("_", interactions$target_genesymbol), ]
+    !grepl("_", interactions$source_genesymbol) &
+    !grepl("_", interactions$target_genesymbol), ]
   undirected <- interactions[interactions$is_directed == 0, c(2, 1, 3:6)]
   names(undirected) <- names(interactions)
   interactions <- rbind(undirected, interactions)
   interactions$interact <- interactions$is_stimulation - interactions$is_inhibition
   interactions <- interactions[, c("source_genesymbol", "target_genesymbol", "interact")]
   interactions[!grepl("^hsa-", interactions$source_genesymbol) &
-                 !grepl("^hsa-", interactions$target_genesymbol), ]
+    !grepl("^hsa-", interactions$target_genesymbol), ]
 }
 
 #' @noRd
@@ -134,21 +142,30 @@ fetch_background_GGI_reactome <- function() {
   dir.create(tmp_dir)
   on.exit(unlink(c(tmp_zip, tmp_dir), recursive = TRUE), add = TRUE)
 
-  tryCatch({
-    utils::download.file(url, destfile = tmp_zip, quiet = TRUE, mode = "wb")
-    utils::unzip(tmp_zip, exdir = tmp_dir)
-  }, error = function(e) {
-    stop("Failed to fetch a default background_GGI from Reactome (", conditionMessage(e), "). ",
-         "Please supply background_GGI directly instead.")
-  })
+  tryCatch(
+    {
+      utils::download.file(url, destfile = tmp_zip, quiet = TRUE, mode = "wb")
+      utils::unzip(tmp_zip, exdir = tmp_dir)
+    },
+    error = function(e) {
+      stop(
+        "Failed to fetch a default background_GGI from Reactome (", conditionMessage(e), "). ",
+        "Please supply background_GGI directly instead."
+      )
+    }
+  )
 
   txt_file <- list.files(tmp_dir, pattern = "_with_annotations\\.txt$", full.names = TRUE)
   if (length(txt_file) == 0) {
-    stop("Failed to fetch a default background_GGI from Reactome: downloaded archive did not ",
-         "contain the expected annotation file. Please supply background_GGI directly instead.")
+    stop(
+      "Failed to fetch a default background_GGI from Reactome: downloaded archive did not ",
+      "contain the expected annotation file. Please supply background_GGI directly instead."
+    )
   }
-  reactome_ggi <- utils::read.table(txt_file[1], sep = "\t", header = TRUE, quote = "",
-                                     stringsAsFactors = FALSE)
+  reactome_ggi <- utils::read.table(txt_file[1],
+    sep = "\t", header = TRUE, quote = "",
+    stringsAsFactors = FALSE
+  )
 
   # Undirected/mixed-sign relations are split into two directed rows, exactly
   # as in the original pathway_generate.Rmd expand_direction() logic.
@@ -178,7 +195,9 @@ combine_parallel <- function(res) {
 
 #' @noRd
 resolve_BPPARAM <- function(ncores, seed = NULL, BPPARAM = NULL) {
-  if (!is.null(BPPARAM)) return(BPPARAM)
+  if (!is.null(BPPARAM)) {
+    return(BPPARAM)
+  }
   if (is.null(ncores) || ncores <= 1) {
     BiocParallel::SerialParam(RNGseed = seed)
   } else {
@@ -188,7 +207,9 @@ resolve_BPPARAM <- function(ncores, seed = NULL, BPPARAM = NULL) {
 
 #' @noRd
 coerce_expr_mat <- function(x, assay = 1) {
-  if (is.null(x) || !methods::is(x, "SummarizedExperiment")) return(x)
+  if (is.null(x) || !methods::is(x, "SummarizedExperiment")) {
+    return(x)
+  }
   if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {
     stop("Package 'SummarizedExperiment' is required to pass a SummarizedExperiment as gene_mat/mir_mat.")
   }
@@ -202,11 +223,11 @@ filter_pathway_by_size <- function(pathway, minSize = NULL, maxSize = NULL) {
   # inside `pathway[...]` gets NSE-resolved against the *column* (an atomic
   # vector) first, raising "$ operator is invalid for atomic vectors". Use
   # the bare column reference instead.
-  if (!is.null(minSize)){
+  if (!is.null(minSize)) {
     pathways_to_remove_min <- names(pathway_counts[pathway_counts < minSize])
     pathway <- pathway[!pathway %in% pathways_to_remove_min, ]
   }
-  if (!is.null(maxSize)){
+  if (!is.null(maxSize)) {
     pathways_to_remove_max <- names(pathway_counts[pathway_counts > maxSize])
     pathway <- pathway[!pathway %in% pathways_to_remove_max, ]
   }
@@ -215,7 +236,9 @@ filter_pathway_by_size <- function(pathway, minSize = NULL, maxSize = NULL) {
 
 #' @noRd
 coerce_pathway <- function(pathway) {
-  if (!methods::is(pathway, "GeneSetCollection")) return(pathway)
+  if (!methods::is(pathway, "GeneSetCollection")) {
+    return(pathway)
+  }
   if (!requireNamespace("GSEABase", quietly = TRUE)) {
     stop("Package 'GSEABase' is required to pass a GeneSetCollection as pathway.")
   }

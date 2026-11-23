@@ -15,8 +15,12 @@
 #' @param fill_col a named vector to specify fill colors for different methods.
 #' @return Two plots, either in the current window if plot_path is NULL, or saved as summary.pdf and pvalue_density.pdf at the plot_path.
 #' @examples
-#' data(toy_pathway); data(toy_gene_DEdata); data(toy_mir_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+#' data(toy_pathway)
+#' data(toy_gene_DEdata)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_mat)
+#' data(toy_mir_mat)
+#' data(background_MGI)
 #' methods <- c("TG_ORA", "TG_Score", "MiR_ORA", "MiR_Score", "Edge_ORA")
 #' input_data <- getAllInputData(
 #'   methods = methods, pathway = toy_pathway,
@@ -38,16 +42,23 @@
 #' plotSummary(result, penrichCutoff = 1)
 #' @export
 plotSummary <- function(result, penrichCutoff = NULL, plot_path = NULL,
-                         fill_col = c("TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
-                                      "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
-                                      "Edge_Topology" = "#EAA5C2","Edge_Network" = "#FA8072")){
+                        fill_col = c(
+                          "TG_ORA" = "#97D7F2", "TG_Score" = "#07AEE3", "MiR_ORA" = "#B3D49D", "MiR_Score" = "#35B257",
+                          "Edge_ORA" = "#EDC194", "Edge_Score1D" = "#F09137", "Edge_Score2D" = "#626FB3",
+                          "Edge_Topology" = "#EAA5C2", "Edge_Network" = "#FA8072"
+                        )) {
   enrich <- list()
   all_pathways <- unique(unlist(lapply(result$result, function(df) df$pathway)))
   n_pathway <- length(all_pathways)
   summary <- data.frame(method = character(), n_pathway = integer(), positive_rate = numeric(), stringsAsFactors = FALSE)
-  if (is.null(penrichCutoff)){penrichCutoff <- 1.01}
-  for (method in names(result$result)){
-    enriched_path <- result$result[[method]] %>% filter(padj < penrichCutoff) %>% select(pathway) %>% pull()
+  if (is.null(penrichCutoff)) {
+    penrichCutoff <- 1.01
+  }
+  for (method in names(result$result)) {
+    enriched_path <- result$result[[method]] %>%
+      filter(padj < penrichCutoff) %>%
+      select(pathway) %>%
+      pull()
     enrich[[method]] <- enriched_path
     summary <- rbind(summary, data.frame(method = method, n_pathway = n_pathway, positive_rate = length(enriched_path) / n_pathway))
   }
@@ -59,30 +70,28 @@ plotSummary <- function(result, penrichCutoff = NULL, plot_path = NULL,
   overlap_plot <- plot_overlap_ht(enrich)
 
   combined <- (rate_plot + overlap_plot + pca_plot) +
-    plot_layout(widths = c(1, 1, 1), heights = 1) & #, guides = "collect"
-    theme(plot.margin = margin(2,2,2,2))
+    plot_layout(widths = c(1, 1, 1), heights = 1) & # , guides = "collect"
+    theme(plot.margin = margin(2, 2, 2, 2))
 
 
   # pvalue_density.pdf
   pvalue_plot <- plot_pvalue_dens(result, fill_col) # patchwork ggplot combine
 
-  if (!is.null(plot_path)){
+  if (!is.null(plot_path)) {
     ggsave(paste0(plot_path, "/summary.pdf"), combined, width = 16, height = 5)
     ggsave(paste0(plot_path, "/pvalue_density.pdf"), pvalue_plot, width = 10, height = 10)
     message("    Please check the summary plot and pvalue density plot at: ", plot_path)
     return(paste0("Please check the summary plot and pvalue density plot at: ", plot_path, "\n"))
-  } else{
+  } else {
     plot(combined)
     plot(pvalue_plot)
     message("  Visualization finished!\n***If you want to save them to pdf files directly, please specify the [plot_path] parameter!***")
     return(list(summary = combined, pvalue = pvalue_plot))
   }
-
 }
 
 
-
-plot_positive_rate <- function(summary, fill_col){# plot_path
+plot_positive_rate <- function(summary, fill_col) { # plot_path
   colnames(summary)[seq_len(3)] <- c("method", "n_pathway", "positive_rate")
   methods <- summary$method
   n_path <- summary$n_pathway[1]
@@ -97,48 +106,48 @@ plot_positive_rate <- function(summary, fill_col){# plot_path
   fill_col <- fill_col[names(fill_col) %in% methods]
 
   p <- ggplot(summary, aes(x = method, y = positive_rate, fill = method)) +
-    geom_bar(stat = "identity", color= "black") +
+    geom_bar(stat = "identity", color = "black") +
     scale_fill_manual(values = fill_col, guide = "none") +
-    labs(x = NULL, y = paste0("Positive Rate (", n_path, " pathways)"),
-         title = "Positive Rates for Different Methods") +
+    labs(
+      x = NULL, y = paste0("Positive Rate (", n_path, " pathways)"),
+      title = "Positive Rates for Different Methods"
+    ) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1, color = "black", size = 8),
       axis.text.y = element_text(color = "black", size = 8),
       axis.title.x = element_text(color = "black", size = 10),
       axis.title.y = element_text(color = "black", size = 10),
-
       axis.ticks.length = unit(0.2, "cm"),
       axis.ticks = element_line(color = "black"),
-
       legend.title = element_text(size = 9, face = "bold"),
       legend.text = element_text(size = 7),
-
       plot.title = element_text(hjust = 0.5, face = "bold", size = 12),
-
       panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
       panel.grid = element_blank()
     ) +
     coord_fixed(ratio = ratio, clip = "off") +
-    scale_y_continuous(expand = c(0,0), limits = c(0, y_range[2] * 1.05))
+    scale_y_continuous(expand = c(0, 0), limits = c(0, y_range[2] * 1.05))
 
   return(p)
 }
 
 
-plot_pca <- function(result, fill_col){
+plot_pca <- function(result, fill_col) {
   all_pathways <- unique(unlist(lapply(result, function(df) df$pathway)))
   methods <- names(result)
-  pval_matrix <- matrix(1, nrow = length(all_pathways), ncol = length(result),
-                        dimnames = list(all_pathways, methods))
-  for (method in methods){
+  pval_matrix <- matrix(1,
+    nrow = length(all_pathways), ncol = length(result),
+    dimnames = list(all_pathways, methods)
+  )
+  for (method in methods) {
     sub_matrix <- result[[method]]
     pval_matrix[sub_matrix$pathway, method] <- sub_matrix$p_value
   }
 
   matrix <- t(pval_matrix)
   matrix <- matrix[, colSums(is.na(matrix)) == 0] # drop columns with NA
-  matrix <- matrix[ , which(apply(matrix, 2, var) != 0)] # remove zero variance columns
+  matrix <- matrix[, which(apply(matrix, 2, var) != 0)] # remove zero variance columns
   fill_col <- fill_col[names(fill_col) %in% methods]
 
   pca_results <- prcomp(matrix, center = TRUE, scale. = TRUE)
@@ -159,9 +168,10 @@ plot_pca <- function(result, fill_col){
 
   pca_plot <- ggplot(
     pca_scores,
-    aes(x = PC1, y = PC2,
-        color = factor(methods, levels = methods),
-        shape = factor(methods, levels = methods)
+    aes(
+      x = PC1, y = PC2,
+      color = factor(methods, levels = methods),
+      shape = factor(methods, levels = methods)
     )
   ) +
     geom_point(size = 3, alpha = 1, stroke = 1.5) + # aes(shape = grade)
@@ -181,26 +191,23 @@ plot_pca <- function(result, fill_col){
       aspect.ratio = 1,
       panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
       panel.grid = element_blank(),
-
       axis.text.x = element_text(color = "black", size = 8),
       axis.text.y = element_text(color = "black", size = 8),
       axis.title.x = element_text(color = "black", size = 10),
       axis.title.y = element_text(color = "black", size = 10),
-
       axis.ticks.length = unit(0.2, "cm"),
       axis.ticks = element_line(color = "black"),
-
       legend.title = element_text(size = 9, face = "bold"),
       legend.text = element_text(size = 7)
-    ) + coord_fixed()
+    ) +
+    coord_fixed()
 
   return(pca_plot)
-
 }
 
-plot_overlap_ht <- function(enrich){
+plot_overlap_ht <- function(enrich) {
   enrich <- Filter(function(x) length(x) > 0, enrich)
-  if (length(enrich) < 2){
+  if (length(enrich) < 2) {
     warning("The number of methods with at least one enriched pathways are below 2. Skip the overlap plot.\n")
     return(NULL)
   }
@@ -209,38 +216,42 @@ plot_overlap_ht <- function(enrich){
   for (i in seq_len(n)) {
     for (j in seq_len(n)) {
       intersection <- length(intersect(enrich[[i]], enrich[[j]]))
-      if (i >= j){ # lower plot: overlap
+      if (i >= j) { # lower plot: overlap
         matrix[i, j] <- intersection
-      } else if (i < j){
+      } else if (i < j) {
         # upper plot: jaccard
         union <- length(base::union(enrich[[i]], enrich[[j]]))
-        if (union == 0){
-          matrix[i,j] <- 0
+        if (union == 0) {
+          matrix[i, j] <- 0
         } else {
           matrix[i, j] <- intersection / union
         }
       }
-
     }
   }
   df <- reshape2::melt(matrix, varnames = c("Method1", "Method2"), value.name = "Value")
   df$Value <- as.numeric(df$Value)
 
   df$Type <- ifelse(as.numeric(df$Method1) < as.numeric(df$Method2), "Upper",
-                    ifelse(df$Method1 == df$Method2, "Diag", "Lower"))
+    ifelse(df$Method1 == df$Method2, "Diag", "Lower")
+  )
   df <- df %>% mutate(text = ifelse(Type %in% c("Diag", "Lower"), as.integer(Value), NA))
 
   df$Method2 <- factor(df$Method2, levels = rev(unique(df$Method2)))
 
   overlap <- ggplot(df, aes(x = Method1, y = Method2, label = text)) +
     # upper plot: jaccard index
-    geom_point(data = subset(df, Type %in% "Upper"),
-               aes(size = Value),
-               shape = 21, fill = "grey60", color = "black") +
+    geom_point(
+      data = subset(df, Type %in% "Upper"),
+      aes(size = Value),
+      shape = 21, fill = "grey60", color = "black"
+    ) +
     # lower part: overlap count
-    geom_point(data = subset(df, Type %in% c("Lower", "Diag")),
-               aes(color = Value),
-               shape = 15, size = 8) +
+    geom_point(
+      data = subset(df, Type %in% c("Lower", "Diag")),
+      aes(color = Value),
+      shape = 15, size = 8
+    ) +
     geom_tile(color = "black", linewidth = 0.5, linetype = 1, fill = NA) +
     {
       # When every method's overlap count is identical (e.g. all pathways
@@ -286,9 +297,9 @@ plot_overlap_ht <- function(enrich){
 }
 
 
-plot_pvalue_dens <- function(result, fill_col){
+plot_pvalue_dens <- function(result, fill_col) {
   plist <- list()
-  for (i in names(result)){
+  for (i in names(result)) {
     plist[[i]] <- result[[i]]$p_value
   }
   methods <- names(result)
@@ -297,11 +308,12 @@ plot_pvalue_dens <- function(result, fill_col){
   plot_list <- lapply(names(plist), function(method) {
     df <- data.frame(pvalue = plist[[method]])
     ggplot(df, aes(x = pvalue)) +
-      geom_density(aes(y = after_stat(density/max(density))),
-                   fill = fill_col[method], alpha = 0.6) +
+      geom_density(aes(y = after_stat(density / max(density))),
+        fill = fill_col[method], alpha = 0.6
+      ) +
       scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25), labels = label_number(accuracy = 0.01)) +
       scale_y_continuous(
-        limits = c(0,1),
+        limits = c(0, 1),
         breaks = seq(0, 1, 0.2),
         labels = scales::percent_format(accuracy = 1) # accuracy: only save integer part
       ) +
@@ -333,4 +345,3 @@ plot_pvalue_dens <- function(result, fill_col){
     labs(x = "pvalue", y = "density")
   return(p_all)
 }
-

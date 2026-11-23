@@ -62,13 +62,13 @@
 #' names(input_data)
 #' @export
 getAllInputData <- function(methods, pathway,
-                               mir_DEdata, gene_DEdata = NULL,
-                               background_MGI = NULL, background_GGI = NULL,
-                               GGI_source = "Omnipath",
-                               gene_mat = NULL, mir_mat = NULL, gene_assay = 1, mir_assay = 1,
-                               scoreFun = NULL,
-                               DElogFCCutoff = 1, DEpadjCutoff = 0.05,
-                               corCutoff = 0, corPadjCutoff = 0.05){
+                            mir_DEdata, gene_DEdata = NULL,
+                            background_MGI = NULL, background_GGI = NULL,
+                            GGI_source = "Omnipath",
+                            gene_mat = NULL, mir_mat = NULL, gene_assay = 1, mir_assay = 1,
+                            scoreFun = NULL,
+                            DElogFCCutoff = 1, DEpadjCutoff = 0.05,
+                            corCutoff = 0, corPadjCutoff = 0.05) {
   message("Generate all input data...")
   pathway <- coerce_pathway(pathway)
   gene_mat <- coerce_expr_mat(gene_mat, assay = gene_assay)
@@ -80,11 +80,11 @@ getAllInputData <- function(methods, pathway,
   score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
   colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
   # check scoreFun
-  if (length(intersect(score_method, methods)) > 0 && is.null(scoreFun)){
+  if (length(intersect(score_method, methods)) > 0 && is.null(scoreFun)) {
     message("No [scoreFun] parameter has been specified. Use the default [rank] instead!\n")
     scoreFun <- "rank"
   }
-  if (length(intersect(score_method, methods)) > 0 && (! scoreFun %in% default_scoreFun)){
+  if (length(intersect(score_method, methods)) > 0 && (!scoreFun %in% default_scoreFun)) {
     stop("The [scoreFun] you input is not valid. Please select one from the default_scoreFun!")
   }
 
@@ -95,23 +95,23 @@ getAllInputData <- function(methods, pathway,
   # background_MGI somewhere below (e.g. TG_ORA maps significant miRNAs to
   # target genes through it), so this is required unconditionally rather
   # than only for Edge_/MiR_ methods.
-  if (is.null(background_MGI)){
+  if (is.null(background_MGI)) {
     message("No background_MGI is given. Using the bundled default background_MGI instead.\n")
     utils::data("background_MGI", package = "miREA", envir = environment())
   }
   colnames(background_MGI)[seq_len(2)] <- c("miRNA", "gene")
 
   # check background_GGI
-  if (length(intersect(target_method, methods)) != 0){
-    if (!is.null(background_GGI)){
+  if (length(intersect(target_method, methods)) != 0) {
+    if (!is.null(background_GGI)) {
       message("background_GGI is supplied directly; GGI_source is ignored.\n")
     } else {
       # GGI_source = NULL means "use the default source", i.e. Omnipath.
       if (is.null(GGI_source)) GGI_source <- "Omnipath"
-      if (! GGI_source %in% default_GGI_source){
+      if (!GGI_source %in% default_GGI_source) {
         stop("You tend to extract default background_GGI for ", GGI_source, ". But [GGI_source] you have specified are not involved. Please use default_GGI_source to see all supporting options!")
       }
-      if (GGI_source == "Omnipath"){
+      if (GGI_source == "Omnipath") {
         message("No background_GGI is given. Fetching Omnipath's full interaction set live (no license/source filtering).\n")
         background_GGI <- fetch_background_GGI_omnipath()
       } else {
@@ -125,7 +125,7 @@ getAllInputData <- function(methods, pathway,
   }
 
   # check expression data
-  if (!is.null(gene_DEdata)){
+  if (!is.null(gene_DEdata)) {
     gene_DEdata <- standardize_DEdata(gene_DEdata, "gene")
     gene_DEdata <- gene_DEdata %>% distinct(gene, .keep_all = TRUE)
     gene_DEdata <- data.table::as.data.table(gene_DEdata)
@@ -136,7 +136,7 @@ getAllInputData <- function(methods, pathway,
   mir_DEdata <- data.table::as.data.table(mir_DEdata)
 
   # ensure that mir_mat and gene_mat have their names as rownames
-  if (!is.null(mir_mat) && !is.null(gene_mat)){
+  if (!is.null(mir_mat) && !is.null(gene_mat)) {
     aligned <- align_expr_mat_samples(mir_mat, gene_mat, rename_id_cols = TRUE, dedup = TRUE, check_samples = FALSE)
     mir_mat <- aligned$mir_mat
     gene_mat <- aligned$gene_mat
@@ -157,41 +157,47 @@ getAllInputData <- function(methods, pathway,
 
 
   message("  Start generate expression data...")
-  data <- get_data(methods = methods, mir_DEdata = mir_DEdata, gene_DEdata = gene_DEdata,
-                   background_MGI = background_MGI, gene_mat = gene_mat, mir_mat = mir_mat, scoreFun = scoreFun,
-                   DElogFCCutoff = DElogFCCutoff, DEpadjCutoff = DEpadjCutoff,
-                   corCutoff = corCutoff, corPadjCutoff = corPadjCutoff)
+  data <- get_data(
+    methods = methods, mir_DEdata = mir_DEdata, gene_DEdata = gene_DEdata,
+    background_MGI = background_MGI, gene_mat = gene_mat, mir_mat = mir_mat, scoreFun = scoreFun,
+    DElogFCCutoff = DElogFCCutoff, DEpadjCutoff = DEpadjCutoff,
+    corCutoff = corCutoff, corPadjCutoff = corPadjCutoff
+  )
   result[["data"]] <- data
-  result[["threshold"]] <- list(DElogFCCutoff = DElogFCCutoff, DEpadjCutoff = DEpadjCutoff,
-                                 corCutoff = corCutoff, corPadjCutoff = corPadjCutoff)
+  result[["threshold"]] <- list(
+    DElogFCCutoff = DElogFCCutoff, DEpadjCutoff = DEpadjCutoff,
+    corCutoff = corCutoff, corPadjCutoff = corPadjCutoff
+  )
 
   message("  Start generate pathway data...")
   pathway_data <- get_pathway_data(methods = methods, pathway = pathway, background_MGI = background_MGI)
   result[["pathway"]] <- pathway_data
 
-  if (length(intersect(target_method, methods)) != 0){
+  if (length(intersect(target_method, methods)) != 0) {
     message("  Start generate pathway_GGI data...")
     pathway_GGI <- get_pathway_GGI_data(methods = methods, pathway = pathway, background_GGI = background_GGI)
     result[["pathway_GGI"]] <- pathway_GGI
 
-    if ("Edge_Network" %in% methods){
+    if ("Edge_Network" %in% methods) {
       message("  Start generate GGI data for whole network...")
       GGI <- get_GGI_data(methods = methods, DEMGI = result[["data"]][["Edge_Network"]], pathway = pathway, background_GGI = background_GGI)
       result[["GGI"]] <- GGI
       message("  Start generate MGI data for whole network...")
       MGI <- get_MGI_data(
         methods = methods, DEMGI = result[["data"]][["Edge_Network"]], pathway = pathway,
-        pathway_MGI = result[["pathway"]][["Edge"]], background_MGI = background_MGI)
+        pathway_MGI = result[["pathway"]][["Edge"]], background_MGI = background_MGI
+      )
       result[["MGI"]] <- MGI
     }
 
-    if ("Edge_Topology" %in% methods){
+    if ("Edge_Topology" %in% methods) {
       message("  Start generate dict_MGI data for permutation...")
-      dict_MGI <- get_dict_MGI(methods = methods, mir_mat = mir_mat, gene_mat = gene_mat, data = data$data,
-                               pathway_MGI = pathway_data$Edge, scoreFun = scoreFun)
+      dict_MGI <- get_dict_MGI(
+        methods = methods, mir_mat = mir_mat, gene_mat = gene_mat, data = data$data,
+        pathway_MGI = pathway_data$Edge, scoreFun = scoreFun
+      )
       result[["dict_MGI"]] <- dict_MGI
     }
-
   }
 
   message("All the input data is ready!")
@@ -225,7 +231,7 @@ getAllInputData <- function(methods, pathway,
 get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
                      background_MGI, gene_mat = NULL, mir_mat = NULL, scoreFun,
                      DElogFCCutoff = 1, DEpadjCutoff = 0.05,
-                     corCutoff = 0, corPadjCutoff = 0.05){
+                     corCutoff = 0, corPadjCutoff = 0.05) {
   scoreFun <- get_data_validate_inputs(methods, gene_DEdata, gene_mat, mir_mat, background_MGI, scoreFun)
 
   coerced <- get_data_coerce_expr(gene_DEdata, mir_DEdata)
@@ -235,9 +241,11 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
 
   result <- get_data_node_based(methods, mir_DEdata, gene_DEdata, background_MGI, DElogFCCutoff, DEpadjCutoff)
 
-  if (sum(grepl("Edge_", methods)) > 0){
-    result <- c(result, get_data_edge_based(methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun,
-                                             DElogFCCutoff, DEpadjCutoff, corCutoff, corPadjCutoff))
+  if (sum(grepl("Edge_", methods)) > 0) {
+    result <- c(result, get_data_edge_based(
+      methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun,
+      DElogFCCutoff, DEpadjCutoff, corCutoff, corPadjCutoff
+    ))
   }
   result
 }
@@ -245,7 +253,7 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
 #' @noRd
 get_data_validate_inputs <- function(methods, gene_DEdata, gene_mat, mir_mat, background_MGI, scoreFun) {
   invalid_method <- base::setdiff(methods, default_method_list)
-  if (length(invalid_method) > 0){
+  if (length(invalid_method) > 0) {
     stop("The method(s):", invalid_method, "you are input is(are) not one of the supportive methods. Please revise the method(s)!")
   }
   sum_Edge <- sum(grepl("Edge_", methods))
@@ -254,19 +262,21 @@ get_data_validate_inputs <- function(methods, gene_DEdata, gene_mat, mir_mat, ba
   if (length(setdiff(methods, no_gene_DEdata)) > 0 && is.null(gene_DEdata)) {
     stop("Please make sure you have input gene_DEdata!")
   }
-  if (sum_Edge != 0 && (is.null(gene_mat) || is.null(mir_mat))){
+  if (sum_Edge != 0 && (is.null(gene_mat) || is.null(mir_mat))) {
     stop("Please make sure you have input gene_mat and mir_mat")
   }
-  if (any(score_method %in% methods) && is.null(scoreFun)){
+  if (any(score_method %in% methods) && is.null(scoreFun)) {
     message("You didn't specify scoreFun for transform expression score, set 'rank' automatically.\n")
     scoreFun <- "rank"
   }
   # NOTE: unreachable in practice — getAllInputData() resolves background_MGI
   # (falling back to the bundled default) before calling get_data(), which is
   # the only caller of this function. Kept as a defensive safety net.
-  if (is.null(background_MGI)){
-    stop("background_MGI must be supplied: a two-column data.frame of miRNA, gene ",
-         "pairs, or use the bundled default background_MGI via getAllInputData().")
+  if (is.null(background_MGI)) {
+    stop(
+      "background_MGI must be supplied: a two-column data.frame of miRNA, gene ",
+      "pairs, or use the bundled default background_MGI via getAllInputData()."
+    )
   }
   scoreFun
 }
@@ -292,30 +302,32 @@ standardize_DEdata <- function(df, entity) {
 
   # miREA's internal convention prefixes the logFC/stat/padj columns with "mir" for
   # the miRNA entity (not "miRNA"), e.g. mirLogFC/mirStat/mirPadj; "gene" uses itself.
-  prefix    <- if (entity == "miRNA") "mir" else entity
-  id_col    <- entity
+  prefix <- if (entity == "miRNA") "mir" else entity
+  id_col <- entity
   logFC_col <- paste0(prefix, "LogFC")
-  stat_col  <- paste0(prefix, "Stat")
-  padj_col  <- paste0(prefix, "Padj")
+  stat_col <- paste0(prefix, "Stat")
+  padj_col <- paste0(prefix, "Padj")
 
   # each candidate list also includes miREA's own canonical output name, so that
   # standardize_DEdata() is idempotent when applied to an already-standardized table
   # (it is called a second time inside get_data_coerce_expr()).
-  id_candidates    <- c(id_col, "ID", "SYMBOL", "Row.names")
-  logFC_candidates <- c(logFC_col, "log2FoldChange", "logFC")   # DESeq2, limma
-  stat_candidates  <- c(stat_col, "stat", "t")                 # DESeq2, limma
-  padj_candidates  <- c(padj_col, "padj", "adj.P.Val")         # DESeq2, limma
+  id_candidates <- c(id_col, "ID", "SYMBOL", "Row.names")
+  logFC_candidates <- c(logFC_col, "log2FoldChange", "logFC") # DESeq2, limma
+  stat_candidates <- c(stat_col, "stat", "t") # DESeq2, limma
+  padj_candidates <- c(padj_col, "padj", "adj.P.Val") # DESeq2, limma
 
   matched_logFC <- intersect(logFC_candidates, colnames(df))
-  matched_stat  <- intersect(stat_candidates, colnames(df))
-  matched_padj  <- intersect(padj_candidates, colnames(df))
+  matched_stat <- intersect(stat_candidates, colnames(df))
+  matched_padj <- intersect(padj_candidates, colnames(df))
 
   if (length(matched_logFC) == 0 || length(matched_stat) == 0 || length(matched_padj) == 0) {
-    stop("Please make sure the input ", entity, "_DEdata has recognizable logFC/stat/padj columns ",
-         "(tried logFC: ", paste(logFC_candidates, collapse = ", "), "; ",
-         "stat: ", paste(stat_candidates, collapse = ", "), "; ",
-         "padj: ", paste(padj_candidates, collapse = ", "), "). ",
-         "Columns found: ", paste(colnames(df), collapse = ", "), ".")
+    stop(
+      "Please make sure the input ", entity, "_DEdata has recognizable logFC/stat/padj columns ",
+      "(tried logFC: ", paste(logFC_candidates, collapse = ", "), "; ",
+      "stat: ", paste(stat_candidates, collapse = ", "), "; ",
+      "padj: ", paste(padj_candidates, collapse = ", "), "). ",
+      "Columns found: ", paste(colnames(df), collapse = ", "), "."
+    )
   }
 
   matched_id <- intersect(id_candidates, colnames(df))
@@ -324,19 +336,22 @@ standardize_DEdata <- function(df, entity) {
   } else if (!is.null(rownames(df)) && !identical(rownames(df), as.character(seq_len(nrow(df))))) {
     id_values <- rownames(df)
   } else {
-    stop("Please make sure the input ", entity, "_DEdata has an ID column (tried: ",
-         paste(id_candidates, collapse = ", "), ") or informative rownames.")
+    stop(
+      "Please make sure the input ", entity, "_DEdata has an ID column (tried: ",
+      paste(id_candidates, collapse = ", "), ") or informative rownames."
+    )
   }
 
   out <- data.frame(id_values, df[[matched_logFC[1]]], df[[matched_stat[1]]], df[[matched_padj[1]]],
-                    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
   colnames(out) <- c(id_col, logFC_col, stat_col, padj_col)
   out
 }
 
 #' @noRd
 get_data_coerce_expr <- function(gene_DEdata, mir_DEdata) {
-  if (!is.null(gene_DEdata)){
+  if (!is.null(gene_DEdata)) {
     gene_DEdata <- standardize_DEdata(gene_DEdata, "gene")
     gene_DEdata <- data.table::as.data.table(gene_DEdata)
   }
@@ -349,12 +364,12 @@ get_data_coerce_expr <- function(gene_DEdata, mir_DEdata) {
 
 #' @noRd
 get_data_coerce_background_mgi <- function(background_MGI) {
-  if (is.data.frame(background_MGI)){
-    if (ncol(background_MGI) != 2){
+  if (is.data.frame(background_MGI)) {
+    if (ncol(background_MGI) != 2) {
       stop("Please make sure the input background_MGI is a two-column dataframe contains miRNA and gene")
     }
     colnames(background_MGI) <- c("miRNA", "gene")
-  } else if (is.character(background_MGI) && is.vector(background_MGI)){
+  } else if (is.character(background_MGI) && is.vector(background_MGI)) {
     background_MGI <- data.frame(
       miRNA = sub(":.*", "", background_MGI),
       gene = sub(".*:", "", background_MGI),
@@ -370,24 +385,24 @@ get_data_coerce_background_mgi <- function(background_MGI) {
 
 #' @noRd
 get_data_node_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI,
-                                 DElogFCCutoff = 1, DEpadjCutoff = 0.05) {
+                                DElogFCCutoff = 1, DEpadjCutoff = 0.05) {
   result <- list()
-  if (sum(methods %in% c("TG_ORA", "TG_Score", "MiR_ORA")) > 0){
+  if (sum(methods %in% c("TG_ORA", "TG_Score", "MiR_ORA")) > 0) {
     interested_miRNAs <- mir_DEdata[abs(mirLogFC) > DElogFCCutoff & mirPadj < DEpadjCutoff, unique(miRNA)]
   }
 
-  if ("TG_ORA" %in% methods){
+  if ("TG_ORA" %in% methods) {
     result[["TG_ORA"]] <- background_MGI[miRNA %in% interested_miRNAs, unique(gene)]
   }
-  if ("TG_Score" %in% methods){
+  if ("TG_Score" %in% methods) {
     genes <- background_MGI[miRNA %in% interested_miRNAs, unique(gene)]
     data <- gene_DEdata[gene %in% genes, setNames(geneStat, gene)]
     result[["TG_Score"]] <- sort(data, decreasing = TRUE)
   }
-  if ("MiR_ORA" %in% methods){
+  if ("MiR_ORA" %in% methods) {
     result[["MiR_ORA"]] <- interested_miRNAs
   }
-  if ("MiR_Score" %in% methods){
+  if ("MiR_Score" %in% methods) {
     data <- mir_DEdata[, setNames(mirStat, miRNA)]
     result[["MiR_Score"]] <- sort(data, decreasing = TRUE)
   }
@@ -396,8 +411,8 @@ get_data_node_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
 
 #' @noRd
 get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun,
-                                 DElogFCCutoff = 1, DEpadjCutoff = 0.05,
-                                 corCutoff = 0, corPadjCutoff = 0.05) {
+                                DElogFCCutoff = 1, DEpadjCutoff = 0.05,
+                                corCutoff = 0, corPadjCutoff = 0.05) {
   DE_method <- c("Edge_ORA", "Edge_Network")
   score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
   result <- list()
@@ -410,19 +425,19 @@ get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
   data.table::setcolorder(dict, c("miRNA", "gene", "cor", "corPadj", "mirLogFC", "mirPadj", "geneLogFC", "genePadj"))
   result[["data"]] <- dict
 
-  if (any(DE_method %in% methods)){
+  if (any(DE_method %in% methods)) {
     sel <- dict[
       cor < corCutoff & corPadj < corPadjCutoff &
         abs(mirLogFC) > DElogFCCutoff & mirPadj < DEpadjCutoff &
         abs(geneLogFC) > DElogFCCutoff & genePadj < DEpadjCutoff
     ]
     data <- if (nrow(sel) > 0) paste0(sel$miRNA, ":", sel$gene) else character(0)
-    for (sub_method in intersect(DE_method, methods)){
+    for (sub_method in intersect(DE_method, methods)) {
       result[[sub_method]] <- data
     }
   }
-  if (any(score_method %in% methods)){
-    dict[, ratio := (geneLogFC / mirLogFC) * ((1-genePadj)/(1+mirPadj))]
+  if (any(score_method %in% methods)) {
+    dict[, ratio := (geneLogFC / mirLogFC) * ((1 - genePadj) / (1 + mirPadj))]
     dict[, normratio := apply_scoreFun(ratio, scoreFun)]
     dict[, `:=`( # `:=`() form modifies multiple columns; infix `:=` modifies a single column
       strength = cor * normratio,
@@ -445,7 +460,7 @@ get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
 }
 
 
-get_pathway_data <- function(methods, pathway, background_MGI){
+get_pathway_data <- function(methods, pathway, background_MGI) {
   colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
   sum_TG <- sum(grepl("TG_|^Edge_Network$", methods)) # Edge-Network needs pathway gene set to map GGI.
   sum_MiR <- sum(grepl("MiR_", methods))
@@ -453,10 +468,10 @@ get_pathway_data <- function(methods, pathway, background_MGI){
 
   result <- list()
 
-  if (sum_TG > 0){
+  if (sum_TG > 0) {
     result[["TG"]] <- pathway
   }
-  if (sum_MiR + sum_Edge > 0){
+  if (sum_MiR + sum_Edge > 0) {
     colnames(background_MGI)[seq_len(2)] <- c("miRNA", "gene")
     background_MGI <- data.table::as.data.table(background_MGI)
     pathway <- data.table::as.data.table(pathway)
@@ -468,10 +483,10 @@ get_pathway_data <- function(methods, pathway, background_MGI){
       background_MGI[gene %in% genes, .(pathway = pw, miRNA, gene)]
     })
     pathway_MGI <- unique(rbindlist(result_list))
-    if (sum_MiR > 0){
+    if (sum_MiR > 0) {
       result[["MiR"]] <- unique(pathway_MGI[, .(pathway, miRNA)])
     }
-    if (sum_Edge > 0){
+    if (sum_Edge > 0) {
       result[["Edge"]] <- pathway_MGI
     }
   }
@@ -480,9 +495,9 @@ get_pathway_data <- function(methods, pathway, background_MGI){
 
 
 # only useful for Edge_Topology, Edge_Network
-get_pathway_GGI_data <- function(methods, pathway, background_GGI){
+get_pathway_GGI_data <- function(methods, pathway, background_GGI) {
   target_method <- c("Edge_Network", "Edge_Topology")
-  if (length(intersect(target_method, methods)) == 0){
+  if (length(intersect(target_method, methods)) == 0) {
     message("The methods you have selected don't need gene-gene interactions data. Skip the pathway_GGI process.\n")
     return(NULL)
   } else {
@@ -498,8 +513,10 @@ get_pathway_GGI_data <- function(methods, pathway, background_GGI){
       pw <- pathway_genes$pathway[i]
       genes <- pathway_genes$genes[[i]]
 
-      background_GGI[from %in% genes & to %in% genes,
-                     .(pathway = pw, from, to)]  # , type = "GGI"
+      background_GGI[
+        from %in% genes & to %in% genes,
+        .(pathway = pw, from, to)
+      ] # , type = "GGI"
     })
 
     pathway_GGI <- unique(rbindlist(result_list))
@@ -508,15 +525,16 @@ get_pathway_GGI_data <- function(methods, pathway, background_GGI){
 }
 
 # DEMGI: result[["data"]][["Edge_Network"]]
-get_GGI_data <- function(methods, DEMGI, pathway, background_GGI){ # gene_mat, gene_DEdata,
-  if (! "Edge_Network" %in% methods){
+get_GGI_data <- function(methods, DEMGI, pathway, background_GGI) { # gene_mat, gene_DEdata,
+  if (!"Edge_Network" %in% methods) {
     message("The methods you have selected don't need global GGI data. Skip the get_GGI_data process.\n")
     return(NULL)
-  } else{
+  } else {
     DEMGI <- data.frame(
       miRNA = sub(":.*", "", DEMGI),
       gene = sub(".*:", "", DEMGI),
-      stringsAsFactors = FALSE)
+      stringsAsFactors = FALSE
+    )
 
     colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
     colnames(background_GGI)[seq_len(2)] <- c("from", "to")
@@ -536,15 +554,16 @@ get_GGI_data <- function(methods, DEMGI, pathway, background_GGI){ # gene_mat, g
   }
 }
 
-get_MGI_data <- function(methods, DEMGI, pathway, pathway_MGI, background_MGI){
-  if (! "Edge_Network" %in% methods){
+get_MGI_data <- function(methods, DEMGI, pathway, pathway_MGI, background_MGI) {
+  if (!"Edge_Network" %in% methods) {
     message("The methods you have selected don't need global MGI data. Skip the get_MGI_data process.\n")
     return(NULL)
-  } else{
+  } else {
     DEMGI <- data.frame(
       miRNA = sub(":.*", "", DEMGI),
       gene = sub(".*:", "", DEMGI),
-      stringsAsFactors = FALSE)
+      stringsAsFactors = FALSE
+    )
 
     colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
     colnames(background_MGI)[seq_len(2)] <- c("miRNA", "gene")
@@ -573,11 +592,11 @@ get_MGI_data <- function(methods, DEMGI, pathway, pathway_MGI, background_MGI){
 
 # useful in Edge_Topology and Edge_Network
 # data is data$data get in the get_data() function
-get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun){
-  if (! "Edge_Topology" %in% methods){
+get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun) {
+  if (!"Edge_Topology" %in% methods) {
     message("The methods you have selected don't need dict_MGI data. Skip the get_dict_MGI process.\n")
     return(NULL)
-  } else{
+  } else {
     aligned <- align_expr_mat_samples(mir_mat, gene_mat)
     mir_mat <- aligned$mir_mat
     gene_mat <- aligned$gene_mat
@@ -613,20 +632,21 @@ get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun
 
     # dict[, corPadj := p.adjust(pvalue, method = "BH")]
 
-    dict[, ratio := (geneLogFC/mirLogFC) * ((1-genePadj)/(1+mirPadj))]
+    dict[, ratio := (geneLogFC / mirLogFC) * ((1 - genePadj) / (1 + mirPadj))]
     dict[, normratio := apply_scoreFun(ratio, scoreFun)]
 
     dict[, strength := cor * normratio]
     dict[, MGI := paste0(miRNA, ":", gene)]
     data.table::setorder(dict, -strength)
     dict <- unique(dict)
-    dict <- dict[, .(MGI, miRNA, gene, cor, corPadj, mirLogFC, mirPadj, geneLogFC, genePadj,
-                     ratio, normratio, strength)]
+    dict <- dict[, .(
+      MGI, miRNA, gene, cor, corPadj, mirLogFC, mirPadj, geneLogFC, genePadj,
+      ratio, normratio, strength
+    )]
     dict <- as.data.frame(dict)
     return(dict)
   }
 }
-
 
 
 #' @noRd
@@ -654,9 +674,11 @@ align_expr_mat_samples <- function(mir_mat, gene_mat, rename_id_cols = FALSE, de
          please ensure mir_mat and gene_mat have shared colnames as sample names!")
     }
     if (length(common_samples) < min(ncol(mir_mat), ncol(gene_mat)) * 0.5) {
-      warning("The number of matched samples between mir_mat and gene_mat is:", length(common_samples),
-              ", which is below 50% of the total number of samples.
-            We suggest to double check the colnames of miRNA and gene expression profiles have shared colnames as sample names!")
+      warning(
+        "The number of matched samples between mir_mat and gene_mat is:", length(common_samples),
+        ", which is below 50% of the total number of samples.
+            We suggest to double check the colnames of miRNA and gene expression profiles have shared colnames as sample names!"
+      )
     }
   }
 
@@ -696,16 +718,16 @@ calc_MGI_corr <- function(dict, mir_mat, gene_mat) {
   gene_sub <- gene_mat[, common_samples, drop = FALSE]
 
   # rank-transform each row once; Spearman correlation is Pearson correlation on ranks.
-  rank_mir  <- t(apply(as.matrix(mir_sub), 1, rank))
+  rank_mir <- t(apply(as.matrix(mir_sub), 1, rank))
   rank_gene <- t(apply(as.matrix(gene_sub), 1, rank))
 
-  idx_mir_all  <- match(dict$miRNA, rownames(mir_sub))
+  idx_mir_all <- match(dict$miRNA, rownames(mir_sub))
   idx_gene_all <- match(dict$gene, rownames(gene_sub))
   n_samples <- ncol(rank_mir)
-  n_pairs   <- nrow(dict)
+  n_pairs <- nrow(dict)
 
   chunk_size <- 2e5
-  rho_all  <- numeric(n_pairs)
+  rho_all <- numeric(n_pairs)
   pval_all <- numeric(n_pairs)
   for (start in seq(1, n_pairs, by = chunk_size)) {
     idx <- start:min(start + chunk_size - 1, n_pairs)
@@ -720,7 +742,7 @@ calc_MGI_corr <- function(dict, mir_mat, gene_mat) {
     sd_g <- sqrt(rowSums(Rg_c^2))
     rho <- cov_mg / (sd_m * sd_g)
     tstat <- rho * sqrt((n_samples - 2) / (1 - rho^2))
-    rho_all[idx]  <- rho
+    rho_all[idx] <- rho
     pval_all[idx] <- 2 * stats::pt(-abs(tstat), df = n_samples - 2)
   }
 
@@ -735,30 +757,29 @@ calc_MGI_corr <- function(dict, mir_mat, gene_mat) {
 
 min_max <- function(x) {
   diff <- max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
-  if (diff != 0){
+  if (diff != 0) {
     scaled <- (x - min(x, na.rm = TRUE)) / diff
   } else {
     scaled <- 0
   }
 }
 
-ranknorm <- function(x){
+ranknorm <- function(x) {
   ranks <- rank(x)
-  result <- (max(ranks) + 1 - ranks)/length(ranks)
+  result <- (max(ranks) + 1 - ranks) / length(ranks)
   return(result)
 }
 
-sigmoid <- function(x){
+sigmoid <- function(x) {
   1 / (1 + exp(x))
 }
 
-max_min <- function(x){
+max_min <- function(x) {
   diff <- max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
-  if (diff != 0){
+  if (diff != 0) {
     scaled <- 1 - (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
     # scaled * 0.98 + 0.01
   } else {
     scaled <- 0
   }
-
 }

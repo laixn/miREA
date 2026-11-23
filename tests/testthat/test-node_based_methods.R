@@ -1,5 +1,7 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     background_MGI, package = "miREA")
+  background_MGI,
+  package = "miREA"
+)
 
 test_that("TG_ORA and TG_Score return enrichment results for the signal pathway", {
   input_data <- getAllInputData(
@@ -8,13 +10,17 @@ test_that("TG_ORA and TG_Score return enrichment results for the signal pathway"
     background_MGI = background_MGI
   )
 
-  ora <- TG_ORA(TG = input_data$data$TG_ORA, background = unique(toy_pathway$gene),
-                pathway = input_data$pathway$TG, pvalueCutoff = 1)
+  ora <- TG_ORA(
+    TG = input_data$data$TG_ORA, background = unique(toy_pathway$gene),
+    pathway = input_data$pathway$TG, pvalueCutoff = 1
+  )
   expect_s3_class(ora, "data.frame")
   expect_true(nrow(ora) > 0)
 
-  score <- TG_Score(geneList = input_data$data$TG_Score, pathway = input_data$pathway$TG,
-                     pvalueType = "std", pvalueCutoff = 1)
+  score <- TG_Score(
+    geneList = input_data$data$TG_Score, pathway = input_data$pathway$TG,
+    pvalueType = "std", pvalueCutoff = 1
+  )
   expect_s3_class(score, "data.frame")
   expect_true(nrow(score) > 0)
 })
@@ -30,13 +36,17 @@ test_that("MiR_ORA and MiR_Score return enrichment results for the signal pathwa
     background_MGI = background_MGI
   )
 
-  ora <- MiR_ORA(DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),
-                 pathway = input_data$pathway$MiR, pvalueCutoff = 1)
+  ora <- MiR_ORA(
+    DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),
+    pathway = input_data$pathway$MiR, pvalueCutoff = 1
+  )
   expect_s3_class(ora, "data.frame")
   expect_true(nrow(ora) > 0)
 
-  score <- MiR_Score(miRList = input_data$data$MiR_Score, pathway = input_data$pathway$MiR,
-                      pvalueType = "std", pvalueCutoff = 1)
+  score <- MiR_Score(
+    miRList = input_data$data$MiR_Score, pathway = input_data$pathway$MiR,
+    pvalueType = "std", pvalueCutoff = 1
+  )
   expect_s3_class(score, "data.frame")
   expect_true(nrow(score) > 0)
 })
@@ -81,8 +91,10 @@ test_that("MiR_ORA filters DEmiR entries missing from the background with a mess
   background_full <- unique(input_data$pathway$MiR$miRNA)
   background_partial <- setdiff(background_full, demir[1])
   expect_message(
-    res <- MiR_ORA(DEmiR = demir, background = background_partial,
-                    pathway = input_data$pathway$MiR, pvalueCutoff = 1),
+    res <- MiR_ORA(
+      DEmiR = demir, background = background_partial,
+      pathway = input_data$pathway$MiR, pvalueCutoff = 1
+    ),
     "not included in the background"
   )
   expect_s3_class(res, "data.frame")
@@ -94,8 +106,10 @@ test_that("MiR_ORA falls back to the miRBase background when none is supplied", 
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   expect_message(
-    res <- MiR_ORA(DEmiR = input_data$data$MiR_ORA, background = NULL,
-                    pathway = input_data$pathway$MiR, pvalueCutoff = 1),
+    res <- MiR_ORA(
+      DEmiR = input_data$data$MiR_ORA, background = NULL,
+      pathway = input_data$pathway$MiR, pvalueCutoff = 1
+    ),
     "extract all mature miRNAs from miRBase"
   )
   expect_s3_class(res, "data.frame")

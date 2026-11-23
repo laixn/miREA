@@ -6,7 +6,7 @@
 #'
 #' @param MGI2D A five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).
 #' @param pathway A three-column dataframe contains pathway miRNA gene.
-#'@param background A character vector contains background MGIs in the format of [miRNA]:[gene].
+#' @param background A character vector contains background MGIs in the format of [miRNA]:[gene].
 #' @param pAdjMethod The method used for multiple testing correction to adjust p-values and control the false discovery rate.
 #'        Use default_pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
@@ -34,8 +34,12 @@
 #'        distribution), and `p_empirical` (the empirical permutation
 #'        p-value, `(nMoreExtreme + 1) / (iter + 1)`).
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+#' data(toy_pathway)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_DEdata)
+#' data(toy_gene_mat)
+#' data(toy_mir_mat)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "Edge_Score2D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
 #'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
@@ -48,23 +52,25 @@
 #' )
 #' head(res)
 #' @export
-Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL, BPPARAM = NULL, seed = NULL){
+Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL, BPPARAM = NULL, seed = NULL) {
   message("\n  Start Edge_Score2D analysis ...")
 
   MGI2D <- data.table::copy(data.table::as.data.table(MGI2D))
   MGI2D <- na.omit(MGI2D)
-  if (is.null(MGI2D)||!is.data.frame(MGI2D)){
+  if (is.null(MGI2D) || !is.data.frame(MGI2D)) {
     stop("Please make sure the input MGI2D is a dataframe!")
   }
-  if (nrow(MGI2D) == 0){
+  if (nrow(MGI2D) == 0) {
     stop("No valid MGI pairs in MGI2D!")
   }
 
-  if (is.null(background)){
-    stop("background must be supplied: a character vector of MGIs in '[miRNA]:[gene]' ",
-         "format. miREA does not ship a bundled default background; see the package ",
-         "vignette for how to build one from background_MGI, or download the full ",
-         "background used in the miREA manuscript from its Zenodo deposit.")
+  if (is.null(background)) {
+    stop(
+      "background must be supplied: a character vector of MGIs in '[miRNA]:[gene]' ",
+      "format. miREA does not ship a bundled default background; see the package ",
+      "vignette for how to build one from background_MGI, or download the full ",
+      "background used in the miREA manuscript from its Zenodo deposit."
+    )
   }
 
   # filtering MGI in the background
@@ -76,7 +82,7 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
   }
   colnames(MGI2D) <- c("MGI", "miRNA", "gene", "x", "y")
 
-  r_all <- sqrt(((1 - MGI2D$x)/2)^2 + (MGI2D$y)^2)
+  r_all <- sqrt(((1 - MGI2D$x) / 2)^2 + (MGI2D$y)^2)
 
 
   # filtering pathway in the background
@@ -98,7 +104,8 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
       p_value = numeric(), padj = numeric(),
       nMoreExtreme = integer(), p_empirical = numeric(),
       TopMGI = character(), stringsAsFactors = FALSE
-    ))}
+    ))
+  }
 
   bpparam <- resolve_BPPARAM(ncores, seed = seed, BPPARAM = BPPARAM)
 
@@ -109,8 +116,10 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
   unique_sizes <- sort(unique(pathway_sizes))
 
   nchunks <- min(BiocParallel::bpnworkers(bpparam), length(unique_sizes))
-  size_groups <- split(unique_sizes,
-                       rep(seq_len(nchunks), length.out = length(unique_sizes)))
+  size_groups <- split(
+    unique_sizes,
+    rep(seq_len(nchunks), length.out = length(unique_sizes))
+  )
 
   r_random_list <- BiocParallel::bplapply(
     size_groups,
@@ -134,7 +143,8 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
     dplyr::relocate(padj, .after = p_value) %>%
     dplyr::filter(
       p_value <= pvalueCutoff,
-      padj <= pvalueCutoff) %>%
+      padj <= pvalueCutoff
+    ) %>%
     arrange(padj)
 
   message("  Edge-Score2D analysis have finished!")
@@ -142,10 +152,10 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
 }
 
 
-Edge_Score2D_simple <- function(MGI2D, r_random_list, pathway, iter){
+Edge_Score2D_simple <- function(MGI2D, r_random_list, pathway, iter) {
   pathway_names <- unique(pathway$pathway)
   pathway_list <- split(pathway, pathway$pathway)
-  compute_pathway <- function(i){
+  compute_pathway <- function(i) {
     pathway_name <- pathway_names[i]
     pw_single <- pathway_list[[pathway_name]]
     pw_size <- nrow(pw_single)
@@ -163,15 +173,15 @@ Edge_Score2D_simple <- function(MGI2D, r_random_list, pathway, iter){
 }
 
 
-Edge_Score2D_single <- function(MGI2D, PW, r_random){
+Edge_Score2D_single <- function(MGI2D, PW, r_random) {
   MGI2D <- na.omit(MGI2D)
-  if (is.null(MGI2D)||!is.data.frame(MGI2D)){
+  if (is.null(MGI2D) || !is.data.frame(MGI2D)) {
     stop("Please make sure the input MGI2D is a dataframe!")
   }
-  if (nrow(MGI2D) == 0){
+  if (nrow(MGI2D) == 0) {
     stop("No valid MGI pairs in MGI2D!")
   }
-  if (length(unique(PW$pathway)) != 1){
+  if (length(unique(PW$pathway)) != 1) {
     warning("The pathway is not calculated one-by-one, please check the PW. Calculate the first one instead.")
     name <- unique(PW$pathway)[1]
     PW <- PW %>% dplyr::filter(pathway == name)
@@ -179,11 +189,13 @@ Edge_Score2D_single <- function(MGI2D, PW, r_random){
 
   points_data <- semi_join(MGI2D, PW, by = c("miRNA", "gene"))
 
-  if (nrow(points_data) == 0) {return(NULL)}
+  if (nrow(points_data) == 0) {
+    return(NULL)
+  }
 
 
   points_data <- points_data %>%
-    mutate(r = sqrt(((1-x)/2)^2 + y^2))
+    mutate(r = sqrt(((1 - x) / 2)^2 + y^2))
 
   r <- sum(points_data$r)
   count_leq <- findInterval(r, r_random) # count <= r
@@ -191,7 +203,7 @@ Edge_Score2D_single <- function(MGI2D, PW, r_random){
   p_empirical <- (nMoreExtreme + 1) / (length(r_random) + 1)
 
   sd_r_random <- sd(r_random)
-  if (is.na(sd_r_random) || sd_r_random == 0){
+  if (is.na(sd_r_random) || sd_r_random == 0) {
     p_value <- 1.0000
   } else {
     z <- (r - mean(r_random)) / sd_r_random
@@ -202,7 +214,7 @@ Edge_Score2D_single <- function(MGI2D, PW, r_random){
   threshold <- quantile(points_data$r, 0.9)
   top_pairs <- points_data %>%
     filter(r >= threshold) %>%
-    mutate(MGI = paste0(miRNA,":", gene)) %>%
+    mutate(MGI = paste0(miRNA, ":", gene)) %>%
     pull(MGI)
 
   ## permutation test
@@ -234,6 +246,4 @@ Edge_Score2D_single <- function(MGI2D, PW, r_random){
     stringsAsFactors = FALSE
   )
   return(result)
-
 }
-

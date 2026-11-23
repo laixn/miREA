@@ -43,7 +43,7 @@ methods::setValidity("miREAResult", function(object) {
     errors <- c(errors, "time$method must be a subset of valid_methods")
   }
   if (!is.list(object@failed_methods) ||
-      (length(object@failed_methods) > 0 && is.null(names(object@failed_methods)))) {
+    (length(object@failed_methods) > 0 && is.null(names(object@failed_methods)))) {
     errors <- c(errors, "failed_methods must be a named list")
   }
   if (length(errors) == 0) TRUE else errors
@@ -59,9 +59,11 @@ methods::setValidity("miREAResult", function(object) {
 #' @rdname miREAResult-class
 #' @export
 miREAResult <- function(result, time, valid_methods, failed_methods = list(), parameter) {
-  methods::new("miREAResult", result = result, time = time,
-               valid_methods = valid_methods, failed_methods = failed_methods,
-               parameter = parameter)
+  methods::new("miREAResult",
+    result = result, time = time,
+    valid_methods = valid_methods, failed_methods = failed_methods,
+    parameter = parameter
+  )
 }
 
 #' @param x A [miREAResult-class] object.
@@ -71,8 +73,10 @@ miREAResult <- function(result, time, valid_methods, failed_methods = list(), pa
 #' @export
 methods::setMethod("$", "miREAResult", function(x, name) {
   if (!name %in% methods::slotNames(x)) {
-    stop("'", name, "' is not a valid miREAResult slot. Available: ",
-         paste(methods::slotNames(x), collapse = ", "))
+    stop(
+      "'", name, "' is not a valid miREAResult slot. Available: ",
+      paste(methods::slotNames(x), collapse = ", ")
+    )
   }
   methods::slot(x, name)
 })
@@ -85,8 +89,10 @@ methods::setMethod("$", "miREAResult", function(x, name) {
 #' @export
 methods::setMethod("[[", "miREAResult", function(x, i, j, ...) {
   if (!i %in% methods::slotNames(x)) {
-    stop("'", i, "' is not a valid miREAResult slot. Available: ",
-         paste(methods::slotNames(x), collapse = ", "))
+    stop(
+      "'", i, "' is not a valid miREAResult slot. Available: ",
+      paste(methods::slotNames(x), collapse = ", ")
+    )
   }
   methods::slot(x, i)
 })

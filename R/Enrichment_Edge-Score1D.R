@@ -17,8 +17,12 @@
 #' @param maxSize The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for Edge-Score1D.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+#' data(toy_pathway)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_DEdata)
+#' data(toy_gene_mat)
+#' data(toy_mir_mat)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
 #'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
@@ -30,7 +34,7 @@
 #' )
 #' head(res)
 #' @export
-Edge_Score1D <- function(MGIList,  pathway, pvalueType = "neg", pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL){
+Edge_Score1D <- function(MGIList, pathway, pvalueType = "neg", pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL) {
   message("\n  Start Edge-Score1D analysis ...")
 
   if (is.null(MGIList)) {
@@ -40,14 +44,16 @@ Edge_Score1D <- function(MGIList,  pathway, pvalueType = "neg", pAdjMethod = "BH
     stop("MGIList must be a named number vector, where the name is MGI, and the value is the ranked score!")
   }
 
-  if (!pAdjMethod %in% default_pAdjMethod){
-    stop("Invalid pAdjMethod: ", pAdjMethod,
-         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
+  if (!pAdjMethod %in% default_pAdjMethod) {
+    stop(
+      "Invalid pAdjMethod: ", pAdjMethod,
+      "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ",")
+    )
   }
 
   colnames(pathway)[seq_len(3)] <- c("pathway", "miRNA", "gene")
   pathway <- pathway %>%
-    dplyr::mutate(MGI = paste0(miRNA,":",gene)) %>%
+    dplyr::mutate(MGI = paste0(miRNA, ":", gene)) %>%
     dplyr::select(pathway, MGI)
 
   MGIList <- sort(MGIList, decreasing = TRUE, na.last = NA)

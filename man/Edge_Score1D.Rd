@@ -42,8 +42,12 @@ A dataframe containing the enrichment result for Edge-Score1D.
 Perform miRNA-gene interaction (MGI) enrichment analysis based on whether the pathway MGI are located unexpectedly forward towards the ranked MGI list.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+data(toy_pathway)
+data(toy_mir_DEdata)
+data(toy_gene_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
+data(background_MGI)
 input_data <- getAllInputData(
   methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,

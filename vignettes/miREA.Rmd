@@ -72,8 +72,9 @@ GSEA-style methods (`TG_ORA`, `MiR_ORA`, `Edge_ORA`, `TG_Score`,
 # Installation
 
 ```{r install, eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
 BiocManager::install("miREA")
 ```
 
@@ -139,7 +140,8 @@ library(GSEABase)
 
 gene_se <- SummarizedExperiment(assays = list(expr = as.matrix(toy_gene_mat)))
 mir_se <- SummarizedExperiment(assays = list(expr = as.matrix(toy_mir_mat)))
-pathway_gsc <- GeneSetCollection(Map(function(genes, name) GeneSet(genes, setName = name),
+pathway_gsc <- GeneSetCollection(Map(
+  function(genes, name) GeneSet(genes, setName = name),
   split(toy_pathway$gene, toy_pathway$pathway),
   names(split(toy_pathway$gene, toy_pathway$pathway))
 ))
@@ -268,14 +270,18 @@ diagram showing the miRNA-gene-pathway flow). Only the five edge-based methods
 are supported, one at a time. 
 
 ```{r plot-heatmap, fig.width = 18, fig.height = 8.5}
-plotHeatmap(method = "Edge_Score1D", result = result, input_data = input_data,
-             penrichCutoff = 0.05, n_pathway = 5, n_mir_heatmap = 10)
+plotHeatmap(
+  method = "Edge_Score1D", result = result, input_data = input_data,
+  penrichCutoff = 0.05, n_pathway = 5, n_mir_heatmap = 10
+)
 ```
 
 ```{r plot-sankey, fig.width = 18, fig.height = 12}
-plotHeatmapSankey(method = "Edge_Score1D", result = result, input_data = input_data,
-                     penrichCutoff = 0.05, n_pathway = 5, n_mir_heatmap = 10,
-                     n_mir_sankey = 5)
+plotHeatmapSankey(
+  method = "Edge_Score1D", result = result, input_data = input_data,
+  penrichCutoff = 0.05, n_pathway = 5, n_mir_heatmap = 10,
+  n_mir_sankey = 5
+)
 ```
 
 # Choosing methods for your own data

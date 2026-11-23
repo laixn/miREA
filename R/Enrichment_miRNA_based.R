@@ -14,7 +14,10 @@
 #' @param maxSize The maximum miRNA set sizes allowed for analysis, filtering out pathways with number of member miRNAs more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for MiR-ORA.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
+#' data(toy_pathway)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_DEdata)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "MiR_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
 #'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
@@ -25,29 +28,33 @@
 #' )
 #' head(res)
 #' @export
-MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL){
+MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL) {
   message("\n  Start MiR-ORA analysis ...")
 
   if (is.null(DEmiR) || length(DEmiR) == 0) {
     stop("A valid character vector contains the differential expressed miRNAs must be entered!")
   }
 
-  if (!pAdjMethod %in% default_pAdjMethod){
-    stop("Invalid pAdjMethod: ", pAdjMethod,
-         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
+  if (!pAdjMethod %in% default_pAdjMethod) {
+    stop(
+      "Invalid pAdjMethod: ", pAdjMethod,
+      "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ",")
+    )
   }
 
-  if (is.null(background)){
+  if (is.null(background)) {
     message("    No background data is given, extract all mature miRNAs from miRBase version 22 instead. ")
-    background <- unique(miRBaseConverter::getAllMiRNAs(version="v22", type="mature", species="hsa")$Name)
+    background <- unique(miRBaseConverter::getAllMiRNAs(version = "v22", type = "mature", species = "hsa")$Name)
   }
 
   # filtering DEmiRs in the background
   if (all(DEmiR %in% background) == FALSE) {
-    message(paste(length(DEmiR[!DEmiR %in% background]), "of", length(DEmiR),
-        "miRNAs are not included in the background. Those are: \n",
-        paste(DEmiR[!DEmiR %in% background], collapse = " "),
-        "\n Those miRNAs are deleted. "))
+    message(paste(
+      length(DEmiR[!DEmiR %in% background]), "of", length(DEmiR),
+      "miRNAs are not included in the background. Those are: \n",
+      paste(DEmiR[!DEmiR %in% background], collapse = " "),
+      "\n Those miRNAs are deleted. "
+    ))
     DEmiR <- DEmiR[DEmiR %in% background]
     if (length(DEmiR) == 0) {
       stop("No valid DEmiR input from background list!")
@@ -64,7 +71,6 @@ MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalue
   message("  MiR-ORA analysis have finished! ")
 
   return(ora_result) # a dataframe
-
 }
 
 
@@ -87,7 +93,10 @@ MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalue
 #' @param maxSize The maximum miRNA set sizes allowed for analysis, filtering out pathways with number of member miRNAs more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for MiR-Score.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
+#' data(toy_pathway)
+#' data(toy_mir_DEdata)
+#' data(toy_gene_DEdata)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "MiR_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
 #'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
@@ -98,7 +107,7 @@ MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalue
 #' )
 #' head(res)
 #' @export
-MiR_Score <- function(miRList, pathway, pvalueType = "std", pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL){ # pvalueType = "std",
+MiR_Score <- function(miRList, pathway, pvalueType = "std", pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL) { # pvalueType = "std",
   message("\n  Start MiR-Score analysis ...")
 
   if (is.null(miRList)) {
@@ -108,15 +117,17 @@ MiR_Score <- function(miRList, pathway, pvalueType = "std", pAdjMethod = "BH", p
     stop("miRList must be a named number vector, where the name is miRNA, and the value is the ranked score!")
   }
 
-  if (!pAdjMethod %in% default_pAdjMethod){
-    stop("Invalid pAdjMethod: ", pAdjMethod,
-         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
+  if (!pAdjMethod %in% default_pAdjMethod) {
+    stop(
+      "Invalid pAdjMethod: ", pAdjMethod,
+      "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ",")
+    )
   }
 
   miRList <- sort(miRList, decreasing = TRUE, na.last = NA)
 
   colnames(pathway)[seq_len(2)] <- c("Term", "MiRNA")
-  gsea <- clusterProfiler::GSEA(geneList = miRList, TERM2GENE = pathway, scoreType = pvalueType, pAdjustMethod = pAdjMethod, pvalueCutoff = pvalueCutoff,  minGSSize = minSize, maxGSSize = maxSize) #  scoreType = pvalueType,
+  gsea <- clusterProfiler::GSEA(geneList = miRList, TERM2GENE = pathway, scoreType = pvalueType, pAdjustMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, minGSSize = minSize, maxGSSize = maxSize) #  scoreType = pvalueType,
   gsea_result <- as.data.frame(gsea) %>% rename(pathway = ID, padj = p.adjust, p_value = pvalue)
   message("  MiR-Score analysis have finished!")
 

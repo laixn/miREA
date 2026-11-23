@@ -1,5 +1,7 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     background_MGI, package = "miREA")
+  background_MGI,
+  package = "miREA"
+)
 
 test_that("miREA() runs all nine methods and returns a result per method", {
   input_data <- suppressWarnings(getAllInputData(
@@ -65,15 +67,19 @@ test_that("miREA() validates input_data structure", {
     "missing the 'pathway' component"
   )
   expect_error(
-    miREA(methods = "TG_ORA",
-          input_data = list(data = list(), pathway = list(TG = data.frame())),
-          background = list(TG = "a")),
+    miREA(
+      methods = "TG_ORA",
+      input_data = list(data = list(), pathway = list(TG = data.frame())),
+      background = list(TG = "a")
+    ),
     "missing in input_data\\$data"
   )
   expect_error(
-    miREA(methods = "TG_ORA",
-          input_data = list(data = list(TG_ORA = "a"), pathway = list()),
-          background = list(TG = "a")),
+    miREA(
+      methods = "TG_ORA",
+      input_data = list(data = list(TG_ORA = "a"), pathway = list()),
+      background = list(TG = "a")
+    ),
     "missing in input_data\\$pathway"
   )
 })
@@ -84,8 +90,10 @@ test_that("miREA() warns and drops invalid method names, erroring if none remain
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   expect_warning(
-    res <- miREA(methods = c("TG_ORA", "bogus_method"), input_data = input_data,
-                 background = list(TG = unique(toy_pathway$gene))),
+    res <- miREA(
+      methods = c("TG_ORA", "bogus_method"), input_data = input_data,
+      background = list(TG = unique(toy_pathway$gene))
+    ),
     "cannot be specified"
   )
   expect_true("TG_ORA" %in% res$valid_methods)
@@ -123,8 +131,10 @@ test_that("miREA() validates pvalueType and ncores", {
   background <- list(TG = unique(toy_pathway$gene))
 
   expect_error(
-    miREA(methods = "TG_ORA", input_data = input_data, background = background,
-          pvalueType = list(MiR = "std")),
+    miREA(
+      methods = "TG_ORA", input_data = input_data, background = background,
+      pvalueType = list(MiR = "std")
+    ),
     "missing in pvalueType"
   )
 
@@ -149,8 +159,10 @@ test_that("miREA() accepts a plain character vector background for a single targ
     methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
-  result <- miREA(methods = "TG_ORA", input_data = input_data,
-                   background = unique(toy_pathway$gene))
+  result <- miREA(
+    methods = "TG_ORA", input_data = input_data,
+    background = unique(toy_pathway$gene)
+  )
   expect_true("TG_ORA" %in% result$valid_methods)
 })
 
@@ -160,8 +172,10 @@ test_that("miREA() rejects a plain character vector background for multiple targ
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   expect_error(
-    miREA(methods = c("TG_ORA", "MiR_ORA"), input_data = input_data,
-          background = unique(toy_pathway$gene)),
+    miREA(
+      methods = c("TG_ORA", "MiR_ORA"), input_data = input_data,
+      background = unique(toy_pathway$gene)
+    ),
     "please specify background for all the targets"
   )
 })

@@ -84,8 +84,11 @@ evaluating whether the MGIs with stronger regulatory strength also have
 more topological importance inside the pathway.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-data(toy_gene_mat); data(toy_mir_mat)
+data(toy_pathway)
+data(toy_mir_DEdata)
+data(toy_gene_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
   methods = "Edge_Topology", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,

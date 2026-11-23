@@ -75,8 +75,12 @@ edge-based method, showing expression fold-changes and significance.
 Only supports one method each time.
 }
 \examples{
-data(toy_pathway); data(toy_gene_DEdata); data(toy_mir_DEdata)
-data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
+data(toy_pathway)
+data(toy_gene_DEdata)
+data(toy_mir_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
+data(background_MGI)
 # Edge_Score2D is included so input_data carries the MGI "strength" scores
 # plotHeatmap() needs for its heatmap cells, without running it in miREA().
 input_data <- getAllInputData(
