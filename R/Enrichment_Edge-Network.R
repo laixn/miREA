@@ -68,8 +68,8 @@ Edge_Network <- function(DEMGI,
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   prepped <- edge_network_prepare_pathway(pathway_gene, pathway_MGI, pathway_GGI, MGI, GGI, minSize, maxSize)
@@ -101,8 +101,8 @@ Edge_Network <- function(DEMGI,
 
   if (is.null(BPPARAM) && (is.null(ncores) || ncores == 1)){
     ncores <- 1
-    warning("You are use unparallel computing. It could cause huge amount of time!!!
-            \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that)!!!\n")
+    message("You are use unparallel computing. It could cause huge amount of time.
+            \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that).\n")
   }
   message("    Build transition matrix...")
   transition_matrix <- edge_network_build_transition_matrix(graph = built$graph, all_edges = built$all_edges)

@@ -38,8 +38,8 @@ Edge_ORA <- function(DEMGI, background = NULL, pathway, pAdjMethod = "BH", pvalu
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   if (is.null(background)){

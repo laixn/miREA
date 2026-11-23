@@ -14,6 +14,8 @@ getAllInputData(
   GGI_source = "Omnipath",
   gene_mat = NULL,
   mir_mat = NULL,
+  gene_assay = 1,
+  mir_assay = 1,
   scoreFun = NULL,
   DElogFCCutoff = 1,
   DEpadjCutoff = 0.05,
@@ -26,9 +28,15 @@ getAllInputData(
 
 \item{pathway}{compulsory. It should be a two-column pathway, containing pathway and gene, or a GSEABase GeneSetCollection object.}
 
-\item{mir_DEdata}{compulsory, should be a four-column dataframe, containing miRNA, log2FC, stat, padj}
+\item{mir_DEdata}{compulsory. A dataframe of differential expression results, with columns matched
+by name (not position), so extra columns are fine. Recognized logFC columns:
+`log2FoldChange`/`logFC`; stat columns: `stat`/`t`; padj columns: `padj`/`adj.P.Val`
+(i.e. `DESeq2::results()` or `limma::topTable()` output can be passed directly). The miRNA
+ID is read from a `miRNA`/`ID`/`SYMBOL`/`Row.names` column if present, otherwise from
+`rownames(mir_DEdata)` (the default for `DESeq2::results()`/`limma::topTable()` output).}
 
-\item{gene_DEdata}{optional, except for TG-ORA, MiR-ORA, and MiR-Score methods, should be a four-column dataframe, containing gene, log2FC, stat, padj}
+\item{gene_DEdata}{optional, except for TG-ORA, MiR-ORA, and MiR-Score methods. Accepts the same
+shapes as `mir_DEdata` (with `gene` instead of `miRNA` as the ID).}
 
 \item{background_MGI}{optional. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. If NULL, miREA falls back to its bundled `background_MGI` dataset (the full manuscript background).}
 
@@ -39,6 +47,13 @@ getAllInputData(
 \item{gene_mat}{optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.}
 
 \item{mir_mat}{optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw miRNA expression matrix (each row a miRNA, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.}
+
+\item{gene_assay}{optional, only used when `gene_mat` is a SummarizedExperiment. Selects which assay to
+extract, either by integer index or assay name (passed as `i` to [SummarizedExperiment::assay()]).
+Default is 1 (the first assay).}
+
+\item{mir_assay}{optional, only used when `mir_mat` is a SummarizedExperiment. Selects which assay to
+extract, either by integer index or assay name. Default is 1 (the first assay).}
 
 \item{scoreFun}{optional, needed for Edge_Score1D, Edge_Score2D, Edge_Topology. See default_scoreFun for all supportive methods.}
 

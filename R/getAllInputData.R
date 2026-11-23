@@ -8,13 +8,24 @@
 #'
 #' @param methods compulsory, see default_method_list for all supportive methods. You could either input one method, or a vector contains several methods you want to try.
 #' @param pathway compulsory. It should be a two-column pathway, containing pathway and gene, or a GSEABase GeneSetCollection object.
-#' @param mir_DEdata compulsory, should be a four-column dataframe, containing miRNA, log2FC, stat, padj
-#' @param gene_DEdata optional, except for TG-ORA, MiR-ORA, and MiR-Score methods, should be a four-column dataframe, containing gene, log2FC, stat, padj
+#' @param mir_DEdata compulsory. A dataframe of differential expression results, with columns matched
+#'        by name (not position), so extra columns are fine. Recognized logFC columns:
+#'        `log2FoldChange`/`logFC`; stat columns: `stat`/`t`; padj columns: `padj`/`adj.P.Val`
+#'        (i.e. `DESeq2::results()` or `limma::topTable()` output can be passed directly). The miRNA
+#'        ID is read from a `miRNA`/`ID`/`SYMBOL`/`Row.names` column if present, otherwise from
+#'        `rownames(mir_DEdata)` (the default for `DESeq2::results()`/`limma::topTable()` output).
+#' @param gene_DEdata optional, except for TG-ORA, MiR-ORA, and MiR-Score methods. Accepts the same
+#'        shapes as `mir_DEdata` (with `gene` instead of `miRNA` as the ID).
 #' @param background_MGI optional. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. If NULL, miREA falls back to its bundled `background_MGI` dataset (the full manuscript background).
 #' @param background_GGI optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, miREA falls back to its bundled `background_GGI_Omnipath`/`background_GGI_Reactome` dataset (the full manuscript background for that source), selected via GGI_source. These are frozen snapshots; to fetch a fresh/current background instead, see `inst/scripts/build_background_GGI.R`.
 #' @param GGI_source optional, select from "Omnipath" or "Reactome". Selects which bundled background_GGI snapshot to fall back to when background_GGI is not provided. The default is Omnipath.
 #' @param gene_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param mir_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw miRNA expression matrix (each row a miRNA, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
+#' @param gene_assay optional, only used when `gene_mat` is a SummarizedExperiment. Selects which assay to
+#'        extract, either by integer index or assay name (passed as `i` to [SummarizedExperiment::assay()]).
+#'        Default is 1 (the first assay).
+#' @param mir_assay optional, only used when `mir_mat` is a SummarizedExperiment. Selects which assay to
+#'        extract, either by integer index or assay name. Default is 1 (the first assay).
 #' @param scoreFun optional, needed for Edge_Score1D, Edge_Score2D, Edge_Topology. See default_scoreFun for all supportive methods.
 #' @param DElogFCCutoff optional, the absolute log2FC threshold used to call a miRNA/gene differentially
 #'        expressed when building the DE sets for the ORA methods and the plotting functions. Default is 1.
@@ -55,14 +66,14 @@
 getAllInputData <- function(methods, pathway,
                                mir_DEdata, gene_DEdata = NULL,
                                background_MGI = NULL, background_GGI = NULL, GGI_source = "Omnipath",
-                               gene_mat = NULL, mir_mat = NULL,
+                               gene_mat = NULL, mir_mat = NULL, gene_assay = 1, mir_assay = 1,
                                scoreFun = NULL,
                                DElogFCCutoff = 1, DEpadjCutoff = 0.05,
                                corCutoff = 0, corPadjCutoff = 0.05){
   message("Generate all input data...")
   pathway <- coerce_pathway(pathway)
-  gene_mat <- coerce_expr_mat(gene_mat)
-  mir_mat <- coerce_expr_mat(mir_mat)
+  gene_mat <- coerce_expr_mat(gene_mat, assay = gene_assay)
+  mir_mat <- coerce_expr_mat(mir_mat, assay = mir_assay)
   sum_TG <- sum(grepl("TG_", methods))
   sum_MiR <- sum(grepl("MiR_", methods))
   sum_Edge <- sum(grepl("Edge_", methods))
@@ -71,7 +82,7 @@ getAllInputData <- function(methods, pathway,
   colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
   # check scoreFun
   if (length(intersect(score_method, methods)) > 0 && is.null(scoreFun)){
-    warning("No [scoreFun] parameter has been specified. Use the default [rank] instead!\n")
+    message("No [scoreFun] parameter has been specified. Use the default [rank] instead!\n")
     scoreFun <- "rank"
   }
   if (length(intersect(score_method, methods)) > 0 && (! scoreFun %in% default_scoreFun)){
@@ -113,18 +124,12 @@ getAllInputData <- function(methods, pathway,
 
   # check expression data
   if (!is.null(gene_DEdata)){
-    if (ncol(gene_DEdata) != 4 || !is.data.frame(gene_DEdata)){
-      stop("Please make sure the input gene_DEdata is a four-column dataframe contains gene, log2FC, stat, and padj!")
-    }
-    colnames(gene_DEdata) <- c("gene", "geneLogFC", "geneStat", "genePadj")
+    gene_DEdata <- standardize_DEdata(gene_DEdata, "gene")
     gene_DEdata <- gene_DEdata %>% distinct(gene, .keep_all = TRUE)
     gene_DEdata <- data.table::as.data.table(gene_DEdata)
   }
 
-  if (ncol(mir_DEdata) != 4 || !is.data.frame(mir_DEdata)){
-    stop("Please make sure the input mir_DEdata is a four-column dataframe contains miRNA, log2FC, stat, and padj!")
-  }
-  colnames(mir_DEdata) <- c("miRNA", "mirLogFC", "mirStat", "mirPadj")
+  mir_DEdata <- standardize_DEdata(mir_DEdata, "miRNA")
   mir_DEdata <- mir_DEdata %>% distinct(miRNA, .keep_all = TRUE)
   mir_DEdata <- data.table::as.data.table(mir_DEdata)
 
@@ -261,7 +266,7 @@ get_data_validate_inputs <- function(methods, gene_DEdata, gene_mat, mir_mat, ba
     stop("Please make sure you have input gene_mat and mir_mat")
   }
   if (any(score_method %in% methods) && is.null(scoreFun)){
-    warning("You didn't specify scoreFun for transform expression score, set 'rank' automatically.\n")
+    message("You didn't specify scoreFun for transform expression score, set 'rank' automatically.\n")
     scoreFun <- "rank"
   }
   # NOTE: unreachable in practice — getAllInputData() resolves background_MGI
@@ -274,20 +279,77 @@ get_data_validate_inputs <- function(methods, gene_DEdata, gene_mat, mir_mat, ba
   scoreFun
 }
 
+#' Standardize a differential-expression table to miREA's internal column layout
+#'
+#' Columns are always matched by name, never by position. Recognizes miREA's own canonical
+#' column names (so this is idempotent on an already-standardized table), the column names
+#' produced by `DESeq2::results()` (`log2FoldChange`, `stat`, `padj`), and those produced by
+#' `limma::topTable()` (`logFC`, `t`, `adj.P.Val`). `df` may have any number of extra columns
+#' (e.g. `baseMean`/`lfcSE` from DESeq2, `AveExpr`/`B` from limma) -- they are ignored. If no ID
+#' column is recognized, `rownames(df)` is used instead (this is how `as.data.frame(DESeq2::
+#' results(dds))` and `limma::topTable()` return their output by default). Errors with a message
+#' listing the recognized names if logFC/stat/padj can't be matched.
+#' @param df A data.frame of DE results for `entity`.
+#' @param entity Either `"gene"` or `"miRNA"`.
+#' @return A four-column data.frame named `c(entity, paste0(entity, c("LogFC","Stat","Padj")))`.
+#' @noRd
+standardize_DEdata <- function(df, entity) {
+  if (!is.data.frame(df)) {
+    stop("Please make sure the input ", entity, "_DEdata is a dataframe.")
+  }
+
+  # miREA's internal convention prefixes the logFC/stat/padj columns with "mir" for
+  # the miRNA entity (not "miRNA"), e.g. mirLogFC/mirStat/mirPadj; "gene" uses itself.
+  prefix    <- if (entity == "miRNA") "mir" else entity
+  id_col    <- entity
+  logFC_col <- paste0(prefix, "LogFC")
+  stat_col  <- paste0(prefix, "Stat")
+  padj_col  <- paste0(prefix, "Padj")
+
+  # each candidate list also includes miREA's own canonical output name, so that
+  # standardize_DEdata() is idempotent when applied to an already-standardized table
+  # (it is called a second time inside get_data_coerce_expr()).
+  id_candidates    <- c(id_col, "ID", "SYMBOL", "Row.names")
+  logFC_candidates <- c(logFC_col, "log2FoldChange", "logFC")   # DESeq2, limma
+  stat_candidates  <- c(stat_col, "stat", "t")                 # DESeq2, limma
+  padj_candidates  <- c(padj_col, "padj", "adj.P.Val")         # DESeq2, limma
+
+  matched_logFC <- intersect(logFC_candidates, colnames(df))
+  matched_stat  <- intersect(stat_candidates, colnames(df))
+  matched_padj  <- intersect(padj_candidates, colnames(df))
+
+  if (length(matched_logFC) == 0 || length(matched_stat) == 0 || length(matched_padj) == 0) {
+    stop("Please make sure the input ", entity, "_DEdata has recognizable logFC/stat/padj columns ",
+         "(tried logFC: ", paste(logFC_candidates, collapse = ", "), "; ",
+         "stat: ", paste(stat_candidates, collapse = ", "), "; ",
+         "padj: ", paste(padj_candidates, collapse = ", "), "). ",
+         "Columns found: ", paste(colnames(df), collapse = ", "), ".")
+  }
+
+  matched_id <- intersect(id_candidates, colnames(df))
+  if (length(matched_id) >= 1) {
+    id_values <- df[[matched_id[1]]]
+  } else if (!is.null(rownames(df)) && !identical(rownames(df), as.character(seq_len(nrow(df))))) {
+    id_values <- rownames(df)
+  } else {
+    stop("Please make sure the input ", entity, "_DEdata has an ID column (tried: ",
+         paste(id_candidates, collapse = ", "), ") or informative rownames.")
+  }
+
+  out <- data.frame(id_values, df[[matched_logFC[1]]], df[[matched_stat[1]]], df[[matched_padj[1]]],
+                    stringsAsFactors = FALSE)
+  colnames(out) <- c(id_col, logFC_col, stat_col, padj_col)
+  out
+}
+
 #' @noRd
 get_data_coerce_expr <- function(gene_DEdata, mir_DEdata) {
   if (!is.null(gene_DEdata)){
-    if (ncol(gene_DEdata) != 4 || !is.data.frame(gene_DEdata)){
-      stop("Please make sure the input gene_DEdata is a four-column dataframe contains gene, log2FC, stat, and padj!")
-    }
-    colnames(gene_DEdata) <- c("gene", "geneLogFC", "geneStat", "genePadj")
+    gene_DEdata <- standardize_DEdata(gene_DEdata, "gene")
     gene_DEdata <- data.table::as.data.table(gene_DEdata)
   }
 
-  if (ncol(mir_DEdata) != 4 || !is.data.frame(mir_DEdata)){
-    stop("Please make sure the input mir_DEdata is a four-column dataframe contains miRNA, log2FC, stat, and padj!")
-  }
-  colnames(mir_DEdata) <- c("miRNA", "mirLogFC", "mirStat", "mirPadj")
+  mir_DEdata <- standardize_DEdata(mir_DEdata, "miRNA")
   mir_DEdata <- data.table::as.data.table(mir_DEdata)
 
   list(gene_DEdata = gene_DEdata, mir_DEdata = mir_DEdata)
@@ -437,7 +499,7 @@ get_pathway_data <- function(methods, pathway, background_MGI){
 get_pathway_GGI_data <- function(methods, pathway, background_GGI){
   target_method <- c("Edge_Network", "Edge_Topology")
   if (length(intersect(target_method, methods)) == 0){
-    warning("The methods you have selected don't need gene-gene interactions data. Skip the pathway_GGI process.\n")
+    message("The methods you have selected don't need gene-gene interactions data. Skip the pathway_GGI process.\n")
     return(NULL)
   } else {
     colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
@@ -464,7 +526,7 @@ get_pathway_GGI_data <- function(methods, pathway, background_GGI){
 # DEMGI: result[["data"]][["Edge_Network"]]
 get_GGI_data <- function(methods, DEMGI, pathway, background_GGI){ # gene_mat, gene_DEdata,
   if (! "Edge_Network" %in% methods){
-    warning("The methods you have selected don't need global GGI data. Skip the get_GGI_data process.\n")
+    message("The methods you have selected don't need global GGI data. Skip the get_GGI_data process.\n")
     return(NULL)
   } else{
     DEMGI <- data.frame(
@@ -492,7 +554,7 @@ get_GGI_data <- function(methods, DEMGI, pathway, background_GGI){ # gene_mat, g
 
 get_MGI_data <- function(methods, DEMGI, pathway, pathway_MGI, background_MGI){
   if (! "Edge_Network" %in% methods){
-    warning("The methods you have selected don't need global GGI data. Skip the get_GGI_data process.\n")
+    message("The methods you have selected don't need global MGI data. Skip the get_MGI_data process.\n")
     return(NULL)
   } else{
     DEMGI <- data.frame(
@@ -529,7 +591,7 @@ get_MGI_data <- function(methods, DEMGI, pathway, pathway_MGI, background_MGI){
 # data is data$data get in the get_data() function
 get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun){
   if (! "Edge_Topology" %in% methods){
-    warning("The methods you have selected don't need dict_MGI data. Skip the get_dict_MGI process.\n")
+    message("The methods you have selected don't need dict_MGI data. Skip the get_dict_MGI process.\n")
     return(NULL)
   } else{
     # ensure that mir_mat and gene_mat have their names as rownames

@@ -36,8 +36,8 @@ TG_ORA <- function(TG, background = NULL, pathway, pAdjMethod = "BH", pvalueCuto
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   colnames(pathway)[seq_len(2)] <- c("Term", "Gene")
@@ -92,8 +92,8 @@ TG_Score <- function(geneList, pathway, pvalueType = "std", pAdjMethod = "BH",  
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   geneList <- sort(geneList, decreasing = TRUE, na.last = NA)

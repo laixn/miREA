@@ -33,8 +33,8 @@ MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalue
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   if (is.null(background)){
@@ -109,8 +109,8 @@ MiR_Score <- function(miRList, pathway, pvalueType = "std", pAdjMethod = "BH", p
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   miRList <- sort(miRList, decreasing = TRUE, na.last = NA)

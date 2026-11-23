@@ -70,13 +70,13 @@ Edge_Topology <- function(MGI, pvalueType = "neg",
   message("\n  Start Edge-Topology analysis ...")
   # check pAdjMethod
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ", ")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ", "))
   }
   # check pvalueType
   if (!pvalueType %in% default_pvalueType){
-    stop(paste("Invalid pvalueType:", pvalueType,
-               "\n Please choose one of:", paste(default_pvalueType, collapse = ", ")))
+    stop("Invalid pvalueType: ", pvalueType,
+         "\n Please choose one of: ", paste(default_pvalueType, collapse = ", "))
   }
 
   # filtering MGI in the background
@@ -131,8 +131,8 @@ Edge_Topology <- function(MGI, pvalueType = "neg",
   serial <- is.null(BPPARAM) && (is.null(ncores) || ncores == 1)
   if (serial){
     ncores <- 1
-    warning("You are use unparallel computing. It could cause huge amount of time!!!
-            \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that)!!!\n")
+    message("You are use unparallel computing. It could cause huge amount of time.
+            \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that).\n")
   }
   message("    Calculate pathway scores and significant level on ",
           if (serial) 1 else BiocParallel::bpnworkers(resolve_BPPARAM(ncores, BPPARAM = BPPARAM)), " cores...")

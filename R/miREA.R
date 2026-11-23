@@ -233,7 +233,7 @@ miREA_validate_ncores <- function(ncores, methods) {
     ncores <- as.integer(ncores)
     ncores <- setNames(as.list(rep(ncores, length(methods_ncores))), methods_ncores)
   } else if (is.null(ncores)){
-    warning("You didn't specify number of cores [ncores]. Use unparallel computing instead.\n")
+    message("You didn't specify number of cores [ncores]. Use unparallel computing instead.\n")
     ncores <- setNames(as.list(rep(1L, length(methods_ncores))), methods_ncores)
   }
   ncores

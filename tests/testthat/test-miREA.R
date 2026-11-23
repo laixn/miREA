@@ -137,7 +137,7 @@ test_that("miREA() validates pvalueType and ncores", {
     "ncores must be a positive integer"
   )
 
-  expect_warning(
+  expect_message(
     res <- miREA(methods = "TG_ORA", input_data = input_data, background = background, ncores = NULL),
     "Use unparallel computing"
   )

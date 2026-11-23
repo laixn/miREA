@@ -102,12 +102,12 @@ resolve_BPPARAM <- function(ncores, seed = NULL, BPPARAM = NULL) {
 }
 
 #' @noRd
-coerce_expr_mat <- function(x) {
+coerce_expr_mat <- function(x, assay = 1) {
   if (is.null(x) || !methods::is(x, "SummarizedExperiment")) return(x)
   if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {
     stop("Package 'SummarizedExperiment' is required to pass a SummarizedExperiment as gene_mat/mir_mat.")
   }
-  as.data.frame(SummarizedExperiment::assay(x))
+  as.data.frame(SummarizedExperiment::assay(x, i = assay))
 }
 
 #' @noRd

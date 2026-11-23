@@ -41,8 +41,8 @@ Edge_Score1D <- function(MGIList,  pathway, pvalueType = "neg", pAdjMethod = "BH
   }
 
   if (!pAdjMethod %in% default_pAdjMethod){
-    stop(paste("Invalid pAdjMethod:", pAdjMethod,
-               "\n Please choose one of:", paste(default_pAdjMethod, collapse = ",")))
+    stop("Invalid pAdjMethod: ", pAdjMethod,
+         "\n Please choose one of: ", paste(default_pAdjMethod, collapse = ","))
   }
 
   colnames(pathway)[seq_len(3)] <- c("pathway", "miRNA", "gene")
