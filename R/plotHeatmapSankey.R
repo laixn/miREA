@@ -73,8 +73,6 @@ plotHeatmapSankey <- function(method, result, input_data, n_mir_heatmap = 20, n_
     ht1 <- ComplexHeatmap::Heatmap(
         comp$path_mat,
         name = "ht1",
-        column_title = paste0("Heatmap and Sankey plot for ", method, " method"),
-        column_title_gp = gpar(fontsize = 20, fontface = "bold", hjust = 0.5),
         col = c("1" = "grey50", "0" = "white"),
         column_names_rot = 90,
         show_row_names = TRUE,
@@ -217,6 +215,8 @@ plotHeatmapSankey <- function(method, result, input_data, n_mir_heatmap = 20, n_
         draw(ht_list,
             merge_legend = TRUE,
             annotation_legend_list = legend_list,
+            column_title = paste0("Heatmap and Sankey plot for ", method, " method"),
+            column_title_gp = gpar(fontsize = 20, fontface = "bold"),
             heatmap_legend_side = "right",
             annotation_legend_side = "right"
         )

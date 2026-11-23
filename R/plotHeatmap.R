@@ -467,8 +467,6 @@ plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathwa
     ht1 <- ComplexHeatmap::Heatmap(
         comp$path_mat,
         name = "ht1",
-        column_title = paste0("Heatmap plot for ", method, " method"),
-        column_title_gp = gpar(fontsize = 20, fontface = "bold", hjust = 0.5),
         col = c("1" = "grey50", "0" = "white"),
         column_names_rot = 90,
         show_row_names = TRUE,
@@ -584,6 +582,8 @@ plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathwa
         draw(ht_list,
             merge_legend = TRUE,
             annotation_legend_list = legend_list,
+            column_title = paste0("Heatmap for ", method, " method"),
+            column_title_gp = gpar(fontsize = 20, fontface = "bold"),
             heatmap_legend_side = "bottom",
             annotation_legend_side = "bottom",
             align_heatmap_legend = "heatmap_center"

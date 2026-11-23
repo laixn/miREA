@@ -269,17 +269,17 @@ method's result as a miRNA-by-gene heatmap (optionally combined with a Sankey
 diagram showing the miRNA-gene-pathway flow). Only the five edge-based methods
 are supported, one at a time. 
 
-```{r plot-heatmap, fig.width = 18, fig.height = 8.5}
+```{r plot-heatmap, fig.width = 13, fig.height = 5.5}
 plotHeatmap(
     method = "Edge_Score1D", result = result, input_data = input_data,
-    penrichCutoff = 0.05, n_pathway = 5, n_mir_heatmap = 10
+    penrichCutoff = 0.05, n_pathway = 10, n_mir_heatmap = 10
 )
 ```
 
-```{r plot-sankey, fig.width = 18, fig.height = 12}
+```{r plot-sankey, fig.width = 13, fig.height = 10}
 plotHeatmapSankey(
     method = "Edge_Score1D", result = result, input_data = input_data,
-    penrichCutoff = 0.05, n_pathway = 5, n_mir_heatmap = 10,
+    penrichCutoff = 0.05, n_pathway = 10, n_mir_heatmap = 10,
     n_mir_sankey = 5
 )
 ```

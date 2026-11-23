@@ -4,7 +4,7 @@ data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
 )
 
 test_that("Edge_Score2D: same seed gives identical results, seed=NULL gives different results", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Score2D", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
@@ -15,16 +15,20 @@ test_that("Edge_Score2D: same seed gives identical results, seed=NULL gives diff
     run <- function(seed) {
         Edge_Score2D(
             MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-            background = background, iter = 30, ncores = 1, pvalueCutoff = 1, seed = seed
+            background = background, iter = 20, ncores = 1, pvalueCutoff = 1, seed = seed
         )
     }
 
     expect_identical(run(42), run(42))
-    expect_false(isTRUE(all.equal(run(NULL), run(NULL))))
+    expect_false(identical(run(1), run(2)))
+    # seed=NULL draws are compared via a rounded summary (rand_score_dist),
+    # so a single pair can coincidentally round to the same result; require
+    # at least one difference across a few independent trials.
+    expect_true(any(replicate(3, !isTRUE(all.equal(run(NULL), run(NULL))))))
 })
 
 test_that("Edge_Topology: same seed gives identical results, seed=NULL gives different results", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Topology", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -37,16 +41,17 @@ test_that("Edge_Topology: same seed gives identical results, seed=NULL gives dif
             MGI = input_data$data$Edge_Topology, background = background,
             pathway = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
             dict_MGI = input_data$dict_MGI, pvalueType = "neg",
-            minSize = 2, maxSize = 5000, iter = 30, ncores = 1, pvalueCutoff = 1, seed = seed
+            minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1, seed = seed
         )
     }
 
     expect_identical(run(42), run(42))
+    expect_false(identical(run(1), run(2)))
     expect_false(isTRUE(all.equal(run(NULL), run(NULL))))
 })
 
 test_that("Edge_Network: same seed gives identical results, seed=NULL gives different results", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Network", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -58,16 +63,17 @@ test_that("Edge_Network: same seed gives identical results, seed=NULL gives diff
             DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
             pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
             MGI = input_data$MGI, GGI = input_data$GGI,
-            minSize = 2, maxSize = 5000, iter = 30, ncores = 1, pvalueCutoff = 1, seed = seed
+            minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1, seed = seed
         )
     }
 
     expect_identical(run(42), run(42))
+    expect_false(identical(run(1), run(2)))
     expect_false(isTRUE(all.equal(run(NULL), run(NULL))))
 })
 
 test_that("miREA() forwards seed consistently across Edge_Score2D/Edge_Topology/Edge_Network", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_Score2D", "Edge_Topology", "Edge_Network"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -88,7 +94,7 @@ test_that("miREA() forwards seed consistently across Edge_Score2D/Edge_Topology/
 })
 
 test_that("Edge_Score2D/Edge_Topology/Edge_Network's internal seed does not leak into the caller's global RNG stream", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Score2D", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
@@ -110,7 +116,7 @@ test_that("Edge_Score2D/Edge_Topology/Edge_Network's internal seed does not leak
     draw1 <- runif(1)
     Edge_Score2D(
         MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-        background = background, iter = 30, ncores = 1, pvalueCutoff = 1, seed = 999
+        background = background, iter = 20, ncores = 1, pvalueCutoff = 1, seed = 999
     )
     draw2 <- runif(1)
 

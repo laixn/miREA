@@ -49,8 +49,9 @@ automatically from `ncores` and `seed` (serial if `ncores` is NULL/1, otherwise
 \item{seed}{Optional integer seed for the permutation test. If NULL (the
 default), no internal seed is set and the permutation draws depend
 on the caller's current random state. If supplied, the permutation
-is made reproducible via [withr::with_seed()], which does not alter
-the caller's global random state.}
+is made reproducible via [withr::with_seed()] when running serially,
+or via `BPPARAM`'s `RNGseed` when `ncores > 1`/a parallel `BPPARAM`
+is used; neither alters the caller's global random state.}
 }
 \value{
 a dataframe contains enrichment result for Edge-Score2D, including

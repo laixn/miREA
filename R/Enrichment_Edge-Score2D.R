@@ -24,8 +24,9 @@
 #' @param seed Optional integer seed for the permutation test. If NULL (the
 #'        default), no internal seed is set and the permutation draws depend
 #'        on the caller's current random state. If supplied, the permutation
-#'        is made reproducible via [withr::with_seed()], which does not alter
-#'        the caller's global random state.
+#'        is made reproducible via [withr::with_seed()] when running serially,
+#'        or via `BPPARAM`'s `RNGseed` when `ncores > 1`/a parallel `BPPARAM`
+#'        is used; neither alters the caller's global random state.
 #'
 #' @return a dataframe contains enrichment result for Edge-Score2D, including
 #'        `nMoreExtreme` (the number of permutation scores at least as
@@ -108,6 +109,7 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
     }
 
     bpparam <- resolve_BPPARAM(ncores, seed = seed, BPPARAM = BPPARAM)
+    serial <- is.null(BPPARAM) && (is.null(ncores) || ncores <= 1)
 
     # generate random pathways
     message("    Generate random MGI set radius on ", BiocParallel::bpnworkers(bpparam), " cores...")
@@ -121,17 +123,29 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
         rep(seq_len(nchunks), length.out = length(unique_sizes))
     )
 
-    r_random_list <- BiocParallel::bplapply(
-        size_groups,
-        function(size_group) {
-            sub_result <- list()
-            for (size in size_group) {
-                sub_result[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
-            }
-            sub_result
-        },
-        BPPARAM = bpparam
-    )
+    draw_random_radius <- function(size_group) {
+        sub_result <- list()
+        for (size in size_group) {
+            sub_result[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
+        }
+        sub_result
+    }
+
+    # Serial execution runs in-process, so plain R-level seeding via
+    # withr::with_seed() is sufficient and avoids depending on BiocParallel's
+    # SerialParam RNG handling (observed to repeat draws across separate
+    # calls on some platform/BiocParallel combinations even with no RNGseed
+    # set). True parallel execution still needs BiocParallel's own RNGseed,
+    # since workers don't inherit this process's RNG stream.
+    r_random_list <- if (serial) {
+        if (is.null(seed)) {
+            lapply(size_groups, draw_random_radius)
+        } else {
+            withr::with_seed(seed, lapply(size_groups, draw_random_radius))
+        }
+    } else {
+        BiocParallel::bplapply(size_groups, draw_random_radius, BPPARAM = bpparam)
+    }
     r_random_list <- unlist(r_random_list, recursive = FALSE)
     names(r_random_list) <- sub("^\\d+\\.", "", names(r_random_list))
     r_random_list <- lapply(r_random_list, sort)

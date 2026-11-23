@@ -4,7 +4,7 @@ data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
 )
 
 test_that("plotSummary(), plotHeatmap(), and plotHeatmapSankey() run without error", {
-    input_data <- suppressWarnings(getAllInputData(
+    input_data <- suppressWarnings(cached_getAllInputData(
         methods = default_method_list, pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -16,7 +16,7 @@ test_that("plotSummary(), plotHeatmap(), and plotHeatmapSankey() run without err
         MiR = unique(input_data$pathway$MiR$miRNA),
         Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
     )
-    result <- suppressWarnings(miREA(
+    result <- suppressWarnings(cached_miREA(
         methods = default_method_list, input_data = input_data, background = background,
         minSize = 2, maxSize = 5000,
         pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
@@ -84,7 +84,7 @@ test_that("plotHeatmap()/plotHeatmapSankey() inherit thresholds from input_data$
 })
 
 test_that("plotHeatmap()/plotHeatmapSankey() always invisibly return list(ht_list, legend_list)", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI,
@@ -122,7 +122,7 @@ test_that("plotHeatmap()/plotHeatmapSankey() always invisibly return list(ht_lis
 })
 
 test_that("plotHeatmap()/plotHeatmapSankey() close the pdf device they open (on.exit/dev.off)", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI,
@@ -144,7 +144,7 @@ test_that("plotHeatmap()/plotHeatmapSankey() close the pdf device they open (on.
 })
 
 test_that("plotHeatmap() derives legend titles from names(gene_annot)/names(mir_annot)", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI,
@@ -202,7 +202,7 @@ test_that("plotHeatmap() rejects an unsupported method and a non-edge-based meth
 })
 
 test_that("plotHeatmap() falls back to the top n_pathway smallest-padj pathways when none pass penrichCutoff", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI,
@@ -228,7 +228,7 @@ test_that("plotHeatmap() falls back to the top n_pathway smallest-padj pathways 
 })
 
 test_that("plotHeatmap() truncates to n_mir_heatmap miRNAs", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI,

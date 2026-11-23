@@ -6,6 +6,7 @@
 ^README\.Rmd$
 ^README\.md$
 ^Figure1\.png$
+^figure$
 ^doc$
 ^Meta$
 ^validation$

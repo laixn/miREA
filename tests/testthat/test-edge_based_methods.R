@@ -39,7 +39,7 @@ test_that("Edge_ORA rejects an empty DEMGI vector", {
 })
 
 test_that("Edge_Topology returns enrichment results for the signal pathway", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Topology", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -58,7 +58,7 @@ test_that("Edge_Topology returns enrichment results for the signal pathway", {
 })
 
 test_that("Edge_Network returns enrichment results for the signal pathway", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Network", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -147,10 +147,10 @@ test_that("Edge_Topology errors when no MGI pairs match the background", {
 })
 
 test_that("Edge_Topology handles n_pathway=0, the iter=1 degenerate branch, and ncores>1", {
-    input_data <- getAllInputData(
-        methods = "Edge_Topology", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-        gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
-        GGI_source = "Reactome",
+    input_data <- cached_getAllInputData(
+        methods = "Edge_Topology", pathway = toy_pathway,
+        mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+        background_MGI = background_MGI, GGI_source = "Reactome",
         gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
     )
     background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
@@ -181,10 +181,10 @@ test_that("Edge_Topology handles n_pathway=0, the iter=1 degenerate branch, and 
 })
 
 test_that("Edge_Topology_single warns on multi-pathway input and handles PW_GGI=NULL", {
-    input_data <- getAllInputData(
-        methods = "Edge_Topology", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-        gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
-        GGI_source = "Reactome",
+    input_data <- cached_getAllInputData(
+        methods = "Edge_Topology", pathway = toy_pathway,
+        mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+        background_MGI = background_MGI, GGI_source = "Reactome",
         gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
     )
     pathway <- as.data.frame(input_data$pathway$Edge)
@@ -239,10 +239,11 @@ test_that("Edge_Score2D rejects invalid MGI2D/background inputs", {
 })
 
 test_that("Edge_Score2D handles n_pathway=0 early return and the ncores>1 parallel path", {
-    input_data <- getAllInputData(
-        methods = "Edge_Score2D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-        gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
-        gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    input_data <- cached_getAllInputData(
+        methods = "Edge_Score2D", pathway = toy_pathway,
+        mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+        background_MGI = background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+        scoreFun = "rank"
     )
     background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 
@@ -263,10 +264,11 @@ test_that("Edge_Score2D handles n_pathway=0 early return and the ncores>1 parall
 })
 
 test_that("Edge_Score2D_single warns on multi-pathway input and returns NULL for no overlap", {
-    input_data <- getAllInputData(
-        methods = "Edge_Score2D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-        gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
-        gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    input_data <- cached_getAllInputData(
+        methods = "Edge_Score2D", pathway = toy_pathway,
+        mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+        background_MGI = background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+        scoreFun = "rank"
     )
     mgi2d <- data.table::as.data.table(na.omit(input_data$data$Edge_Score2D))
     colnames(mgi2d) <- c("MGI", "miRNA", "gene", "x", "y")
@@ -284,7 +286,7 @@ test_that("Edge_Score2D_single warns on multi-pathway input and returns NULL for
 })
 
 test_that("Edge_Score2D/Edge_Topology/Edge_Network accept an explicit BPPARAM", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = c("Edge_Score2D", "Edge_Topology", "Edge_Network"), pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
@@ -315,7 +317,7 @@ test_that("Edge_Score2D/Edge_Topology/Edge_Network accept an explicit BPPARAM", 
 })
 
 test_that("Edge_Network runs through the parallel RWR path with ncores > 1", {
-    input_data <- getAllInputData(
+    input_data <- cached_getAllInputData(
         methods = "Edge_Network", pathway = toy_pathway,
         mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
         background_MGI = background_MGI, GGI_source = "Reactome",
