@@ -13,7 +13,10 @@
 #' @param plot_path The directory to save the plot. If not null, it will generate two pdf file named summary.pdf and pvalue_density.pdf at the plot path. If null, the plot will be drawn at the current window.
 #' @param penrichCutoff  The threshold for deciding enrichment of pathways. Default is 0.05.
 #' @param fill_col a named vector to specify fill colors for different methods.
-#' @return Two plots, either in the current window if plot_path is NULL, or saved as summary.pdf and pvalue_density.pdf at the plot_path.
+#' @return Invisibly, a list with the combined summary plot and the p-value density
+#'   plot (`list(summary, pvalue)`). As a side effect, draws both plots in the current
+#'   window if plot_path is NULL, or saves them as summary.pdf and pvalue_density.pdf
+#'   at plot_path.
 #' @examples
 #' data(toy_pathway)
 #' data(toy_gene_DEdata)
@@ -78,15 +81,15 @@ plotSummary <- function(result, penrichCutoff = NULL, plot_path = NULL,
   pvalue_plot <- plot_pvalue_dens(result, fill_col) # patchwork ggplot combine
 
   if (!is.null(plot_path)) {
-    ggsave(paste0(plot_path, "/summary.pdf"), combined, width = 16, height = 5)
-    ggsave(paste0(plot_path, "/pvalue_density.pdf"), pvalue_plot, width = 10, height = 10)
+    ggsave(file.path(plot_path, "summary.pdf"), combined, width = 16, height = 5)
+    ggsave(file.path(plot_path, "pvalue_density.pdf"), pvalue_plot, width = 10, height = 10)
     message("    Please check the summary plot and pvalue density plot at: ", plot_path)
-    return(paste0("Please check the summary plot and pvalue density plot at: ", plot_path, "\n"))
+    invisible(list(summary = combined, pvalue = pvalue_plot))
   } else {
     plot(combined)
     plot(pvalue_plot)
     message("  Visualization finished!\n***If you want to save them to pdf files directly, please specify the [plot_path] parameter!***")
-    return(list(summary = combined, pvalue = pvalue_plot))
+    invisible(list(summary = combined, pvalue = pvalue_plot))
   }
 }
 

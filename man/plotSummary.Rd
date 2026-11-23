@@ -23,7 +23,10 @@ plotSummary(
 \item{fill_col}{a named vector to specify fill colors for different methods.}
 }
 \value{
-Two plots, either in the current window if plot_path is NULL, or saved as summary.pdf and pvalue_density.pdf at the plot_path.
+Invisibly, a list with the combined summary plot and the p-value density
+plot (\code{list(summary, pvalue)}). As a side effect, draws both plots in the current
+window if plot_path is NULL, or saves them as summary.pdf and pvalue_density.pdf
+at plot_path.
 }
 \description{
 Draws summary plots comparing enrichment results across the different
