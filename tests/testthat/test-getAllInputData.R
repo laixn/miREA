@@ -210,6 +210,64 @@ test_that("getAllInputData() selects the requested assay via gene_assay/mir_assa
   expect_equal(input_data_assay1$data$data, input_data_direct$data$data)
 })
 
+test_that("getAllInputData() falls back to bundled background_GGI_Reactome when background_GGI=NULL, GGI_source='Reactome'", {
+  input_data <- getAllInputData(
+    methods = "Edge_Topology", pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI, GGI_source = "Reactome",
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  data(background_GGI_Reactome, package = "miREA")
+  expected <- background_GGI_Reactome
+  colnames(expected)[seq_len(2)] <- c("from", "to")
+  expect_equal(input_data$background_GGI, expected)
+})
+
+test_that("getAllInputData() fetches Omnipath live when background_GGI=NULL and GGI_source is 'Omnipath' or NULL", {
+  skip_if_not_installed("OmnipathR")
+  input_data <- tryCatch(
+    getAllInputData(
+      methods = "Edge_Topology", pathway = toy_pathway,
+      mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+      background_MGI = background_MGI, GGI_source = "Omnipath",
+      gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    ),
+    error = function(e) {
+      skip(paste("Omnipath/OmnipathR unavailable in this environment:", conditionMessage(e)))
+    }
+  )
+  expect_equal(colnames(input_data$background_GGI), c("from", "to"))
+  expect_true(nrow(input_data$background_GGI) > 0)
+
+  # GGI_source = NULL is documented to behave the same as "Omnipath"
+  input_data_null_source <- tryCatch(
+    getAllInputData(
+      methods = "Edge_Topology", pathway = toy_pathway,
+      mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+      background_MGI = background_MGI, GGI_source = NULL,
+      gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    ),
+    error = function(e) {
+      skip(paste("Omnipath/OmnipathR unavailable in this environment:", conditionMessage(e)))
+    }
+  )
+  expect_equal(colnames(input_data_null_source$background_GGI), c("from", "to"))
+})
+
+test_that("getAllInputData() uses a user-supplied background_GGI directly and ignores GGI_source", {
+  custom_GGI <- data.frame(from = c("TP53", "MYC"), to = c("MDM2", "MAX"), stringsAsFactors = FALSE)
+  expect_message(
+    input_data <- getAllInputData(
+      methods = "Edge_Topology", pathway = toy_pathway,
+      mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+      background_MGI = background_MGI, background_GGI = custom_GGI, GGI_source = "Omnipath",
+      gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    ),
+    "GGI_source is ignored"
+  )
+  expect_equal(input_data$background_GGI, custom_GGI)
+})
+
 test_that("fetch_background_GGI_omnipath() returns the expected structure", {
   skip_if_not_installed("OmnipathR")
   interactions <- tryCatch(

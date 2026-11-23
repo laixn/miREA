@@ -81,11 +81,11 @@ BiocManager::install("miREA")
 
 This vignette uses a small, self-contained example dataset bundled with the
 package (see `?miREA_example_data`), derived from the real bladder urothelial
-carcinoma (BLCA) data used in the miREA manuscript. It covers 16
-bladder-cancer-specific MSigDB gene sets and 99 TCGA samples (80 tumor and 19
-normal, used for differential expression). The 80 tumor samples are also used
-for miRNA-gene correlation. For the full datasets used in the manuscript, see
-the [Zenodo deposit](https://zenodo.org/records/18803209).
+carcinoma (BLCA) data used in the miREA manuscript. It covers 10
+bladder-cancer-relevant Reactome pathways and 422 TCGA samples (403 tumor and
+19 normal, used for differential expression). The 403 tumor samples are also
+used for miRNA-gene correlation. For the full datasets used in the manuscript,
+see the [Zenodo deposit](https://zenodo.org/records/18803209).
 
 ```{r load-data}
 library(miREA)
@@ -247,8 +247,10 @@ We use `pvalueCutoff = 1` throughout this vignette so every pathway is
 returned. The exception is the ORA methods (`TG_ORA`, `MiR_ORA`, `Edge_ORA`).
 These methods only report pathways with at least one overlapping
 differentially expressed gene, miRNA, or edge, so some pathways can still be
-missing even at `pvalueCutoff = 1`. For example, `Edge_ORA` returns 9 of 16
-pathways here.
+missing even at `pvalueCutoff = 1` (all 10 of the toy pathways happen to have
+at least one such overlap here, so none are dropped in this particular
+example; on your own data, check `nrow()` of the ORA results against the
+number of input pathways if you want to confirm none were silently excluded).
 
 # Step 3: Visualize results
 
@@ -286,6 +288,16 @@ question. See the method performance comparisons in the miREA manuscript
 `Edge_Topology` in particular can be computationally expensive on large,
 real-sized pathway/background data. Consider excluding it or increasing
 `ncores` for large analyses.
+
+For the permutation-based methods (`Edge_Score2D`, `Edge_Topology`,
+`Edge_Network`), we recommend `iter >= 1000` (the default); this vignette only
+uses `iter = 20` to keep build time short on the small toy dataset, and is not
+representative of real analyses. On real-sized data -- the manuscript's own
+BLCA analysis, a genome-scale background against 10 pathways, `iter = 1000` --
+`Edge_Topology` took about 30 minutes and `Edge_Network` about 3.6 minutes,
+both on 8 cores. Runtime scales with the size of the background MGI/GGI
+network and the number of pathways tested, so these numbers are only a rough
+guide; `ncores` is the main lever for scaling down wall-clock time.
 
 # Session info
 

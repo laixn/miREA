@@ -148,3 +148,75 @@ test_that("plotHeatmap() derives legend titles from names(gene_annot)/names(mir_
   expect_true(any(grepl("TP53_pathway", lgd_titles)))
   expect_true(any(grepl("let7_family", lgd_titles)))
 })
+
+test_that("plotHeatmap() rejects an unsupported method and a non-edge-based method", {
+  input_data <- getAllInputData(
+    methods = c("Edge_ORA", "TG_ORA"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+  )
+  background <- list(TG = unique(toy_pathway$gene),
+                      Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+  result <- miREA(
+    methods = c("Edge_ORA", "TG_ORA"), input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+  )
+
+  expect_error(
+    plotHeatmap(method = "bogus_method", result = result, input_data = input_data),
+    "No valid result for method"
+  )
+  expect_error(
+    plotHeatmap(method = "TG_ORA", result = result, input_data = input_data),
+    "Only useful when the methods include Edge-based method"
+  )
+  expect_error(
+    plotHeatmap(method = c("Edge_ORA", "TG_ORA"), result = result, input_data = input_data),
+    "Please specify only ONE"
+  )
+})
+
+test_that("plotHeatmap() falls back to the top n_pathway smallest-padj pathways when none pass penrichCutoff", {
+  input_data <- getAllInputData(
+    methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  background <- list(Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+  result <- miREA(
+    methods = "Edge_ORA", input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+  )
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  expect_warning(
+    res <- plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data,
+                        penrichCutoff = 1e-300, n_pathway = 3),
+    "No enriched items"
+  )
+  expect_type(res, "list")
+  expect_equal(nrow(res$ht_list@ht_list$ht1@matrix), 3)
+})
+
+test_that("plotHeatmap() truncates to n_mir_heatmap miRNAs", {
+  input_data <- getAllInputData(
+    methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  background <- list(Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+  result <- miREA(
+    methods = "Edge_ORA", input_data = input_data, background = background,
+    minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+  )
+
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  res <- plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data,
+                      penrichCutoff = 1, n_mir_heatmap = 2)
+  expect_lte(nrow(res$ht_list@ht_list$ht2@matrix), 2)
+})
