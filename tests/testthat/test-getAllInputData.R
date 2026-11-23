@@ -246,7 +246,7 @@ test_that("getAllInputData() fetches Omnipath live when background_GGI=NULL and 
       skip(paste("Omnipath/OmnipathR unavailable in this environment:", conditionMessage(e)))
     }
   )
-  expect_equal(colnames(input_data$background_GGI), c("from", "to"))
+  expect_equal(colnames(input_data$background_GGI), c("from", "to", "interact"))
   expect_true(nrow(input_data$background_GGI) > 0)
 
   # GGI_source = NULL is documented to behave the same as "Omnipath"
@@ -261,7 +261,7 @@ test_that("getAllInputData() fetches Omnipath live when background_GGI=NULL and 
       skip(paste("Omnipath/OmnipathR unavailable in this environment:", conditionMessage(e)))
     }
   )
-  expect_equal(colnames(input_data_null_source$background_GGI), c("from", "to"))
+  expect_equal(colnames(input_data_null_source$background_GGI), c("from", "to", "interact"))
 })
 
 test_that("getAllInputData() uses a user-supplied background_GGI directly and ignores GGI_source", {
