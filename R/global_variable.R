@@ -87,18 +87,6 @@ default_pvalueType <- c("pos", "std", "neg")
 default_GGI_source <- c("Omnipath", "Reactome")
 
 #' @noRd
-snapshot_rng_state <- function() {
-  old <- if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) get(".Random.seed", envir = .GlobalEnv) else NULL
-  function() {
-    if (is.null(old)) {
-      if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) rm(".Random.seed", envir = .GlobalEnv)
-    } else {
-      assign(".Random.seed", old, envir = .GlobalEnv)
-    }
-  }
-}
-
-#' @noRd
 combine_parallel <- function(res) {
   dplyr::bind_rows(lapply(res, as.data.frame))
 }

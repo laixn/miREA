@@ -38,7 +38,7 @@ Use default_pAdjMethod to find all possible values.
 If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
 
 \item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.}
 
@@ -55,7 +55,12 @@ is made reproducible via [withr::with_seed()], which does not alter
 the caller's global random state.}
 }
 \value{
-A dataframe containing the enrichment result for Edge-Network.
+A dataframe containing the enrichment result for Edge-Network,
+       including `nMoreExtreme` (the number of permutation scores at
+       least as extreme as the observed score, out of `iter`), `p_value`
+       (a normal-approximation p-value from the permutation null
+       distribution), and `p_empirical` (the empirical permutation
+       p-value, `(nMoreExtreme + 1) / (iter + 1)`).
 }
 \description{
 Perform miRNA-gene interaction (MGI) network enrichment analysis, based on

@@ -19,25 +19,25 @@
 #'          input_data$pathway_GGI: a dataframe containing pathway and their directed GGI involved. Only useful when methods contain Edge_Topology and Edge_Network.
 #'          input_data$MGI: a dataframe containing MGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
 #'          input_data$GGI: a dataframe containing directed GGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
-#'          input_data$dict_MGI: a dataframe containing all posible MGIs and their expression profiles. Only useful for Edge_Topology.
+#'          input_data$dict_MGI: a dataframe containing all possible MGIs and their expression profiles. Only useful for Edge_Topology.
 #'
 #' @param background Contains background items (genes for TG_ method, miRNAs for MiR_ method, MGIs for Edge_ method).
 #'                    If methods contains more than one targets, it should be a list where each sub-element is a character vector named by the target (TG, MiR, or Edge).
 #'                    If methods contains only one target, it could also be a character vector.
-#'                    If NULL, use the global background instead.
+#'                    Required: miREA does not ship a bundled default background, so background = NULL raises an error.
 #' @param minSize The minimum pathway set sizes allowed for analysis, filtering out pathways with number of members less than the minSize threshold.
 #' @param maxSize The maximum pathway set sizes allowed for analysis, filtering out pathways with number of members more than the maxSize threshold.
 #' @param pvalueType How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is list(TG = "std", MiR = "std", Edge = "neg").
 #' The "pos" and "neg" score types are intended to be used for one-tailed tests
 #' (i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
 #' The "std" is used when interested in both positive and negative scores, which is the same as the original GSEA algorithm.
-#' Only used in Score-based method (Edge_Score2D, Edge_TopoScore, TG_Score, MiR_Score).
+#' Only used in Score-based method (Edge_Score2D, Edge_Topology, TG_Score, MiR_Score).
 #' @param pAdjMethod The method used for multiple testing correction to adjust p-values and control the false discovery rate.
 #'        Use default_pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 #'        If no adjustment is desired, set pAdjMethod = "none".
-#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 1.
-#' @param iter Number of iteractions when perform permutation test. Default iter is 1000.
+#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 1.
+#' @param iter Number of iterations when perform permutation test. Default iter is 1000.
 #' @param ncores Number of cores for parallel computing. Only useful if methods contain Edge_Score2D, Edge_Topology, and Edge_Network.
 #'        It accepts either a integer that is universal for all methods, or a list specify the number of cores for each method separately.
 #'        Our recommendation is to specify different nodes for each method. E.g., list(Edge_Score2D = 4, Edge_Topology = 32, Edge_Network = 8).

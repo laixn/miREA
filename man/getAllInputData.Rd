@@ -26,11 +26,11 @@ getAllInputData(
 
 \item{gene_DEdata}{optional, except for TG-ORA, MiR-ORA, and MiR-Score methods, should be a four-column dataframe, containing gene, log2FC, stat, padj}
 
-\item{background_MGI}{required for MiR_ and Edge_ methods. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. miREA does not ship a bundled default.}
+\item{background_MGI}{optional. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. If NULL, miREA falls back to its bundled `background_MGI` dataset (the full manuscript background).}
 
-\item{background_GGI}{optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, we would use GGI_source to determine the background GGIs.}
+\item{background_GGI}{optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, miREA falls back to its bundled `background_GGI_Omnipath`/`background_GGI_Reactome` dataset (the full manuscript background for that source), selected via GGI_source. These are frozen snapshots; to fetch a fresh/current background instead, see `inst/scripts/build_background_GGI.R`.}
 
-\item{GGI_source}{optional, select from "Omnipath" or "Reactome". Used when background_GGI is not provided. The default is Omnipath.}
+\item{GGI_source}{optional, select from "Omnipath" or "Reactome". Selects which bundled background_GGI snapshot to fall back to when background_GGI is not provided. The default is Omnipath.}
 
 \item{gene_mat}{optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.}
 

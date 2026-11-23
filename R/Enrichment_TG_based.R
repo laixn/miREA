@@ -9,7 +9,7 @@
 #'        Use default_pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 #'        If no adjustment is desired, set pAdjMethod = "none".
-#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.
+#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.
 #' @param minSize The minimum gene set sizes allowed for analysis, filtering out pathways with number of member genes less than the minSize threshold.
 #' @param maxSize The maximum gene set sizes allowed for analysis, filtering out pathways with number of member genes more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for TG-ORA.
@@ -65,7 +65,7 @@ TG_ORA <- function(TG, background = NULL, pathway, pAdjMethod = "BH", pvalueCuto
 #'        Use default_pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 #'        If no adjustment is desired, set pAdjMethod = "none".
-#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.
+#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.
 #' @param minSize The minimum gene set sizes allowed for analysis, filtering out pathways with number of member genes less than the minSize threshold.
 #' @param maxSize The maximum gene set sizes allowed for analysis, filtering out pathways with number of member genes more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for TG-Score.

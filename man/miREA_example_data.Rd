@@ -31,9 +31,31 @@
 }
 }
 \source{
-Derived from TCGA BLCA data and MSigDB bladder-cancer-specific gene
-  sets, as processed for the miREA manuscript
-  (\doi{10.64898/2026.02.27.708509}).
+\describe{
+  \item{toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat}{Derived
+    from TCGA BLCA RNA-seq/miRNA-seq data, as processed for the miREA
+    manuscript (\doi{10.64898/2026.02.27.708509}).}
+  \item{toy_pathway}{Subset of MSigDB bladder-cancer-specific gene sets
+    (16 sets, including `KEGG_BLADDER_CANCER`). KEGG-derived gene sets
+    carry their own redistribution restrictions (see
+    \url{https://www.genome.jp/kegg/legal.html}), separate from MSigDB's
+    own license terms; this has not been independently verified for the
+    bundled set.}
+  \item{toy_background_MGI}{Subset of a miRNA-gene target-site prediction
+    table from Hua, X., Li, Y., Pentaparthi, S.R., et al. (2023).
+    Landscape of MicroRNA Regulatory Network Architecture and Functional
+    Rerouting in Cancer. Cancer Res, 83, 59-73, deduplicated to
+    (miRNA, gene) pairs and harmonized to current HGNC gene symbols.}
+  \item{toy_background_GGI}{Subset of Omnipath interactions
+    (\code{OmnipathR::import_all_interactions()}), filtered to
+    interactions with experimental support (\code{n_references != 0}),
+    with \code{interact} derived from \code{is_stimulation -
+    is_inhibition}, harmonized to current HGNC gene symbols. Omnipath
+    aggregates many underlying interaction databases, some of which
+    (e.g. SPIKE, NetPath) impose non-commercial-use restrictions; which
+    resources contributed to this particular subset has not been
+    independently verified.}
+}
 }
 \description{
 A small, self-contained example dataset derived from the real BLCA
@@ -48,9 +70,11 @@ methods' stricter correlation-significance filters, real non-empty
 results, so every exported function in the package can run on real (not
 synthetic) data. `toy_gene_mat`/`toy_mir_mat` use only the tumor samples
 (correlation is computed within the tumor population, as in the
-manuscript). See `data-raw/generate_toy_data.R` for the full generation
-script. For the full datasets used in the manuscript, see the Zenodo
-deposit at
+manuscript). See `data-raw/generate_toy_data.R` in the package's GitHub
+repository (\url{https://github.com/laixn/miREA}; not included in the
+installed package, since it depends on local TCGA files that are not
+redistributed) for the generation script. For the full datasets used in
+the manuscript, see the Zenodo deposit at
 \url{https://zenodo.org/records/18803209}.
 }
 \examples{

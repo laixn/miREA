@@ -11,7 +11,7 @@
 #'        Use default_pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 #'        If no adjustment is desired, set pAdjMethod = "none".
-#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.
+#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.
 #' @param minSize The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.
 #' @param maxSize The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.
 #' @param iter Number of iterations for permutation test
@@ -22,7 +22,12 @@
 #'        is made reproducible via [withr::with_seed()], which does not alter
 #'        the caller's global random state.
 #'
-#' @return a dataframe contains enrichment result for Edge-Score2D
+#' @return a dataframe contains enrichment result for Edge-Score2D, including
+#'        `nMoreExtreme` (the number of permutation scores at least as
+#'        extreme as the observed score, out of `iter`), `p_value` (a
+#'        normal-approximation p-value from the permutation null
+#'        distribution), and `p_empirical` (the empirical permutation
+#'        p-value, `(nMoreExtreme + 1) / (iter + 1)`).
 #' @examples
 #' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
 #' data(toy_gene_mat); data(toy_mir_mat); data(toy_background_MGI)
@@ -40,10 +45,8 @@
 #' @export
 Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL, seed = NULL){
   message("\n  Start Edge_Score2D analysis ...")
-  restore_rng <- snapshot_rng_state()
-  on.exit(restore_rng(), add = TRUE)
 
-  data.table::setDT(MGI2D)
+  MGI2D <- data.table::copy(data.table::as.data.table(MGI2D))
   MGI2D <- na.omit(MGI2D)
   if (is.null(MGI2D)||!is.data.frame(MGI2D)){
     stop("Please make sure the input MGI2D is a dataframe!")
@@ -72,7 +75,7 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
 
 
   # filtering pathway in the background
-  data.table::setDT(pathway)
+  pathway <- data.table::copy(data.table::as.data.table(pathway))
   pathway[, MGI := paste0(miRNA, ":", gene)]
   pathway <- pathway[MGI %in% MGI2D$MGI]
   pathway <- pathway[MGI2D, on = .(MGI), nomatch = 0L]
@@ -94,9 +97,10 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
     warning("No pathways meet the size criteria.")
     return(data.frame(
       pathway = character(), MGISize = integer(),
-      r = numeric(), p_value = numeric(), padj = numeric(),
-      nMoreExtreme = integer(), top10_MGI = character(),
-      r_random = character(), stringsAsFactors = FALSE
+      score = numeric(), rand_score_dist = character(),
+      p_value = numeric(), padj = numeric(),
+      nMoreExtreme = integer(), p_empirical = numeric(),
+      TopMGI = character(), stringsAsFactors = FALSE
     ))}
 
   if (is.null(ncores) || ncores == 1){
@@ -105,43 +109,39 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
 
   # generate random pathways
   message("    Generate random MGI set radius on ", ncores, " cores...")
-  setDT(pathway)
-  setDT(MGI2D)
 
   pathway_sizes <- table(pathway$pathway)
   unique_sizes <- sort(unique(pathway_sizes))
 
-  seeds_null <- if (is.null(seed)) {
-    sample(100000, iter, replace = FALSE)
-  } else {
-    withr::with_seed(seed, sample(100000, iter, replace = FALSE))
-  }
-
-  compute_random_r <- function(r_all, size, i){
-    withr::with_seed(seeds_null[i], sum(sample(r_all, size)))
-  }
   if (ncores == 1){
-    r_random_list <- list()
-    for (size in unique_sizes) {
-      r_random_list[[as.character(size)]] <- unlist(lapply(seq_len(iter), compute_random_r, size = size, r_all = r_all))
-    }} else {
+    generate_r_random_list <- function(){
+      r_random_list <- list()
+      for (size in unique_sizes) {
+        r_random_list[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
+      }
+      r_random_list
+    }
+    r_random_list <- if (is.null(seed)) {
+      generate_r_random_list()
+    } else {
+      withr::with_seed(seed, generate_r_random_list())
+    }
+  } else {
       random_core <- min(ncores, length(unique_sizes))
       cl <- parallel::makeCluster(random_core)
       on.exit(parallel::stopCluster(cl), add = TRUE)
-      parallel::clusterExport(cl, c("compute_random_r", "r_all", "iter", "seeds_null"), envir = environment())
-      parallel::clusterEvalQ(cl, requireNamespace("withr"))
+      if (!is.null(seed)) parallel::clusterSetRNGStream(cl, seed)
+      parallel::clusterExport(cl, c("r_all", "iter"), envir = environment())
       size_groups <- split(unique_sizes,
                            rep(seq_len(random_core), length.out = length(unique_sizes)))
-      seeds_split <- split(seeds_null, rep(seq_len(random_core), length.out = length(seeds_null)))
 
       r_random_list <-  parallel::parLapply(
         cl,
-        X = split(unique_sizes, rep(seq_len(random_core), length.out = length(unique_sizes))),
+        X = size_groups,
         fun = function(size_group) {
           sub_result <- list()
           for (size in size_group) {
-            r_values <- vapply(seq_len(iter), function(i) compute_random_r(r_all = r_all, size = size, i), numeric(1))
-            sub_result[[as.character(size)]] <- r_values
+            sub_result[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
           }
           return(sub_result)
         }
@@ -151,7 +151,7 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
     }
   r_random_list <- lapply(r_random_list, sort)
 
-  message("    Calculate pathway radius and siginificant level...")
+  message("    Calculate pathway radius and significant level...")
   result <- Edge_Score2D_simple(MGI2D = MGI2D, r_random_list = r_random_list, pathway = pathway, iter = iter)
   result <- result %>%
     dplyr::mutate(padj = stats::p.adjust(p_value, method = pAdjMethod)) %>%
@@ -159,7 +159,7 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
     dplyr::filter(
       p_value <= pvalueCutoff,
       padj <= pvalueCutoff) %>%
-    arrange(padj, decrease = FALSE)
+    arrange(padj)
 
   message("  Edge-Score2D analysis have finished!")
   return(result)
@@ -212,12 +212,14 @@ Edge_Score2D_single <- function(MGI2D, PW, r_random){
   r <- sum(points_data$r)
   count_leq <- findInterval(r, r_random) # count <= r
   nMoreExtreme <- length(r_random) - count_leq
+  p_empirical <- (nMoreExtreme + 1) / (length(r_random) + 1)
 
-  if (is.na(sd(r_random)) || sd(r_random) != 0){
-    z <- (r - mean(r_random)) / sd(r_random)
-    p_value <- pnorm(z, lower.tail = FALSE)
-  } else {
+  sd_r_random <- sd(r_random)
+  if (is.na(sd_r_random) || sd_r_random == 0){
     p_value <- 1.0000
+  } else {
+    z <- (r - mean(r_random)) / sd_r_random
+    p_value <- pnorm(z, lower.tail = FALSE)
   }
 
 
@@ -250,6 +252,7 @@ Edge_Score2D_single <- function(MGI2D, PW, r_random){
     "rand_score_dist" = paste(random_ds, collapse = ","),
     "p_value" = p_value,
     "nMoreExtreme" = nMoreExtreme,
+    "p_empirical" = p_empirical,
     "TopMGI" = paste(top_pairs, collapse = "/"),
     # "rand_score_dist" = paste(round(r_random, 4), collapse = ","),
     stringsAsFactors = FALSE

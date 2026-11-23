@@ -22,14 +22,16 @@ test_that("getAllInputData() builds all expected components for the full method 
   expect_true(nrow(input_data$dict_MGI) > 0)
 })
 
-test_that("getAllInputData() requires background_MGI", {
-  expect_error(
-    getAllInputData(
+test_that("getAllInputData() falls back to the bundled background_MGI when NULL", {
+  expect_message(
+    input_data <- getAllInputData(
       methods = "TG_ORA", pathway = toy_pathway,
       mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata
     ),
-    "background_MGI must be supplied"
+    "Using the bundled default background_MGI"
   )
+  data(background_MGI, package = "miREA")
+  expect_equal(nrow(input_data$background_MGI), nrow(background_MGI))
 })
 
 test_that("getAllInputData() works for a single method without the full pipeline", {

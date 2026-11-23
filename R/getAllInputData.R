@@ -10,9 +10,9 @@
 #' @param pathway compulsory. It should be a two-column pathway, containing pathway and gene, or a GSEABase GeneSetCollection object.
 #' @param mir_DEdata compulsory, should be a four-column dataframe, containing miRNA, log2FC, stat, padj
 #' @param gene_DEdata optional, except for TG-ORA, MiR-ORA, and MiR-Score methods, should be a four-column dataframe, containing gene, log2FC, stat, padj
-#' @param background_MGI required for MiR_ and Edge_ methods. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. miREA does not ship a bundled default.
-#' @param background_GGI optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, we would use GGI_source to determine the background GGIs.
-#' @param GGI_source optional, select from "Omnipath" or "Reactome". Used when background_GGI is not provided. The default is Omnipath.
+#' @param background_MGI optional. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. If NULL, miREA falls back to its bundled `background_MGI` dataset (the full manuscript background).
+#' @param background_GGI optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, miREA falls back to its bundled `background_GGI_Omnipath`/`background_GGI_Reactome` dataset (the full manuscript background for that source), selected via GGI_source. These are frozen snapshots; to fetch a fresh/current background instead, see `inst/scripts/build_background_GGI.R`.
+#' @param GGI_source optional, select from "Omnipath" or "Reactome". Selects which bundled background_GGI snapshot to fall back to when background_GGI is not provided. The default is Omnipath.
 #' @param gene_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param mir_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw miRNA expression matrix (each row a miRNA, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param scoreFun optional, needed for Edge_Score1D, Edge_Score2D, Edge_Topology. See default_scoreFun for all supportive methods.
@@ -74,10 +74,8 @@ getAllInputData <- function(methods, pathway,
   # target genes through it), so this is required unconditionally rather
   # than only for Edge_/MiR_ methods.
   if (is.null(background_MGI)){
-    stop("background_MGI must be supplied: a two-column data.frame of miRNA, gene ",
-         "pairs. miREA does not ship a bundled default background_MGI; see the ",
-         "package vignette for how to build one, or download the full background ",
-         "used in the miREA manuscript from its Zenodo deposit.")
+    message("No background_MGI is given. Using the bundled default background_MGI instead.\n")
+    utils::data("background_MGI", package = "miREA", envir = environment())
   }
   colnames(background_MGI)[seq_len(2)] <- c("miRNA", "gene")
 
@@ -85,10 +83,18 @@ getAllInputData <- function(methods, pathway,
   if (length(intersect(target_method, methods)) != 0){
     if (is.null(background_GGI)){
       if (! GGI_source %in% default_GGI_source){
-        stop("You tend to extract default background_GGI for", GGI_source,". But [GGI_source] you have specified are not involved. Please use default_GGI_source() to see all supporting options!")
+        stop("You tend to extract default background_GGI for ", GGI_source, ". But [GGI_source] you have specified are not involved. Please use default_GGI_source to see all supporting options!")
       }
-      warning("No background_GGI is given. Use global GGI list from ", GGI_source, " instead.\n")
-      load(paste0("data/raw_data/background/background_GGI_", GGI_source, ".RData"))
+      bundled_env <- new.env()
+      if (GGI_source == "Omnipath"){
+        message("No background_GGI is given. Using the bundled default background_GGI_Omnipath instead.\n")
+        utils::data("background_GGI_Omnipath", package = "miREA", envir = bundled_env)
+        background_GGI <- bundled_env[["background_GGI_Omnipath"]]
+      } else {
+        message("No background_GGI is given. Using the bundled default background_GGI_Reactome instead.\n")
+        utils::data("background_GGI_Reactome", package = "miREA", envir = bundled_env)
+        background_GGI <- bundled_env[["background_GGI_Reactome"]]
+      }
     }
     colnames(background_GGI)[seq_len(2)] <- c("from", "to")
   }
@@ -191,7 +197,7 @@ getAllInputData <- function(methods, pathway,
 # gene_DEdata: TG_ORA, TG_Score
 # mir_DEdata: MiR_ORA, MiR_Score
 # background_MGI: could be either two-column dataframe, or a character vector with format [miRNA]:[gene]
-#                 Edge_ORA, Edge_Score1D, Edge_TopoDE, Edge_network
+#                 Edge_ORA, Edge_Score1D, Edge_Topology, Edge_Network
 # background_GGI
 # pathway
 # scoreFun: Edge_Score1D
@@ -200,7 +206,7 @@ getAllInputData <- function(methods, pathway,
 # mir_DEdata: compulsory, should be four-column dataframe, containing miRNA, log2FC, stat, padj
 # gene_mat: only needed for Edge_ method
 # mir_mat: only needed for Edge_ method
-# scoreFun: only needed for Edge_Score1D, Edge_Score2D, Edge_TopoScore, Edge_TopoScore_weight, choose one from rank, sigmoid, normalize
+# scoreFun: only needed for Edge_Score1D, Edge_Score2D, Edge_Topology, choose one from rank, sigmoid, normalize
 # background_MGI: only needed for Edge_ method
 # will return a list, contains the input of each method
 get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
@@ -239,13 +245,12 @@ get_data_validate_inputs <- function(methods, gene_DEdata, gene_mat, mir_mat, ba
     warning("You didn't specify scoreFun for transform expression score, set 'rank' automatically.\n")
     scoreFun <- "rank"
   }
-  # NOTE: required unconditionally — see the equivalent check in
-  # getAllInputData() for why this can't be scoped to Edge_ methods only.
+  # NOTE: unreachable in practice — getAllInputData() resolves background_MGI
+  # (falling back to the bundled default) before calling get_data(), which is
+  # the only caller of this function. Kept as a defensive safety net.
   if (is.null(background_MGI)){
     stop("background_MGI must be supplied: a two-column data.frame of miRNA, gene ",
-         "pairs. miREA does not ship a bundled default background_MGI; see the ",
-         "package vignette for how to build one, or download the full background ",
-         "used in the miREA manuscript from its Zenodo deposit.")
+         "pairs, or use the bundled default background_MGI via getAllInputData().")
   }
   scoreFun
 }
@@ -406,7 +411,7 @@ get_pathway_data <- function(methods, pathway, background_MGI){
 }
 
 
-# only useful for Edge_TopoDE, Edge_TopoScore, Edge_network, Edge_TopoScore_weight
+# only useful for Edge_Topology, Edge_Network
 get_pathway_GGI_data <- function(methods, pathway, background_GGI){
   target_method <- c("Edge_Network", "Edge_Topology")
   if (length(intersect(target_method, methods)) == 0){
@@ -434,7 +439,7 @@ get_pathway_GGI_data <- function(methods, pathway, background_GGI){
   }
 }
 
-# DEMGI: result[["data"]][["Edge_network"]]
+# DEMGI: result[["data"]][["Edge_Network"]]
 get_GGI_data <- function(methods, DEMGI, pathway, background_GGI){ # gene_mat, gene_DEdata,
   if (! "Edge_Network" %in% methods){
     warning("The methods you have selected don't need global GGI data. Skip the get_GGI_data process.\n")
@@ -498,7 +503,7 @@ get_MGI_data <- function(methods, DEMGI, pathway, pathway_MGI, background_MGI){
 }
 
 
-# useful in TopoDE, TopoScore, TopoScore_weight, and network
+# useful in Edge_Topology and Edge_Network
 # data is data$data get in the get_data() function
 get_dict_MGI <- function(methods, mir_mat, gene_mat, data, pathway_MGI, scoreFun){
   if (! "Edge_Topology" %in% methods){

@@ -57,6 +57,8 @@ Suggests:
     BiocStyle,
     GSEABase,
     knitr,
+    multiMiR,
+    OmnipathR,
     rmarkdown,
     SummarizedExperiment,
     testthat (>= 3.0.0)

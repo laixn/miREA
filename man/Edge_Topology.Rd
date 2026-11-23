@@ -36,12 +36,18 @@ The "std" is used when interested in both positive and negative scores.}
 
 \item{dict_MGI}{A four-column dataframe, including MGI miRNA gene strength. Containing all possible MGIs that could be used in permutation test. Equals to input_data$dict_MGI.}
 
-\item{iter}{Number of iterations for permutation test.}
+\item{iter}{Maximum number of permutations for the permutation test. The
+actual number of permutations run for a given pathway can be lower:
+internally, permutations are drawn in up to three sequential
+stages (roughly 10%, 50%, and 100% of `iter`), stopping early once
+enough extreme permutation scores have been observed to settle the
+p-value. The number of permutations actually used for a pathway is
+reported in the `nPerm` column of the result.}
 
 \item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
 
 \item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.}
 
@@ -56,7 +62,13 @@ is made reproducible via [withr::with_seed()], which does not alter
 the caller's global random state.}
 }
 \value{
-A dataframe containing the enrichment result for Edge-Topology.
+A dataframe containing the enrichment result for Edge-Topology,
+       including `nPerm` (the actual number of permutations run for that
+       pathway, see `iter`), `nMoreExtreme` (the number of those
+       permutations at least as extreme as the observed score), `p_value`
+       (a normal-approximation p-value from the permutation null
+       distribution), and `p_empirical` (the empirical permutation
+       p-value, `(nMoreExtreme + 1) / (nPerm + 1)`).
 }
 \description{
 Perform miRNA-gene interaction (MGI) network enrichment analysis, based on

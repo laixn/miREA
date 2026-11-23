@@ -14,7 +14,7 @@
 #'        Use default_pAdjMethod to find all possible values.
 #'        If not specified, Benjamini & Hochberg (BH) method will be automatically used.
 #'        If no adjustment is desired, set pAdjMethod = "none".
-#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values below the specified pvalueCutoff. Default pvalueCutoff is 0.05.
+#' @param pvalueCutoff The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.
 #' @param minSize The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.
 #' @param maxSize The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.
 #' @param iter Number of iterations for permutation test
@@ -24,7 +24,12 @@
 #'        on the caller's current random state. If supplied, the permutation
 #'        is made reproducible via [withr::with_seed()], which does not alter
 #'        the caller's global random state.
-#' @return A dataframe containing the enrichment result for Edge-Network.
+#' @return A dataframe containing the enrichment result for Edge-Network,
+#'        including `nMoreExtreme` (the number of permutation scores at
+#'        least as extreme as the observed score, out of `iter`), `p_value`
+#'        (a normal-approximation p-value from the permutation null
+#'        distribution), and `p_empirical` (the empirical permutation
+#'        p-value, `(nMoreExtreme + 1) / (iter + 1)`).
 #' @examples
 #' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
 #' data(toy_gene_mat); data(toy_mir_mat)
@@ -53,8 +58,6 @@ Edge_Network <- function(DEMGI,
                          minSize = NULL, maxSize = NULL,
                          iter = 1000, ncores = NULL, seed = NULL){
   message("\n  Start Edge-Network analysis ...")
-  restore_rng <- snapshot_rng_state()
-  on.exit(restore_rng(), add = TRUE)
   if (is.null(DEMGI)) {
     stop("A valid character DEMGI vector contains the differential expressed MGI must be entered!")
   }
@@ -76,8 +79,10 @@ Edge_Network <- function(DEMGI,
   if (n_pathway == 0) {
     warning("No pathways meet the size criteria.")
     return(data.frame(
-      pathway = character(), n_MGI = integer(), score = numeric(), rand_score_dist = character(), p_value = numeric(),  padj = numeric(),
-      contribute_MGI = character(), n_contribute_MGI = integer(),
+      pathway = character(), n_MGI = integer(), score = numeric(), rand_score_dist = character(),
+      z = numeric(), p_value = numeric(),
+      nMoreExtreme = integer(), p_empirical = numeric(), padj = numeric(),
+      contribute_edge = character(), n_contribute_edge = integer(),
       stringsAsFactors = FALSE
     ))}
 
@@ -105,7 +110,7 @@ Edge_Network <- function(DEMGI,
 
   final <- edge_network_finalize_results(
     obs_result = scored$obs_result, perm_result = scored$perm_result, contributing_mgi = scored$contributing_mgi,
-    MGISize = MGISize, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff
+    MGISize = MGISize, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, n_iter = scored$n_iter
   )
 
   message("  Edge-Network analysis have finished!")
@@ -200,26 +205,22 @@ edge_network_build_restart_matrix <- function(edge_ids, all_edges, pathway, DEMG
   MGI_pw_indices <- which(all_edges$type == "MGI" & edge_ids %in% pathway$MGI) # all MGIs that in the randomization range
   MGI_connect_indices <- setdiff(which(all_edges$type == "MGI"), c(MGI_out_indices, MGI_pw_indices))
 
-  seeds_null <- if (is.null(seed)) {
-    sample(10000, iter, replace = FALSE)
+  draw_random_restart <- function(i){
+    new_restart <- rep(0, length(edge_ids))
+    new_restart[MGI_out_indices] <- 1 # fixed DEMGI that outside the pathways as 1
+    selected_pw_indices <- sample(MGI_pw_indices, num_DE_in, replace = FALSE)
+    selected_connect_indices <- sample(MGI_connect_indices, num_DE_connect, replace = FALSE)
+    selected_indices <- c(selected_pw_indices, selected_connect_indices)
+    new_restart[selected_indices] <- 1
+    new_restart
+  }
+  random_restarts <- if (is.null(seed)) {
+    vapply(seq_len(iter), draw_random_restart, numeric(length(edge_ids)))
   } else {
-    withr::with_seed(seed, sample(10000, iter, replace = FALSE))
+    withr::with_seed(seed, vapply(seq_len(iter), draw_random_restart, numeric(length(edge_ids))))
   }
 
-  restart_matrix <- cbind(
-    restart_list,
-    vapply(seq_len(iter), function(i){
-      withr::with_seed(seeds_null[i], {
-        new_restart <- rep(0, length(edge_ids))
-        new_restart[MGI_out_indices] <- 1 # fixed DEMGI that outside the pathways as 1
-        selected_pw_indices <- sample(MGI_pw_indices, num_DE_in, replace = FALSE)
-        selected_connect_indices <- sample(MGI_connect_indices, num_DE_connect, replace = FALSE)
-        selected_indices <- c(selected_pw_indices, selected_connect_indices)
-        new_restart[selected_indices] <- 1
-        new_restart
-      })
-    }, numeric(length(edge_ids)))
-  )
+  restart_matrix <- cbind(restart_list, random_restarts)
   colnames(restart_matrix) <- c('OBS', paste0("P", seq(iter)))
 
   restart_matrix <- as(Matrix::Matrix(restart_matrix, sparse = TRUE), "dgCMatrix")
@@ -359,6 +360,11 @@ edge_network_pathway_scores <- function(pathway, pathway_GGI, obs_score, perm_sc
   perm_result_mat <- P %*% perm_scores  # pathways x iterations
 
   # convert back to data.table
+  # Matrix::summary() only returns the stored (non-zero) entries of the sparse
+  # product; pathway/iteration combinations whose propagated score is exactly
+  # zero are legitimately missing from perm_coo, not numerically negligible.
+  # edge_network_finalize_results() accounts for this explicitly via n_iter,
+  # rather than assuming perm_result contains every (pathway, iter) pair.
   perm_coo <- Matrix::summary(perm_result_mat)  # i,j,x
   perm_result <- data.table(
     pathway = rownames(perm_result_mat)[perm_coo$i],
@@ -366,44 +372,54 @@ edge_network_pathway_scores <- function(pathway, pathway_GGI, obs_score, perm_sc
     score = perm_coo$x
   )
 
-  list(obs_result = obs_result, contributing_mgi = contributing_mgi, perm_result = perm_result)
+  list(obs_result = obs_result, contributing_mgi = contributing_mgi, perm_result = perm_result,
+       n_iter = ncol(perm_result_mat))
 }
 
 #' @noRd
 edge_network_finalize_results <- function(obs_result, perm_result, contributing_mgi,
-                                           MGISize, pAdjMethod, pvalueCutoff) {
-  random_stats <- perm_result[, .(
-    rand_score_dist = paste(
-      sprintf("%.4f", min(score)),
-      sprintf("%.4f", quantile(score, 0.25)),
-      sprintf("%.4f", median(score)),
-      sprintf("%.4f", mean(score)),
-      sprintf("%.4f", quantile(score, 0.75)),
-      sprintf("%.4f", max(score)),
-      sep = ","
-    )
-  ), by = pathway]
+                                           MGISize, pAdjMethod, pvalueCutoff, n_iter) {
+  # perm_result only stores the non-zero permutation scores (see
+  # edge_network_pathway_scores()); reconstruct each pathway's true null
+  # distribution (length n_iter, zero-padded) one pathway at a time so the
+  # mean/sd/quantiles and nMoreExtreme count the missing zeros correctly,
+  # without ever materializing the full pathway-by-iteration matrix.
+  all_pathways <- obs_result$pathway
+  score_list <- split(perm_result$score, perm_result$pathway)
+  obs_score_by_pathway <- setNames(obs_result$score, obs_result$pathway)
 
-  result <- merge(perm_result, obs_result, by = "pathway", suffixes = c("_perm", "_obs"))
+  pathway_stats <- rbindlist(lapply(all_pathways, function(pw){
+    stored <- score_list[[pw]]
+    if (is.null(stored)) stored <- numeric(0)
+    full <- c(stored, rep(0, n_iter - length(stored)))
+    obs <- obs_score_by_pathway[[pw]]
 
-  # calculate p-values
-  pval_dt <- result[, {
-    sd_perm <- sd(score_perm)
-    mu_perm <- mean(score_perm)
-    obs <- unique(score_obs)
+    sd_perm <- sd(full)
+    mu_perm <- mean(full)
     if (is.na(sd_perm) || sd_perm == 0) {
-      .(z = NA_real_,
-        p_value = 1.0000)
+      z <- NA_real_
+      p_value <- 1.0000
     } else {
       z <- (obs - mu_perm) / sd_perm
-      p <- pnorm(z, lower.tail = FALSE)
-      .(z = as.numeric(z),
-        p_value = as.numeric(p))
+      p_value <- pnorm(z, lower.tail = FALSE)
     }
-  }, by = pathway]
+    nMoreExtreme <- sum(full >= obs)
+    p_empirical <- (nMoreExtreme + 1) / (n_iter + 1)
 
-  final <- merge(obs_result, pval_dt, by = "pathway")
-  final <- merge(final, random_stats, by = "pathway")
+    rand_score_dist <- paste(
+      sprintf("%.4f", min(full)),
+      sprintf("%.4f", quantile(full, 0.25)),
+      sprintf("%.4f", median(full)),
+      sprintf("%.4f", mu_perm),
+      sprintf("%.4f", quantile(full, 0.75)),
+      sprintf("%.4f", max(full)),
+      sep = ","
+    )
+    data.table(pathway = pw, rand_score_dist = rand_score_dist,
+               z = z, p_value = p_value, nMoreExtreme = nMoreExtreme, p_empirical = p_empirical)
+  }))
+
+  final <- merge(obs_result, pathway_stats, by = "pathway")
   final[, padj := p.adjust(p_value, method = pAdjMethod)]
   final <- merge(final, contributing_mgi, by = "pathway", all.x = TRUE)
   final <- merge(MGISize, final, by = "pathway")

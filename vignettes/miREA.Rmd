@@ -163,6 +163,34 @@ does not ship a bundled default background. Build one from your own
 background_MGI/background_GGI, or download the full background used in the
 manuscript from the Zenodo deposit linked above.
 
+## Building a custom background_MGI/background_GGI
+
+`background_MGI` (curated miRNA-gene interactions) is always required for
+`MiR_`/`Edge_` methods; one option is `multiMiR::get_multimir()`, which
+queries several curated/predicted miRNA-target databases:
+
+```{r build-background-mgi, eval=FALSE}
+mgi <- multiMiR::get_multimir(table = "validated", summary = TRUE)
+background_MGI <- unique(mgi@data[, c("mature_mirna_id", "target_symbol")])
+colnames(background_MGI) <- c("miRNA", "gene")
+```
+
+`background_GGI` (gene-gene interactions, needed for `Edge_Topology` and
+`Edge_Network`) falls back to a bundled snapshot (`data(background_GGI_Omnipath)`
+or `data(background_GGI_Reactome)`, selected via `GGI_source`) when
+`background_GGI = NULL`; see `getAllInputData()`. These are frozen snapshots
+from when the manuscript's background was built. To fetch a fresh/current
+background instead (e.g. because Omnipath's database has grown since), or to
+reproduce the exact filtering used in the manuscript, see
+`inst/scripts/build_background_GGI.R` in the package's GitHub repository
+(\url{https://github.com/laixn/miREA}):
+
+```{r build-background-ggi, eval=FALSE}
+interactions <- OmnipathR::import_all_interactions()
+background_GGI <- unique(interactions[, c("source_genesymbol", "target_genesymbol")])
+colnames(background_GGI) <- c("from", "to")
+```
+
 ```{r run-miREA}
 background <- list(
   TG = unique(toy_pathway$gene),
