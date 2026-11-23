@@ -31,17 +31,17 @@
 #' @return A heatmap plot either in the current window, or saved as heatmap_[method].pdf in the plot_path.
 #' @examples
 #' data(toy_pathway); data(toy_gene_DEdata); data(toy_mir_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat); data(toy_background_MGI)
+#' data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
 #' # Edge_Score2D is included so input_data carries the MGI "strength" scores
 #' # plotHeatmap() needs for its heatmap cells, without running it in miREA().
 #' input_data <- getAllInputData(
 #'   methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
 #'   mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-#'   background_MGI = toy_background_MGI,
+#'   background_MGI = background_MGI,
 #'   gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
 #' )
 #' background <- list(
-#'   Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+#'   Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 #' )
 #' result <- miREA(
 #'   methods = "Edge_ORA", input_data = input_data, background = background,

@@ -39,10 +39,10 @@ A dataframe containing the enrichment result for TG-ORA.
 Perform target gene enrichment analysis based on the overlap between differentially expressed gene set and pathway gene set.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 input_data <- getAllInputData(
   methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- TG_ORA(
   TG = input_data$data$TG_ORA, background = unique(toy_pathway$gene),

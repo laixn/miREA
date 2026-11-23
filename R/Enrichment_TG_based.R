@@ -14,10 +14,10 @@
 #' @param maxSize The maximum gene set sizes allowed for analysis, filtering out pathways with number of member genes more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for TG-ORA.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-#'   gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+#'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 #' )
 #' res <- TG_ORA(
 #'   TG = input_data$data$TG_ORA, background = unique(toy_pathway$gene),
@@ -70,10 +70,10 @@ TG_ORA <- function(TG, background = NULL, pathway, pAdjMethod = "BH", pvalueCuto
 #' @param maxSize The maximum gene set sizes allowed for analysis, filtering out pathways with number of member genes more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for TG-Score.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "TG_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-#'   gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+#'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 #' )
 #' res <- TG_Score(
 #'   geneList = input_data$data$TG_Score, pathway = input_data$pathway$TG,

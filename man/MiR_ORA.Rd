@@ -39,10 +39,10 @@ A dataframe containing the enrichment result for MiR-ORA.
 Perform miRNA enrichment analysis based on the overlap between differentially expressed miRNA set and pathway miRNA set. Pathway miRNA set was mapped from pathway gene set.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 input_data <- getAllInputData(
   methods = "MiR_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- MiR_ORA(
   DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),

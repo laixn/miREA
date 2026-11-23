@@ -62,18 +62,18 @@
 #' microRNA-oriented enrichment analysis. bioRxiv. \doi{10.64898/2026.02.27.708509}
 #' @examples
 #' data(toy_pathway); data(toy_gene_DEdata); data(toy_mir_DEdata)
-#' data(toy_gene_mat); data(toy_mir_mat); data(toy_background_MGI); data(toy_background_GGI)
+#' data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = default_method_list, pathway = toy_pathway,
 #'   mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-#'   background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
-#'   GGI_source = "Omnipath", gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+#'   background_MGI = background_MGI, GGI_source = "Reactome",
+#'   gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
 #'   scoreFun = "rank"
 #' )
 #' background <- list(
 #'   TG = unique(toy_pathway$gene),
 #'   MiR = unique(input_data$pathway$MiR$miRNA),
-#'   Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+#'   Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 #' )
 #' result <- miREA(
 #'   methods = default_method_list, input_data = input_data, background = background,

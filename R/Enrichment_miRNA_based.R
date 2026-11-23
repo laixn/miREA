@@ -14,10 +14,10 @@
 #' @param maxSize The maximum miRNA set sizes allowed for analysis, filtering out pathways with number of member miRNAs more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for MiR-ORA.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "MiR_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-#'   gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+#'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 #' )
 #' res <- MiR_ORA(
 #'   DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),
@@ -87,10 +87,10 @@ MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalue
 #' @param maxSize The maximum miRNA set sizes allowed for analysis, filtering out pathways with number of member miRNAs more than the maxSize threshold.
 #' @return A dataframe containing the enrichment result for MiR-Score.
 #' @examples
-#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+#' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "MiR_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-#'   gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+#'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 #' )
 #' res <- MiR_Score(
 #'   miRList = input_data$data$MiR_Score, pathway = input_data$pathway$MiR,

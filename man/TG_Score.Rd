@@ -42,10 +42,10 @@ A dataframe containing the enrichment result for TG-Score.
 Perform target gene enrichment analysis based on whether the pathway genes are located unexpectedly forward towards the ranked gene list.
 }
 \examples{
-data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(toy_background_MGI)
+data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata); data(background_MGI)
 input_data <- getAllInputData(
   methods = "TG_Score", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- TG_Score(
   geneList = input_data$data$TG_Score, pathway = input_data$pathway$TG,

@@ -1,18 +1,18 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     toy_background_MGI, toy_background_GGI, package = "miREA")
+     background_MGI, package = "miREA")
 
 test_that("miREA() runs all nine methods and returns a result per method", {
   input_data <- suppressWarnings(getAllInputData(
     methods = default_method_list, pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
-    GGI_source = "Omnipath", gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+    background_MGI = background_MGI, GGI_source = "Reactome",
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
     scoreFun = "rank"
   ))
   background <- list(
     TG = unique(toy_pathway$gene),
     MiR = unique(input_data$pathway$MiR$miRNA),
-    Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
   )
 
   result <- suppressWarnings(miREA(
@@ -33,7 +33,7 @@ test_that("miREA() records the DE thresholds used to build input_data in its par
   input_data <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, DElogFCCutoff = 2, DEpadjCutoff = 0.01
+    background_MGI = background_MGI, DElogFCCutoff = 2, DEpadjCutoff = 0.01
   )
   result <- miREA(
     methods = "TG_ORA", input_data = input_data,
@@ -47,7 +47,7 @@ test_that("miREA() requires a background when none is supplied", {
   input_data <- suppressWarnings(getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI
+    background_MGI = background_MGI
   ))
   expect_error(
     miREA(methods = "TG_ORA", input_data = input_data, background = NULL),
@@ -81,7 +81,7 @@ test_that("miREA() validates input_data structure", {
 test_that("miREA() warns and drops invalid method names, erroring if none remain", {
   input_data <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-    gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   expect_warning(
     res <- miREA(methods = c("TG_ORA", "bogus_method"), input_data = input_data,
@@ -99,7 +99,7 @@ test_that("miREA() warns and drops invalid method names, erroring if none remain
 test_that("miREA() requires pathway_GGI/dict_MGI/GGI/MGI for topology/network methods", {
   input_data <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-    gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   input_data$data$Edge_Topology <- data.frame()
   input_data$pathway$Edge <- data.frame()
@@ -118,7 +118,7 @@ test_that("miREA() requires pathway_GGI/dict_MGI/GGI/MGI for topology/network me
 test_that("miREA() validates pvalueType and ncores", {
   input_data <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-    gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   background <- list(TG = unique(toy_pathway$gene))
 
@@ -147,7 +147,7 @@ test_that("miREA() validates pvalueType and ncores", {
 test_that("miREA() accepts a plain character vector background for a single target", {
   input_data <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-    gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   result <- miREA(methods = "TG_ORA", input_data = input_data,
                    background = unique(toy_pathway$gene))
@@ -157,7 +157,7 @@ test_that("miREA() accepts a plain character vector background for a single targ
 test_that("miREA() rejects a plain character vector background for multiple targets", {
   input_data <- getAllInputData(
     methods = c("TG_ORA", "MiR_ORA"), pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-    gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI
+    gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
   )
   expect_error(
     miREA(methods = c("TG_ORA", "MiR_ORA"), input_data = input_data,
@@ -170,14 +170,14 @@ test_that("miREA() continues running other methods after one method errors, and 
   input_data <- getAllInputData(
     methods = c("TG_ORA", "Edge_Score2D", "Edge_Topology"), pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
-    GGI_source = "Omnipath", gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    background_MGI = background_MGI, GGI_source = "Reactome",
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
   )
   # deliberately break TG_ORA's input so it errors inside miREA()'s tryCatch
   input_data$data$TG_ORA <- character(0)
   background <- list(
     TG = unique(toy_pathway$gene),
-    Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
   )
 
   expect_warning(

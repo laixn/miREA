@@ -4,7 +4,6 @@
 \name{miREA_background_data}
 \alias{miREA_background_data}
 \alias{background_MGI}
-\alias{background_GGI_Omnipath}
 \alias{background_GGI_Reactome}
 \title{Full background MGI/GGI data for miREA}
 \format{
@@ -12,9 +11,6 @@
   \item{background_MGI}{A data.frame with columns `miRNA`, `gene`:
     306,150 miRNA-gene interactions covering 2,562 miRNAs and 5,135
     protein-coding genes.}
-  \item{background_GGI_Omnipath}{A data.frame with columns
-    `source_genesymbol`, `target_genesymbol`, `interact`: a frozen
-    snapshot of 103,316 Omnipath gene-gene interactions.}
   \item{background_GGI_Reactome}{A data.frame with columns
     `source_gene`, `target_gene`, `direction`: a frozen snapshot of
     464,630 Reactome Functional Interaction network edges, covering
@@ -31,37 +27,32 @@
     Hua, X., Li, Y., Pentaparthi, S.R., et al. (2023). Landscape of
     MicroRNA Regulatory Network Architecture and Functional Rerouting in
     Cancer. Cancer Res, 83, 59-73.}
-  \item{background_GGI_Omnipath}{282,504 experimentally validated,
-    Homo-sapiens-only Omnipath interactions (\code{n_references != 0}),
-    with undirected interactions duplicated as bidirectional edges, then
-    harmonized to current HGNC gene symbols. This is a frozen snapshot:
-    fetching Omnipath live via [getAllInputData()]'s `GGI_source =
-    "Omnipath"` option reflects Omnipath's current (larger, still
-    growing) database contents instead. Omnipath aggregates many
-    underlying interaction databases, some of which (e.g. SPIKE,
-    NetPath) impose non-commercial-use restrictions; which resources
-    contributed to this particular snapshot has not been independently
-    verified.}
   \item{background_GGI_Reactome}{Reconstructed from the Reactome
     Functional Interaction network's predefined gene-gene interactions,
     with undirected/mixed-sign edges expanded into directed pairs, then
     harmonized to current HGNC gene symbols. This is a frozen snapshot
     of a specific dated Reactome FI release; fetching Reactome live via
     [getAllInputData()]'s `GGI_source = "Reactome"` option reconstructs
-    the network from a pinned (but not HGNC-harmonized) release instead.}
+    the network from a pinned (but not HGNC-harmonized) release instead.
+    Reactome's data is licensed CC0 (public domain dedication), so this
+    snapshot carries no usage restrictions.}
 }
 }
 \description{
-The complete (non-toy) miRNA-gene interaction (MGI) and gene-gene
-interaction (GGI) backgrounds used in the miREA manuscript. Unlike the
-`toy_background_MGI`/`toy_background_GGI` subsets above, these are not
-restricted to any particular gene/miRNA universe, and are the datasets
-[getAllInputData()] falls back to when `background_MGI`/`background_GGI`
-is not supplied.
+The complete (non-toy) miRNA-gene interaction (MGI) background, and the
+Reactome gene-gene interaction (GGI) background, used in the miREA
+manuscript. These are the datasets [getAllInputData()] falls back to when
+`background_MGI` is not supplied, or `background_GGI` is not supplied and
+`GGI_source = "Reactome"`. There is no bundled Omnipath GGI background:
+`GGI_source = "Omnipath"` instead fetches Omnipath's full interaction set
+live, with no license/source filtering, since Omnipath aggregates many
+underlying databases with their own (sometimes restrictive) licenses,
+unlike Reactome's data, which is CC0. Users who need a license-restricted
+subset should filter it themselves and supply it via `background_GGI`
+(see the "Third-party data licensing" section of the package README).
 }
 \examples{
 data(background_MGI)
-data(background_GGI_Omnipath)
 data(background_GGI_Reactome)
 }
 \keyword{datasets}

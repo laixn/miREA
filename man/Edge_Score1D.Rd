@@ -43,10 +43,10 @@ Perform miRNA-gene interaction (MGI) enrichment analysis based on whether the pa
 }
 \examples{
 data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
-data(toy_gene_mat); data(toy_mir_mat); data(toy_background_MGI)
+data(toy_gene_mat); data(toy_mir_mat); data(background_MGI)
 input_data <- getAllInputData(
   methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-  gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI,
+  gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
   gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
 )
 res <- Edge_Score1D(

@@ -94,8 +94,7 @@ data(toy_gene_DEdata)
 data(toy_mir_DEdata)
 data(toy_gene_mat)
 data(toy_mir_mat)
-data(toy_background_MGI)
-data(toy_background_GGI)
+data(background_MGI)
 
 head(toy_pathway)
 dim(toy_gene_mat)
@@ -116,9 +115,8 @@ input_data <- getAllInputData(
   pathway = toy_pathway,
   mir_DEdata = toy_mir_DEdata,
   gene_DEdata = toy_gene_DEdata,
-  background_MGI = toy_background_MGI,
-  background_GGI = toy_background_GGI,
-  GGI_source = "Omnipath",
+  background_MGI = background_MGI,
+  GGI_source = "Reactome",
   gene_mat = toy_gene_mat,
   mir_mat = toy_mir_mat,
   scoreFun = "rank"
@@ -149,7 +147,7 @@ pathway_gsc <- GeneSetCollection(Map(function(genes, name) GeneSet(genes, setNam
 input_data_bioc <- getAllInputData(
   methods = "Edge_ORA", pathway = pathway_gsc,
   mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-  background_MGI = toy_background_MGI,
+  background_MGI = background_MGI,
   gene_mat = gene_se, mir_mat = mir_se
 )
 identical(input_data_bioc$data$Edge_ORA, input_data$data$Edge_ORA)
@@ -176,26 +174,35 @@ colnames(background_MGI) <- c("miRNA", "gene")
 ```
 
 `background_GGI` (gene-gene interactions, needed for `Edge_Topology` and
-`Edge_Network`) falls back to a bundled snapshot (`data(background_GGI_Omnipath)`
-or `data(background_GGI_Reactome)`, selected via `GGI_source`) when
-`background_GGI = NULL`; see `getAllInputData()`. These are frozen snapshots
-from when the manuscript's background was built. To fetch a fresh/current
-background instead (e.g. because Omnipath's database has grown since), or to
-reproduce the exact filtering used in the manuscript, see
-`inst/scripts/build_background_GGI.R` in the package's GitHub repository
-(\url{https://github.com/laixn/miREA}):
+`Edge_Network`) is obtained differently depending on `GGI_source` when
+`background_GGI = NULL`; see `getAllInputData()`:
 
-```{r build-background-ggi, eval=FALSE}
-interactions <- OmnipathR::import_all_interactions()
-background_GGI <- unique(interactions[, c("source_genesymbol", "target_genesymbol")])
-colnames(background_GGI) <- c("from", "to")
-```
+* `GGI_source = "Omnipath"` (the default) fetches Omnipath's full
+  interaction set live (requires the `OmnipathR` package and an internet
+  connection), with no license/source filtering. Omnipath aggregates many
+  underlying databases with their own licenses, some of which restrict
+  commercial use — see the "Third-party data licensing" section of the
+  package README for why miREA does not filter this itself, and how to
+  supply a license-restricted subset via `background_GGI`. This package's
+  own license does not extend to such third-party data; users are
+  responsible for ensuring their use complies with the applicable source
+  licenses.
+* `GGI_source = "Reactome"` falls back to the bundled
+  `data(background_GGI_Reactome)` snapshot, a frozen, CC0-licensed (no
+  usage restriction) Reactome Functional Interaction network release.
+
+The manuscript's own `background_GGI` (Methods 2.1) was built by extracting
+282,504 experimentally validated, *Homo sapiens*-only interactions from
+Omnipath (undirected interactions treated as bidirectional), and
+reconstructing Reactome pathway networks from Reactome's predefined
+gene-gene interactions, for a combined 464,595 GGIs across 13,640 genes
+(see \doi{10.64898/2026.02.27.708509} for details).
 
 ```{r run-miREA}
 background <- list(
   TG = unique(toy_pathway$gene),
   MiR = unique(input_data$pathway$MiR$miRNA),
-  Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+  Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 )
 
 result <- miREA(

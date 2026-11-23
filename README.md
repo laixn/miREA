@@ -80,6 +80,37 @@ types and pathway sets used in the miREA manuscript have been deposited at
 
 ---
 
+## Third-party data licensing
+
+This package is distributed under the Artistic License 2.0. At runtime it
+can retrieve molecular interaction data from [Omnipath](https://omnipathdb.org/)
+(via `OmnipathR`) and/or bundle a [Reactome](https://reactome.org/) Functional
+Interaction network snapshot. These are not the same thing as the package's
+own license:
+
+* **Reactome**: Reactome's data is licensed
+  [CC0](https://reactome.org/license) (public domain dedication), so the
+  bundled `background_GGI_Reactome` snapshot has no usage restrictions, not
+  even attribution.
+* **Omnipath**: Omnipath aggregates interactions from many underlying
+  databases, each carrying its own license, some of which restrict
+  commercial use. `getAllInputData(..., GGI_source = "Omnipath")` fetches
+  Omnipath's **full, unfiltered** interaction set live (not bundled with the
+  package) — miREA does not filter by license or source. Omnipath/OmnipathR
+  does expose a `license` argument intended for this, but in our testing it
+  did not actually narrow the returned interactions, so rather than give a
+  false impression of filtering, miREA returns the data as-is. If your use
+  case requires a license-restricted subset (e.g. commercially-licensed
+  sources only), filter it yourself — for example using
+  `OmnipathR::resource_info()` to inspect each source's license — and supply
+  the result via `background_GGI`.
+
+The Artistic License 2.0 of this package does **not** extend to such
+third-party data. Users are responsible for ensuring their use of retrieved
+interaction data complies with the applicable source licenses.
+
+---
+
 ## Citation
 
 Zhesi Zhang, Xin Lai. miREA: a network-based tool for microRNA-oriented enrichment

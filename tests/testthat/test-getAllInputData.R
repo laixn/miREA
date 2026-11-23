@@ -1,5 +1,5 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     toy_background_MGI, toy_background_GGI, package = "miREA")
+     background_MGI, package = "miREA")
 
 test_that("getAllInputData() builds all expected components for the full method list", {
   input_data <- getAllInputData(
@@ -7,9 +7,8 @@ test_that("getAllInputData() builds all expected components for the full method 
     pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI,
-    background_GGI = toy_background_GGI,
-    GGI_source = "Omnipath",
+    background_MGI = background_MGI,
+    GGI_source = "Reactome",
     gene_mat = toy_gene_mat,
     mir_mat = toy_mir_mat,
     scoreFun = "rank"
@@ -38,7 +37,7 @@ test_that("getAllInputData() works for a single method without the full pipeline
   input_data <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI
+    background_MGI = background_MGI
   )
   expect_true(is.character(input_data$data$TG_ORA))
   expect_true(length(input_data$data$TG_ORA) > 0)
@@ -57,13 +56,13 @@ test_that("getAllInputData() accepts SummarizedExperiment and GeneSetCollection 
   input_data_std <- getAllInputData(
     methods = default_method_list, pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
+    background_MGI = background_MGI, GGI_source = "Reactome",
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
   )
   input_data_bioc <- getAllInputData(
     methods = default_method_list, pathway = pathway_gsc,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
+    background_MGI = background_MGI, GGI_source = "Reactome",
     gene_mat = gene_se, mir_mat = mir_se, scoreFun = "rank"
   )
 
@@ -75,7 +74,7 @@ test_that("getAllInputData() records the DE thresholds it used, and they actuall
   input_data_default <- getAllInputData(
     methods = c("TG_ORA", "Edge_ORA"), pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+    background_MGI = background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
   )
   expect_equal(
     input_data_default$threshold,
@@ -85,7 +84,7 @@ test_that("getAllInputData() records the DE thresholds it used, and they actuall
   input_data_strict <- getAllInputData(
     methods = c("TG_ORA", "Edge_ORA"), pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+    background_MGI = background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
     DElogFCCutoff = 10, DEpadjCutoff = 1e-6
   )
   expect_equal(input_data_strict$threshold$DElogFCCutoff, 10)
@@ -166,12 +165,12 @@ test_that("getAllInputData() accepts DESeq2::results()-style gene_DEdata and pro
   input_data_positional <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI
+    background_MGI = background_MGI
   )
   input_data_deseq2 <- getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = gene_DEdata_deseq2,
-    background_MGI = toy_background_MGI
+    background_MGI = background_MGI
   )
 
   expect_equal(sort(input_data_deseq2$data$TG_ORA), sort(input_data_positional$data$TG_ORA))
@@ -190,13 +189,13 @@ test_that("getAllInputData() selects the requested assay via gene_assay/mir_assa
   input_data_assay1 <- getAllInputData(
     methods = "Edge_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI,
+    background_MGI = background_MGI,
     gene_mat = gene_se, mir_mat = toy_mir_mat, gene_assay = "counts"
   )
   input_data_assay2 <- getAllInputData(
     methods = "Edge_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI,
+    background_MGI = background_MGI,
     gene_mat = gene_se, mir_mat = toy_mir_mat, gene_assay = "scaled"
   )
 
@@ -205,8 +204,20 @@ test_that("getAllInputData() selects the requested assay via gene_assay/mir_assa
   input_data_direct <- getAllInputData(
     methods = "Edge_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI,
+    background_MGI = background_MGI,
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
   )
   expect_equal(input_data_assay1$data$data, input_data_direct$data$data)
+})
+
+test_that("fetch_background_GGI_omnipath() returns the expected structure", {
+  skip_if_not_installed("OmnipathR")
+  interactions <- tryCatch(
+    miREA:::fetch_background_GGI_omnipath(),
+    error = function(e) {
+      skip(paste("Omnipath/OmnipathR unavailable in this environment:", conditionMessage(e)))
+    }
+  )
+  expect_equal(colnames(interactions), c("source_genesymbol", "target_genesymbol", "interact"))
+  expect_true(nrow(interactions) > 0)
 })

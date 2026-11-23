@@ -47,14 +47,14 @@
 #' @examples
 #' data(toy_pathway); data(toy_mir_DEdata); data(toy_gene_DEdata)
 #' data(toy_gene_mat); data(toy_mir_mat)
-#' data(toy_background_MGI); data(toy_background_GGI)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = "Edge_Topology", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
-#'   gene_DEdata = toy_gene_DEdata, background_MGI = toy_background_MGI,
-#'   background_GGI = toy_background_GGI, GGI_source = "Omnipath",
+#'   gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
+#'   GGI_source = "Reactome",
 #'   gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
 #' )
-#' background <- unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+#' background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 #' res <- Edge_Topology(
 #'   MGI = input_data$data$Edge_Topology, background = background,
 #'   pathway = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,

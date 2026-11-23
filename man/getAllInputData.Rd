@@ -40,9 +40,9 @@ shapes as `mir_DEdata` (with `gene` instead of `miRNA` as the ID).}
 
 \item{background_MGI}{optional. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. If NULL, miREA falls back to its bundled `background_MGI` dataset (the full manuscript background).}
 
-\item{background_GGI}{optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, miREA falls back to its bundled `background_GGI_Omnipath`/`background_GGI_Reactome` dataset (the full manuscript background for that source), selected via GGI_source. These are frozen snapshots; to fetch a fresh/current background instead, see `inst/scripts/build_background_GGI.R`.}
+\item{background_GGI}{optional, it should be a two-column data frame that contains source gene and target gene. If supplied, GGI_source is ignored (a message notes this). If NULL and GGI_source = "Omnipath" (or GGI_source = NULL, which is treated the same as "Omnipath"), miREA fetches Omnipath's full interaction set live (requires the OmnipathR package and an internet connection), with no license/source filtering (see the "Third-party data licensing" section of the package README for why, and how to supply a license-restricted subset yourself). If NULL and GGI_source = "Reactome", miREA falls back to its bundled `background_GGI_Reactome` dataset (a frozen CC0-licensed snapshot, no commercial-use restriction).}
 
-\item{GGI_source}{optional, select from "Omnipath" or "Reactome". Selects which bundled background_GGI snapshot to fall back to when background_GGI is not provided. The default is Omnipath.}
+\item{GGI_source}{optional, select from "Omnipath" or "Reactome", or NULL. Selects how background_GGI is obtained when not provided directly; NULL behaves like "Omnipath". The default is "Omnipath".}
 
 \item{gene_mat}{optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.}
 
@@ -86,16 +86,14 @@ data(toy_gene_DEdata)
 data(toy_mir_DEdata)
 data(toy_gene_mat)
 data(toy_mir_mat)
-data(toy_background_MGI)
-data(toy_background_GGI)
+data(background_MGI)
 input_data <- getAllInputData(
   methods = default_method_list,
   pathway = toy_pathway,
   mir_DEdata = toy_mir_DEdata,
   gene_DEdata = toy_gene_DEdata,
-  background_MGI = toy_background_MGI,
-  background_GGI = toy_background_GGI,
-  GGI_source = "Omnipath",
+  background_MGI = background_MGI,
+  GGI_source = "Reactome",
   gene_mat = toy_gene_mat,
   mir_mat = toy_mir_mat,
   scoreFun = "rank"

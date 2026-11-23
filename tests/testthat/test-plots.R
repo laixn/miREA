@@ -1,18 +1,18 @@
 data(toy_pathway, toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat,
-     toy_background_MGI, toy_background_GGI, package = "miREA")
+     background_MGI, package = "miREA")
 
 test_that("plotSummary(), plotHeatmap(), and plotHeatmapSankey() run without error", {
   input_data <- suppressWarnings(getAllInputData(
     methods = default_method_list, pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
-    GGI_source = "Omnipath", gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+    background_MGI = background_MGI, GGI_source = "Reactome",
+    gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
     scoreFun = "rank"
   ))
   background <- list(
     TG = unique(toy_pathway$gene),
     MiR = unique(input_data$pathway$MiR$miRNA),
-    Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
   )
   result <- suppressWarnings(miREA(
     methods = default_method_list, input_data = input_data, background = background,
@@ -35,14 +35,14 @@ test_that("plotHeatmap()/plotHeatmapSankey() inherit thresholds from input_data$
   input_data_strict <- getAllInputData(
     methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
-    background_MGI = toy_background_MGI,
+    background_MGI = background_MGI,
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank",
     DElogFCCutoff = 1.5, DEpadjCutoff = 0.1
   )
   expect_equal(input_data_strict$threshold$DElogFCCutoff, 1.5)
 
   background <- list(
-    Edge = unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
   )
   result_strict <- miREA(
     methods = "Edge_ORA", input_data = input_data_strict, background = background,

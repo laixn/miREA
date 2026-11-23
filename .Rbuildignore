@@ -3,7 +3,6 @@
 ^\.git$
 ^\.github$
 ^\.gitignore$
-^data-raw$
 ^README\.Rmd$
 ^README\.md$
 ^Figure1\.png$

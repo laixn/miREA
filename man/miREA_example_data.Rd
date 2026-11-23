@@ -8,13 +8,12 @@
 \alias{toy_mir_DEdata}
 \alias{toy_gene_mat}
 \alias{toy_mir_mat}
-\alias{toy_background_MGI}
-\alias{toy_background_GGI}
 \title{Toy BLCA example data for miREA}
 \format{
 \describe{
   \item{toy_pathway}{A data.frame with columns `pathway`, `gene`: pathway-gene
-    membership for 16 bladder-cancer-specific MSigDB gene sets.}
+    membership for the 10 Reactome pathways most enriched in the full
+    manuscript BLCA run.}
   \item{toy_gene_DEdata}{A data.frame with columns `gene`, `log2FoldChange`,
     `stat`, `padj`: differential expression results for the gene universe.}
   \item{toy_mir_DEdata}{A data.frame with columns `miRNA`, `log2FoldChange`,
@@ -23,38 +22,33 @@
     as rownames), the 80 tumor TCGA samples.}
   \item{toy_mir_mat}{A miRNA-by-sample expression matrix (data.frame,
     miRNAs as rownames), the same 80 tumor TCGA samples as `toy_gene_mat`.}
-  \item{toy_background_MGI}{A data.frame with columns `miRNA`, `gene`:
-    curated miRNA-gene interactions restricted to the toy universe.}
-  \item{toy_background_GGI}{A data.frame with columns `source_genesymbol`,
-    `target_genesymbol`, `interact`: Omnipath gene-gene interactions
-    restricted to the toy gene universe.}
 }
 }
 \source{
 \describe{
-  \item{toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat}{Derived
-    from TCGA BLCA RNA-seq/miRNA-seq data, as processed for the miREA
-    manuscript (\doi{10.64898/2026.02.27.708509}).}
-  \item{toy_pathway}{Subset of MSigDB bladder-cancer-specific gene sets
-    (16 sets, including `KEGG_BLADDER_CANCER`). KEGG-derived gene sets
-    carry their own redistribution restrictions (see
-    \url{https://www.genome.jp/kegg/legal.html}), separate from MSigDB's
-    own license terms; this has not been independently verified for the
-    bundled set.}
-  \item{toy_background_MGI}{Subset of a miRNA-gene target-site prediction
-    table from Hua, X., Li, Y., Pentaparthi, S.R., et al. (2023).
-    Landscape of MicroRNA Regulatory Network Architecture and Functional
-    Rerouting in Cancer. Cancer Res, 83, 59-73, deduplicated to
-    (miRNA, gene) pairs and harmonized to current HGNC gene symbols.}
-  \item{toy_background_GGI}{Subset of Omnipath interactions
-    (\code{OmnipathR::import_all_interactions()}), filtered to
-    interactions with experimental support (\code{n_references != 0}),
-    with \code{interact} derived from \code{is_stimulation -
-    is_inhibition}, harmonized to current HGNC gene symbols. Omnipath
-    aggregates many underlying interaction databases, some of which
-    (e.g. SPIKE, NetPath) impose non-commercial-use restrictions; which
-    resources contributed to this particular subset has not been
-    independently verified.}
+  \item{toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat}{TCGA
+    BLCA RNA-seq/miRNA-seq read counts (same source data as the
+    manuscript, see Methods 2.3, \doi{10.64898/2026.02.27.708509}),
+    subset to 80 tumor + 19 normal samples: every BLCA patient with
+    paired tumor+normal RNA-seq and miRNA-seq is used for the normal
+    group (19 patients); 80 tumor samples is the smallest tumor-group
+    size found empirically to give every method, including the
+    edge-based methods' stricter correlation-significance filters, a
+    non-empty result. Genes/miRNAs with read counts > 10 in at least
+    five samples were tested with DESeq2 (design `~ type`, tumor vs.
+    normal), as in the manuscript's own DE pipeline, run independently
+    on this toy sample subset (not a subset of the manuscript's own DE
+    results). `toy_gene_mat`/`toy_mir_mat` are the raw counts for the
+    tumor samples only (matching the manuscript's correlation step,
+    computed within the tumor population).}
+  \item{toy_pathway}{The 10 Reactome pathways with the lowest (padj,
+    p_value) in the Edge_Score1D output of the full manuscript BLCA run
+    (Reactome pathway set as in Methods 2.2, 2,766 pathways, v94;
+    \doi{10.64898/2026.02.27.708509}; full enrichment results at
+    \url{https://zenodo.org/records/18803209}), restricted to genes
+    present in `toy_gene_DEdata`. Reactome's data is
+    CC0 (public domain), so this carries no usage restriction, unlike
+    the KEGG-derived MSigDB sets used here previously.}
 }
 }
 \description{
@@ -62,20 +56,23 @@ A small, self-contained example dataset derived from the real BLCA
 (bladder urothelial carcinoma) data used in the miREA manuscript. Gene and
 miRNA differential expression are computed (DESeq2, tumor vs. normal) from
 80 tumor + 19 normal TCGA samples. The resulting DE-testable gene/miRNA
-universe is used to subset 16 bladder-cancer-specific MSigDB gene sets
-(e.g. KEGG_BLADDER_CANCER, LINDGREN_BLADDER_CANCER_*) and the
-manuscript's background_MGI/background_GGI. 80 tumor samples is the
+universe is used to subset the 10 Reactome pathways most enriched in the
+full manuscript BLCA run and the manuscript's background_MGI/
+background_GGI. 80 tumor samples is the
 smallest size found to give every method, including the edge-based
 methods' stricter correlation-significance filters, real non-empty
 results, so every exported function in the package can run on real (not
 synthetic) data. `toy_gene_mat`/`toy_mir_mat` use only the tumor samples
 (correlation is computed within the tumor population, as in the
-manuscript). See `data-raw/generate_toy_data.R` in the package's GitHub
-repository (\url{https://github.com/laixn/miREA}; not included in the
-installed package, since it depends on local TCGA files that are not
-redistributed) for the generation script. For the full datasets used in
-the manuscript, see the Zenodo deposit at
-\url{https://zenodo.org/records/18803209}.
+manuscript). For the full datasets used in the manuscript, see the
+Zenodo deposit at \url{https://zenodo.org/records/18803209}.
+}
+\note{
+These toy objects are paired with the full, real background_MGI
+  and background_GGI_Reactome datasets (see [miREA_background_data]) for
+  examples/tests that need a background_MGI/background_GGI argument —
+  there is no separate "toy" subset of those, since the full datasets are
+  already small enough to use directly.
 }
 \examples{
 data(toy_pathway)
@@ -83,7 +80,5 @@ data(toy_gene_DEdata)
 data(toy_mir_DEdata)
 data(toy_gene_mat)
 data(toy_mir_mat)
-data(toy_background_MGI)
-data(toy_background_GGI)
 }
 \keyword{datasets}

@@ -17,8 +17,8 @@
 #' @param gene_DEdata optional, except for TG-ORA, MiR-ORA, and MiR-Score methods. Accepts the same
 #'        shapes as `mir_DEdata` (with `gene` instead of `miRNA` as the ID).
 #' @param background_MGI optional. It should be either a character vector in the format of [miRNA]:[gene], or a two-column dataframe, containing miRNA gene. If NULL, miREA falls back to its bundled `background_MGI` dataset (the full manuscript background).
-#' @param background_GGI optional, it should be a two-column data frame that contains source gene and target gene. Combined with *GGI_source*. If NULL, miREA falls back to its bundled `background_GGI_Omnipath`/`background_GGI_Reactome` dataset (the full manuscript background for that source), selected via GGI_source. These are frozen snapshots; to fetch a fresh/current background instead, see `inst/scripts/build_background_GGI.R`.
-#' @param GGI_source optional, select from "Omnipath" or "Reactome". Selects which bundled background_GGI snapshot to fall back to when background_GGI is not provided. The default is Omnipath.
+#' @param background_GGI optional, it should be a two-column data frame that contains source gene and target gene. If supplied, GGI_source is ignored (a message notes this). If NULL and GGI_source = "Omnipath" (or GGI_source = NULL, which is treated the same as "Omnipath"), miREA fetches Omnipath's full interaction set live (requires the OmnipathR package and an internet connection), with no license/source filtering (see the "Third-party data licensing" section of the package README for why, and how to supply a license-restricted subset yourself). If NULL and GGI_source = "Reactome", miREA falls back to its bundled `background_GGI_Reactome` dataset (a frozen CC0-licensed snapshot, no commercial-use restriction).
+#' @param GGI_source optional, select from "Omnipath" or "Reactome", or NULL. Selects how background_GGI is obtained when not provided directly; NULL behaves like "Omnipath". The default is "Omnipath".
 #' @param gene_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param mir_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw miRNA expression matrix (each row a miRNA, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param gene_assay optional, only used when `gene_mat` is a SummarizedExperiment. Selects which assay to
@@ -47,16 +47,14 @@
 #' data(toy_mir_DEdata)
 #' data(toy_gene_mat)
 #' data(toy_mir_mat)
-#' data(toy_background_MGI)
-#' data(toy_background_GGI)
+#' data(background_MGI)
 #' input_data <- getAllInputData(
 #'   methods = default_method_list,
 #'   pathway = toy_pathway,
 #'   mir_DEdata = toy_mir_DEdata,
 #'   gene_DEdata = toy_gene_DEdata,
-#'   background_MGI = toy_background_MGI,
-#'   background_GGI = toy_background_GGI,
-#'   GGI_source = "Omnipath",
+#'   background_MGI = background_MGI,
+#'   GGI_source = "Reactome",
 #'   gene_mat = toy_gene_mat,
 #'   mir_mat = toy_mir_mat,
 #'   scoreFun = "rank"
@@ -65,7 +63,8 @@
 #' @export
 getAllInputData <- function(methods, pathway,
                                mir_DEdata, gene_DEdata = NULL,
-                               background_MGI = NULL, background_GGI = NULL, GGI_source = "Omnipath",
+                               background_MGI = NULL, background_GGI = NULL,
+                               GGI_source = "Omnipath",
                                gene_mat = NULL, mir_mat = NULL, gene_assay = 1, mir_assay = 1,
                                scoreFun = NULL,
                                DElogFCCutoff = 1, DEpadjCutoff = 0.05,
@@ -104,16 +103,19 @@ getAllInputData <- function(methods, pathway,
 
   # check background_GGI
   if (length(intersect(target_method, methods)) != 0){
-    if (is.null(background_GGI)){
+    if (!is.null(background_GGI)){
+      message("background_GGI is supplied directly; GGI_source is ignored.\n")
+    } else {
+      # GGI_source = NULL means "use the default source", i.e. Omnipath.
+      if (is.null(GGI_source)) GGI_source <- "Omnipath"
       if (! GGI_source %in% default_GGI_source){
         stop("You tend to extract default background_GGI for ", GGI_source, ". But [GGI_source] you have specified are not involved. Please use default_GGI_source to see all supporting options!")
       }
-      bundled_env <- new.env()
       if (GGI_source == "Omnipath"){
-        message("No background_GGI is given. Using the bundled default background_GGI_Omnipath instead.\n")
-        utils::data("background_GGI_Omnipath", package = "miREA", envir = bundled_env)
-        background_GGI <- bundled_env[["background_GGI_Omnipath"]]
+        message("No background_GGI is given. Fetching Omnipath's full interaction set live (no license/source filtering).\n")
+        background_GGI <- fetch_background_GGI_omnipath()
       } else {
+        bundled_env <- new.env()
         message("No background_GGI is given. Using the bundled default background_GGI_Reactome instead.\n")
         utils::data("background_GGI_Reactome", package = "miREA", envir = bundled_env)
         background_GGI <- bundled_env[["background_GGI_Reactome"]]
