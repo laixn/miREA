@@ -15,55 +15,56 @@
     membership for the 10 Reactome pathways most enriched in the full
     manuscript BLCA run.}
   \item{toy_gene_DEdata}{A data.frame with columns `gene`, `log2FoldChange`,
-    `stat`, `padj`: differential expression results for the gene universe.}
+    `stat`, `padj`: differential expression results for the genes in
+    `toy_pathway` (1,142 of 1,145 pathway genes have a result; the other 3
+    were dropped by DESeq2's independent filtering and simply carry no DE
+    info downstream).}
   \item{toy_mir_DEdata}{A data.frame with columns `miRNA`, `log2FoldChange`,
-    `stat`, `padj`: differential expression results for the miRNA universe.}
+    `stat`, `padj`: differential expression results for the miRNAs that
+    target a `toy_pathway` gene (via `background_MGI`) and are DE-testable.}
   \item{toy_gene_mat}{A gene-by-sample expression matrix (data.frame, genes
-    as rownames), the 80 tumor TCGA samples.}
+    as rownames), restricted to the genes in `toy_gene_DEdata`, the 403
+    tumor TCGA samples.}
   \item{toy_mir_mat}{A miRNA-by-sample expression matrix (data.frame,
-    miRNAs as rownames), the same 80 tumor TCGA samples as `toy_gene_mat`.}
+    miRNAs as rownames), restricted to the miRNAs in `toy_mir_DEdata`, the
+    same 403 tumor TCGA samples as `toy_gene_mat`.}
 }
 }
 \source{
 \describe{
-  \item{toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat}{TCGA
-    BLCA RNA-seq/miRNA-seq read counts (same source data as the
-    manuscript, see Methods 2.3, \doi{10.64898/2026.02.27.708509}),
-    subset to 80 tumor + 19 normal samples: every BLCA patient with
-    paired tumor+normal RNA-seq and miRNA-seq is used for the normal
-    group (19 patients); 80 tumor samples is the smallest tumor-group
-    size found empirically to give every method, including the
-    edge-based methods' stricter correlation-significance filters, a
-    non-empty result. Genes/miRNAs with read counts > 10 in at least
-    five samples were tested with DESeq2 (design `~ type`, tumor vs.
-    normal), as in the manuscript's own DE pipeline, run independently
-    on this toy sample subset (not a subset of the manuscript's own DE
-    results). `toy_gene_mat`/`toy_mir_mat` are the raw counts for the
-    tumor samples only (matching the manuscript's correlation step,
-    computed within the tumor population).}
+  \item{toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat}{Subset,
+    by gene/miRNA, of the manuscript's own full TCGA BLCA differential
+    expression results and raw expression matrices (403 tumor + 19 normal
+    samples, DESeq2, design `~ type`, tumor vs. normal; Methods 2.3,
+    \doi{10.64898/2026.02.27.708509}) -- i.e. the exact DE results
+    `toy_pathway` below was itself selected from, not an independently
+    re-derived DE run on a different sample subset. Restricted to the genes
+    in `toy_pathway`, and the miRNAs that target one of those genes via
+    `background_MGI` and are DE-testable. `toy_gene_mat`/`toy_mir_mat` are
+    the raw counts for the tumor samples only (matching the manuscript's
+    correlation step, computed within the tumor population).}
   \item{toy_pathway}{The 10 Reactome pathways with the lowest (padj,
     p_value) in the Edge_Score1D output of the full manuscript BLCA run
     (Reactome pathway set as in Methods 2.2, 2,766 pathways, v94;
     \doi{10.64898/2026.02.27.708509}; full enrichment results at
-    \url{https://zenodo.org/records/18803209}), restricted to genes
-    present in `toy_gene_DEdata`. Reactome's data is
+    \url{https://zenodo.org/records/18803209}). Reactome's data is
     CC0 (public domain), so this carries no usage restriction, unlike
     the KEGG-derived MSigDB sets used here previously.}
 }
 }
 \description{
 A small, self-contained example dataset derived from the real BLCA
-(bladder urothelial carcinoma) data used in the miREA manuscript. Gene and
-miRNA differential expression are computed (DESeq2, tumor vs. normal) from
-80 tumor + 19 normal TCGA samples. The resulting DE-testable gene/miRNA
-universe is used to subset the 10 Reactome pathways most enriched in the
-full manuscript BLCA run and the manuscript's background_MGI/
-background_GGI. 80 tumor samples is the
-smallest size found to give every method, including the edge-based
-methods' stricter correlation-significance filters, real non-empty
-results, so every exported function in the package can run on real (not
-synthetic) data. `toy_gene_mat`/`toy_mir_mat` use only the tumor samples
-(correlation is computed within the tumor population, as in the
+(bladder urothelial carcinoma) data used in the miREA manuscript.
+`toy_pathway` is a fixed set of 10 Reactome pathways selected from the full
+manuscript BLCA run (see `@source` below); `toy_gene_DEdata`/`toy_mir_DEdata`/
+`toy_gene_mat`/`toy_mir_mat` are the manuscript's own differential
+expression results and raw expression matrices (403 tumor + 19 normal TCGA
+samples; the normal samples are only used to compute differential
+expression, not correlation -- see below), restricted to the genes/miRNAs
+needed to exercise `toy_pathway` (so every exported function in the package
+can run on real, not synthetic, data without shipping the full ~35,000-gene
+DE-testable universe). `toy_gene_mat`/`toy_mir_mat` use only the tumor
+samples (correlation is computed within the tumor population, as in the
 manuscript). For the full datasets used in the manuscript, see the
 Zenodo deposit at \url{https://zenodo.org/records/18803209}.
 }

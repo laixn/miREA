@@ -748,18 +748,8 @@ ranknorm <- function(x){
   return(result)
 }
 
-ranknorm_pos <- function(x){
-  ranks <- rank(x)
-  result <- ranks/length(ranks)
-  return(result)
-}
-
 sigmoid <- function(x){
   1 / (1 + exp(x))
-}
-
-sigmoid_pos <- function(x){
-  1 / (1 + exp(-x))
 }
 
 max_min <- function(x){
