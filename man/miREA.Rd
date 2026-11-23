@@ -78,6 +78,9 @@ caller's global random state.}
 A [miREAResult-class] object containing the per-method result tables
 (`result`), per-method elapsed time (`time`), the methods that completed
 without error (`valid_methods`), and the call parameters (`parameter`).
+`parameter$DE_threshold` records the `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/
+`corPadjCutoff` values used to build `input_data` (see [getAllInputData()]),
+or `NULL` if `input_data` does not carry a `threshold` element.
 Supports `$` access to these four fields for backward compatibility.
 }
 \description{

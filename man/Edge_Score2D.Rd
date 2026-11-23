@@ -14,6 +14,7 @@ Edge_Score2D(
   maxSize = NULL,
   iter = 1000,
   ncores = NULL,
+  BPPARAM = NULL,
   seed = NULL
 )
 }
@@ -37,7 +38,13 @@ If no adjustment is desired, set pAdjMethod = "none".}
 
 \item{iter}{Number of iterations for permutation test}
 
-\item{ncores}{Number of cores for calculating randomized r during the permutation test.}
+\item{ncores}{Number of cores for calculating randomized r during the permutation test.
+Ignored if `BPPARAM` is supplied.}
+
+\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling how the
+permutation test is parallelized. If NULL (the default), one is constructed
+automatically from `ncores` and `seed` (serial if `ncores` is NULL/1, otherwise
+[BiocParallel::SnowParam()]).}
 
 \item{seed}{Optional integer seed for the permutation test. If NULL (the
 default), no internal seed is set and the permutation draws depend

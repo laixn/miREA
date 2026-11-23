@@ -27,6 +27,11 @@
 #' @param pAdjMethod The method used for multiple testing correction to adjust p-values and control the false discovery rate.
 #'        Use default_pAdjMethod to find all possible values.
 #' @param ncores Number of cores for permutation test (parallel computing different pathways).
+#'        Ignored if `BPPARAM` is supplied.
+#' @param BPPARAM A [BiocParallel::BiocParallelParam-class] instance controlling how the
+#'        permutation test is parallelized. If NULL (the default), one is constructed
+#'        automatically from `ncores` (serial if `ncores` is NULL/1, otherwise
+#'        [BiocParallel::SnowParam()]).
 #' @param seed Optional integer seed for the permutation test. If NULL (the
 #'        default), no internal seed is set and the permutation draws depend
 #'        on the caller's current random state. If supplied, the permutation
@@ -61,7 +66,7 @@
 Edge_Topology <- function(MGI, pvalueType = "neg",
                            background, pathway, pathway_GGI, dict_MGI,
                            iter = 1000, pAdjMethod = "BH", pvalueCutoff = 0.05,
-                           minSize = NULL, maxSize = NULL, ncores = NULL, seed = NULL){
+                           minSize = NULL, maxSize = NULL, ncores = NULL, BPPARAM = NULL, seed = NULL){
   message("\n  Start Edge-Topology analysis ...")
   # check pAdjMethod
   if (!pAdjMethod %in% default_pAdjMethod){
@@ -123,16 +128,18 @@ Edge_Topology <- function(MGI, pvalueType = "neg",
   dict_MGI <- dict_MGI[, .(MGI, miRNA, gene, strength)]
 
   message("    Start analysis on ", n_pathway, " pathways...")
-  if (is.null(ncores) || ncores == 1){
+  serial <- is.null(BPPARAM) && (is.null(ncores) || ncores == 1)
+  if (serial){
     ncores <- 1
     warning("You are use unparallel computing. It could cause huge amount of time!!!
             \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that)!!!\n")
   }
-  message("    Calculate pathway scores and significant level on ", ncores, " cores...")
-  if (ncores == 1){
+  message("    Calculate pathway scores and significant level on ",
+          if (serial) 1 else BiocParallel::bpnworkers(resolve_BPPARAM(ncores, BPPARAM = BPPARAM)), " cores...")
+  if (serial){
     result <- Edge_Topology_simple(MGI = MGI, dict_MGI = dict_MGI, pathway = pathway, pathway_GGI = pathway_GGI, pvalueType = pvalueType, iter = iter, seed = seed) # background = background,
   } else {
-    result <- Edge_Topology_parallel(MGI = MGI, dict_MGI = dict_MGI, pathway = pathway, pathway_GGI = pathway_GGI, pvalueType = pvalueType, iter = iter, ncores = ncores, seed = seed) # background = background,
+    result <- Edge_Topology_parallel(MGI = MGI, dict_MGI = dict_MGI, pathway = pathway, pathway_GGI = pathway_GGI, pvalueType = pvalueType, iter = iter, ncores = ncores, BPPARAM = BPPARAM, seed = seed) # background = background,
   }
   result <- result %>%
     dplyr::mutate(padj = stats::p.adjust(p_value, method = pAdjMethod)) %>%
@@ -178,56 +185,38 @@ Edge_Topology_simple <- function(MGI, dict_MGI, pathway, pathway_GGI, pvalueType
 }
 
 ## Edge_Topology_parallel
-Edge_Topology_parallel <- function(MGI, dict_MGI, pathway, pathway_GGI, pvalueType, iter, ncores, seed = NULL){ # background,
+Edge_Topology_parallel <- function(MGI, dict_MGI, pathway, pathway_GGI, pvalueType, iter, ncores, BPPARAM = NULL, seed = NULL){ # background,
+  bpparam <- resolve_BPPARAM(ncores, BPPARAM = BPPARAM)
+  nchunks <- BiocParallel::bpnworkers(bpparam)
+
   pathway_counts <- table(pathway$pathway)
   pathway_counts <- sort(pathway_counts, decreasing = TRUE, na.last = NA)
   pathway_names_sorted <- names(pathway_counts)
 
-  # initialize the task list of each core
-  if (length(pathway_counts) < ncores) {
-    ncores <- length(pathway_counts)
-    warning("Since your task can only be divided into ", ncores, " parts, modify the number of cores to ", ncores, " \n")
+  # initialize the task list of each chunk
+  if (length(pathway_counts) < nchunks) {
+    nchunks <- length(pathway_counts)
+    warning("Since your task can only be divided into ", nchunks, " parts, modify the number of cores to ", nchunks, " \n")
   }
-  task_list <- vector("list", ncores)
-  task_sizes <- rep(0, ncores)  # record total pathway size of each pathway
+  task_list <- vector("list", nchunks)
+  task_sizes <- rep(0, nchunks)  # record total pathway size of each chunk
 
-  # greedy algorithm：distribute the largest pathway to the smallest load core
+  # greedy algorithm：distribute the largest pathway to the smallest load chunk
   for (i in seq_along(pathway_names_sorted)) {
     min_core <- which.min(task_sizes)
     task_list[[min_core]] <- c(task_list[[min_core]], pathway_names_sorted[i])
     task_sizes[min_core] <- task_sizes[min_core] + pathway_counts[i]
   }
   message(paste("      Total MGI size of each core is:", paste(task_sizes, collapse = " ")))
-  cl <- parallel::makeCluster(ncores) # , type = "SOCK", outfile = NULL
-  on.exit(parallel::stopCluster(cl), add = TRUE)
-  requireNamespace("RhpcBLASctl")
 
-  parallel::clusterExport(cl, c("MGI", "dict_MGI", "pathway", "pathway_GGI", "pvalueType", # "background",
-                                "iter", "ncores", "task_list", "Edge_Topology_simple", "Edge_Topology_single", "min_max", "seed"), envir = environment())
-  parallel::clusterEvalQ(cl, {
-    # Keep each worker single-threaded for BLAS/OpenMP so that ncores worker
-    # processes don't each spawn their own thread pool and oversubscribe the
-    # machine (igraph's centrality routines and data.table both parallelize
-    # internally by default).
-    RhpcBLASctl::omp_set_num_threads(1)
-    RhpcBLASctl::blas_set_num_threads(1)
-
-    requireNamespace("igraph")
-    requireNamespace("data.table")
-    requireNamespace("dplyr")
-    requireNamespace("withr")
-
-    NULL
-  })
-
-  results <- parallel::parLapply(cl, seq_len(ncores), function(i) {
+  results <- BiocParallel::bplapply(seq_len(nchunks), function(i) {
     pw <- pathway[pathway %in% task_list[[i]]]
     ggi <- pathway_GGI[pathway %in% task_list[[i]]]
     Edge_Topology_simple(MGI = MGI, dict_MGI = dict_MGI,
                           pathway = pw, pathway_GGI = ggi, # background,
                           pvalueType = pvalueType,
                           iter = iter, seed = seed)
-  })
+  }, BPPARAM = bpparam)
 
   pathway_result <- combine_parallel(results)
   return(pathway_result)

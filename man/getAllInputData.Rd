@@ -14,7 +14,11 @@ getAllInputData(
   GGI_source = "Omnipath",
   gene_mat = NULL,
   mir_mat = NULL,
-  scoreFun = NULL
+  scoreFun = NULL,
+  DElogFCCutoff = 1,
+  DEpadjCutoff = 0.05,
+  corCutoff = 0,
+  corPadjCutoff = 0.05
 )
 }
 \arguments{
@@ -37,9 +41,23 @@ getAllInputData(
 \item{mir_mat}{optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw miRNA expression matrix (each row a miRNA, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.}
 
 \item{scoreFun}{optional, needed for Edge_Score1D, Edge_Score2D, Edge_Topology. See default_scoreFun for all supportive methods.}
+
+\item{DElogFCCutoff}{optional, the absolute log2FC threshold used to call a miRNA/gene differentially
+expressed when building the DE sets for the ORA methods and the plotting functions. Default is 1.}
+
+\item{DEpadjCutoff}{optional, the adjusted p-value threshold used to call a miRNA/gene differentially
+expressed when building the DE sets for the ORA methods and the plotting functions. Default is 0.05.}
+
+\item{corCutoff}{optional, the miRNA-gene expression correlation threshold (MGIs with `cor < corCutoff`
+are considered) used when building the DE sets for the ORA methods and the plotting functions.
+Default is 0.}
+
+\item{corPadjCutoff}{optional, the adjusted p-value threshold for the miRNA-gene expression correlation,
+used when building the DE sets for the ORA methods and the plotting functions. Default is 0.05.}
 }
 \value{
-A list that contains all the data formats needed for miREA.
+A list that contains all the data formats needed for miREA, including a `threshold` element
+       recording the `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/`corPadjCutoff` values actually used.
 }
 \description{
 Functions to generate input data for miREA, based on the original expression and differential expression results for miRNAs and genes.

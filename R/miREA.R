@@ -54,6 +54,9 @@
 #' @return A [miREAResult-class] object containing the per-method result tables
 #' (`result`), per-method elapsed time (`time`), the methods that completed
 #' without error (`valid_methods`), and the call parameters (`parameter`).
+#' `parameter$DE_threshold` records the `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/
+#' `corPadjCutoff` values used to build `input_data` (see [getAllInputData()]),
+#' or `NULL` if `input_data` does not carry a `threshold` element.
 #' Supports `$` access to these four fields for backward compatibility.
 #' @references Zhang Z, Lai X (2026). miREA: a network-based tool for
 #' microRNA-oriented enrichment analysis. bioRxiv. \doi{10.64898/2026.02.27.708509}
@@ -111,7 +114,7 @@ miREA <- function(methods, input_data, background = NULL,
   message("=== End time: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " ===")
 
   miREAResult(result = all_result, time = time, valid_methods = names(all_result),
-              parameter = list(method = methods, n_pathway = n_pathway, minSize = minSize, maxSize = maxSize, pvalueType = pvalueType, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, iter = iter, ncores = ncores, seed = seed))
+              parameter = list(method = methods, n_pathway = n_pathway, minSize = minSize, maxSize = maxSize, pvalueType = pvalueType, pAdjMethod = pAdjMethod, pvalueCutoff = pvalueCutoff, iter = iter, ncores = ncores, seed = seed, DE_threshold = input_data[["threshold"]]))
 }
 
 #' @noRd

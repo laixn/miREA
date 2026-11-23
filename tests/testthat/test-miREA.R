@@ -29,6 +29,20 @@ test_that("miREA() runs all nine methods and returns a result per method", {
   }
 })
 
+test_that("miREA() records the DE thresholds used to build input_data in its parameter slot", {
+  input_data <- getAllInputData(
+    methods = "TG_ORA", pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = toy_background_MGI, DElogFCCutoff = 2, DEpadjCutoff = 0.01
+  )
+  result <- miREA(
+    methods = "TG_ORA", input_data = input_data,
+    background = list(TG = unique(toy_pathway$gene)), pvalueCutoff = 1
+  )
+  expect_equal(result$parameter$DE_threshold, input_data$threshold)
+  expect_equal(result$parameter$DE_threshold$DElogFCCutoff, 2)
+})
+
 test_that("miREA() requires a background when none is supplied", {
   input_data <- suppressWarnings(getAllInputData(
     methods = "TG_ORA", pathway = toy_pathway,

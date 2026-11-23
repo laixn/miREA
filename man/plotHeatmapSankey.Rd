@@ -18,7 +18,11 @@ plotHeatmapSankey(
   sankey_prop = 1.5,
   gene_annot = NULL,
   mir_annot = NULL,
-  annot_color = "#A6DDBA"
+  annot_color = "#A6DDBA",
+  DElogFCCutoff = NULL,
+  DEpadjCutoff = NULL,
+  corCutoff = NULL,
+  corPadjCutoff = NULL
 )
 }
 \arguments{
@@ -49,6 +53,22 @@ plotHeatmapSankey(
 \item{mir_annot}{Same format as gene_annot. If not NULL, it will generate an annotation bar for miRNAs at the left side of the heatmap, to show whether miRNAs hit in the given list.}
 
 \item{annot_color}{The color of the annotation bars for genes and miRNAs}
+
+\item{DElogFCCutoff}{optional, the absolute log2FC threshold used to call a miRNA/gene differentially
+expressed for the heatmap/Sankey annotation. If NULL (the default), falls back to
+`input_data$threshold$DElogFCCutoff` (set by [getAllInputData()]), or 1 if that is absent.}
+
+\item{DEpadjCutoff}{optional, the adjusted p-value threshold used to call a miRNA/gene differentially
+expressed for the heatmap/Sankey annotation. If NULL (the default), falls back to
+`input_data$threshold$DEpadjCutoff`, or 0.05 if that is absent.}
+
+\item{corCutoff}{optional, the miRNA-gene expression correlation threshold for the heatmap/Sankey
+annotation. If NULL (the default), falls back to `input_data$threshold$corCutoff`, or 0 if
+that is absent.}
+
+\item{corPadjCutoff}{optional, the adjusted p-value threshold for the miRNA-gene expression
+correlation, for the heatmap/Sankey annotation. If NULL (the default), falls back to
+`input_data$threshold$corPadjCutoff`, or 0.05 if that is absent.}
 }
 \value{
 A heatmap-sankey plot either in the current window, or saved as heatmap_sankey_[method].pdf in the plot_path.

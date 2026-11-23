@@ -260,3 +260,52 @@ test_that("Edge_Score2D_single warns on multi-pathway input and returns NULL for
   pw_no_overlap <- data.frame(pathway = "fake_pw", miRNA = "fake_mir", gene = "fake_gene")
   expect_null(miREA:::Edge_Score2D_single(MGI2D = mgi2d, PW = pw_no_overlap, r_random = r_random))
 })
+
+test_that("Edge_Score2D/Edge_Topology/Edge_Network accept an explicit BPPARAM", {
+  input_data <- getAllInputData(
+    methods = c("Edge_Score2D", "Edge_Topology", "Edge_Network"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
+    GGI_source = "Omnipath", gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+  )
+  background <- unique(paste0(toy_background_MGI$miRNA, ":", toy_background_MGI$gene))
+
+  score2d <- Edge_Score2D(
+    MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
+    background = background, iter = 5, BPPARAM = BiocParallel::SerialParam(), pvalueCutoff = 1
+  )
+  expect_s3_class(score2d, "data.frame")
+
+  topology <- Edge_Topology(
+    MGI = input_data$data$Edge_Topology, background = background,
+    pathway = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
+    dict_MGI = input_data$dict_MGI, iter = 5, BPPARAM = BiocParallel::SerialParam(), pvalueCutoff = 1
+  )
+  expect_s3_class(topology, "data.frame")
+
+  network <- Edge_Network(
+    DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
+    pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
+    MGI = input_data$MGI, GGI = input_data$GGI,
+    minSize = 2, maxSize = 5000, iter = 20, BPPARAM = BiocParallel::SerialParam(), pvalueCutoff = 1
+  )
+  expect_s3_class(network, "data.frame")
+})
+
+test_that("Edge_Network runs through the parallel RWR path with ncores > 1", {
+  input_data <- getAllInputData(
+    methods = "Edge_Network", pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = toy_background_MGI, background_GGI = toy_background_GGI,
+    GGI_source = "Omnipath", gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+  )
+
+  res <- Edge_Network(
+    DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
+    pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
+    MGI = input_data$MGI, GGI = input_data$GGI,
+    minSize = 2, maxSize = 5000, iter = 20, ncores = 2, pvalueCutoff = 1
+  )
+  expect_s3_class(res, "data.frame")
+  expect_true("LINDGREN_BLADDER_CANCER_CLUSTER_2B" %in% res$pathway)
+})

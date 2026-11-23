@@ -16,6 +16,11 @@
 #' @param maxSize The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.
 #' @param iter Number of iterations for permutation test
 #' @param ncores Number of cores for calculating randomized r during the permutation test.
+#'        Ignored if `BPPARAM` is supplied.
+#' @param BPPARAM A [BiocParallel::BiocParallelParam-class] instance controlling how the
+#'        permutation test is parallelized. If NULL (the default), one is constructed
+#'        automatically from `ncores` and `seed` (serial if `ncores` is NULL/1, otherwise
+#'        [BiocParallel::SnowParam()]).
 #' @param seed Optional integer seed for the permutation test. If NULL (the
 #'        default), no internal seed is set and the permutation draws depend
 #'        on the caller's current random state. If supplied, the permutation
@@ -43,7 +48,7 @@
 #' )
 #' head(res)
 #' @export
-Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL, seed = NULL){
+Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", pvalueCutoff = 0.05, minSize = NULL, maxSize = NULL, iter = 1000, ncores = NULL, BPPARAM = NULL, seed = NULL){
   message("\n  Start Edge_Score2D analysis ...")
 
   MGI2D <- data.table::copy(data.table::as.data.table(MGI2D))
@@ -103,52 +108,31 @@ Edge_Score2D <- function(MGI2D, pathway, background = NULL, pAdjMethod = "BH", p
       TopMGI = character(), stringsAsFactors = FALSE
     ))}
 
-  if (is.null(ncores) || ncores == 1){
-    ncores <- 1
-  }
+  bpparam <- resolve_BPPARAM(ncores, seed = seed, BPPARAM = BPPARAM)
 
   # generate random pathways
-  message("    Generate random MGI set radius on ", ncores, " cores...")
+  message("    Generate random MGI set radius on ", BiocParallel::bpnworkers(bpparam), " cores...")
 
   pathway_sizes <- table(pathway$pathway)
   unique_sizes <- sort(unique(pathway_sizes))
 
-  if (ncores == 1){
-    generate_r_random_list <- function(){
-      r_random_list <- list()
-      for (size in unique_sizes) {
-        r_random_list[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
-      }
-      r_random_list
-    }
-    r_random_list <- if (is.null(seed)) {
-      generate_r_random_list()
-    } else {
-      withr::with_seed(seed, generate_r_random_list())
-    }
-  } else {
-      random_core <- min(ncores, length(unique_sizes))
-      cl <- parallel::makeCluster(random_core)
-      on.exit(parallel::stopCluster(cl), add = TRUE)
-      if (!is.null(seed)) parallel::clusterSetRNGStream(cl, seed)
-      parallel::clusterExport(cl, c("r_all", "iter"), envir = environment())
-      size_groups <- split(unique_sizes,
-                           rep(seq_len(random_core), length.out = length(unique_sizes)))
+  nchunks <- min(BiocParallel::bpnworkers(bpparam), length(unique_sizes))
+  size_groups <- split(unique_sizes,
+                       rep(seq_len(nchunks), length.out = length(unique_sizes)))
 
-      r_random_list <-  parallel::parLapply(
-        cl,
-        X = size_groups,
-        fun = function(size_group) {
-          sub_result <- list()
-          for (size in size_group) {
-            sub_result[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
-          }
-          return(sub_result)
-        }
-      )
-      r_random_list <- unlist(r_random_list, recursive = FALSE)
-      names(r_random_list) <- sub("^\\d+\\.", "", names(r_random_list))
-    }
+  r_random_list <- BiocParallel::bplapply(
+    size_groups,
+    function(size_group) {
+      sub_result <- list()
+      for (size in size_group) {
+        sub_result[[as.character(size)]] <- vapply(seq_len(iter), function(i) sum(sample(r_all, size)), numeric(1))
+      }
+      sub_result
+    },
+    BPPARAM = bpparam
+  )
+  r_random_list <- unlist(r_random_list, recursive = FALSE)
+  names(r_random_list) <- sub("^\\d+\\.", "", names(r_random_list))
   r_random_list <- lapply(r_random_list, sort)
 
   message("    Calculate pathway radius and significant level...")

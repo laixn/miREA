@@ -29,6 +29,7 @@ Depends:
     R (>= 4.6.0)
 Imports:
     BiocGenerics,
+    BiocParallel,
     ComplexHeatmap,
     circlize,
     clusterProfiler,
@@ -44,10 +45,8 @@ Imports:
     Matrix,
     methods,
     miRBaseConverter,
-    parallel,
     patchwork,
     reshape2,
-    RhpcBLASctl,
     scales,
     stats,
     tibble,

@@ -92,6 +92,16 @@ combine_parallel <- function(res) {
 }
 
 #' @noRd
+resolve_BPPARAM <- function(ncores, seed = NULL, BPPARAM = NULL) {
+  if (!is.null(BPPARAM)) return(BPPARAM)
+  if (is.null(ncores) || ncores <= 1) {
+    BiocParallel::SerialParam(RNGseed = seed)
+  } else {
+    BiocParallel::SnowParam(workers = ncores, RNGseed = seed)
+  }
+}
+
+#' @noRd
 coerce_expr_mat <- function(x) {
   if (is.null(x) || !methods::is(x, "SummarizedExperiment")) return(x)
   if (!requireNamespace("SummarizedExperiment", quietly = TRUE)) {

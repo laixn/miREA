@@ -19,6 +19,11 @@
 #' @param maxSize The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.
 #' @param iter Number of iterations for permutation test
 #' @param ncores Number of cores for permutation test (parallel computing random RWR procedure).
+#'        Ignored if `BPPARAM` is supplied.
+#' @param BPPARAM A [BiocParallel::BiocParallelParam-class] instance controlling how the
+#'        permutation test is parallelized. If NULL (the default), one is constructed
+#'        automatically from `ncores` (serial if `ncores` is NULL/1, otherwise
+#'        [BiocParallel::SnowParam()]).
 #' @param seed Optional integer seed for the permutation test. If NULL (the
 #'        default), no internal seed is set and the permutation draws depend
 #'        on the caller's current random state. If supplied, the permutation
@@ -56,7 +61,7 @@ Edge_Network <- function(DEMGI,
                          MGI, GGI,
                          pAdjMethod = "BH", pvalueCutoff = 0.05,
                          minSize = NULL, maxSize = NULL,
-                         iter = 1000, ncores = NULL, seed = NULL){
+                         iter = 1000, ncores = NULL, BPPARAM = NULL, seed = NULL){
   message("\n  Start Edge-Network analysis ...")
   if (is.null(DEMGI)) {
     stop("A valid character DEMGI vector contains the differential expressed MGI must be entered!")
@@ -94,7 +99,7 @@ Edge_Network <- function(DEMGI,
     iter = iter, seed = seed
   )
 
-  if (is.null(ncores) || ncores == 1){
+  if (is.null(BPPARAM) && (is.null(ncores) || ncores == 1)){
     ncores <- 1
     warning("You are use unparallel computing. It could cause huge amount of time!!!
             \nFor parallel computing, please specify [ncores] parameter to be larger than 1 (We highly recommend that)!!!\n")
@@ -102,8 +107,9 @@ Edge_Network <- function(DEMGI,
   message("    Build transition matrix...")
   transition_matrix <- edge_network_build_transition_matrix(graph = built$graph, all_edges = built$all_edges)
 
-  message("    Execute RWR with ", iter, " iterations on ", ncores, " cores...")
-  rwr <- edge_network_run_rwr(transition_matrix = transition_matrix, restart_matrix = restart_matrix, ncores = ncores)
+  bpparam <- resolve_BPPARAM(ncores, BPPARAM = BPPARAM)
+  message("    Execute RWR with ", iter, " iterations on ", BiocParallel::bpnworkers(bpparam), " cores...")
+  rwr <- edge_network_run_rwr(transition_matrix = transition_matrix, restart_matrix = restart_matrix, BPPARAM = bpparam)
 
   message("    Summarise by pathways...")
   scored <- edge_network_pathway_scores(pathway = pathway, pathway_GGI = pathway_GGI, obs_score = rwr$obs_score, perm_scores = rwr$perm_scores)
@@ -290,7 +296,7 @@ edge_network_make_rwr <- function(transition_matrix) {
 }
 
 #' @noRd
-edge_network_run_rwr <- function(transition_matrix, restart_matrix, ncores) {
+edge_network_run_rwr <- function(transition_matrix, restart_matrix, BPPARAM) {
   run_rwr <- edge_network_make_rwr(transition_matrix)
 
   obs_vec <- restart_matrix[, 1, drop = FALSE] # drop = FALSE
@@ -299,25 +305,16 @@ edge_network_run_rwr <- function(transition_matrix, restart_matrix, ncores) {
 
   obs_score <- run_rwr(obs_vec)  # calculate the observation scores
 
-  if (ncores > 1){
-    # divided restart_matrix to ncores blocks (sub-matrix), where each column represent a single permutation
-    avg <- ceiling(n_cols / ncores)
-    block_indices <- split(seq_len(n_cols), rep(seq_len(ncores), each = avg, length.out = n_cols))
+  # divide the permutation columns into one block per worker, where each
+  # column of a block represents a single permutation
+  ncores <- BiocParallel::bpnworkers(BPPARAM)
+  avg <- ceiling(n_cols / ncores)
+  block_indices <- split(seq_len(n_cols), rep(seq_len(ncores), each = avg, length.out = n_cols))
 
-    cl <- parallel::makeCluster(ncores)
-    on.exit(parallel::stopCluster(cl), add = TRUE)
-    parallel::clusterExport(cl, varlist = c("transition_matrix", "run_rwr", "perm_mat"), envir = environment())  # , "edge_ids", "restart_matrix"
-    parallel::clusterEvalQ(cl, requireNamespace("Matrix"))
-
-    perm_scores_list <- parallel::parLapply(cl, block_indices, function(idxs) {
-      do.call(cbind, lapply(idxs, function(i) run_rwr(perm_mat[, i, drop = FALSE])))
-    })
-    perm_scores <- do.call(cbind, perm_scores_list)
-  } else {
-    perm_scores <- do.call(cbind, lapply(seq_len(ncol(perm_mat)), function(i) {
-      run_rwr(perm_mat[, i, drop = FALSE])
-    }))
-  }
+  perm_scores_list <- BiocParallel::bplapply(block_indices, function(idxs) {
+    do.call(cbind, lapply(idxs, function(i) run_rwr(perm_mat[, i, drop = FALSE])))
+  }, BPPARAM = BPPARAM)
+  perm_scores <- do.call(cbind, perm_scores_list)
 
   list(obs_score = obs_score, perm_scores = perm_scores)
 }

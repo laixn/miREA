@@ -70,3 +70,27 @@ test_that("getAllInputData() accepts SummarizedExperiment and GeneSetCollection 
   expect_equal(input_data_bioc$dict_MGI, input_data_std$dict_MGI)
   expect_equal(input_data_bioc$data$Edge_Topology, input_data_std$data$Edge_Topology)
 })
+
+test_that("getAllInputData() records the DE thresholds it used, and they actually affect the DE sets", {
+  input_data_default <- getAllInputData(
+    methods = c("TG_ORA", "Edge_ORA"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = toy_background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+  )
+  expect_equal(
+    input_data_default$threshold,
+    list(DElogFCCutoff = 1, DEpadjCutoff = 0.05, corCutoff = 0, corPadjCutoff = 0.05)
+  )
+
+  input_data_strict <- getAllInputData(
+    methods = c("TG_ORA", "Edge_ORA"), pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+    background_MGI = toy_background_MGI, gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+    DElogFCCutoff = 10, DEpadjCutoff = 1e-6
+  )
+  expect_equal(input_data_strict$threshold$DElogFCCutoff, 10)
+  expect_equal(input_data_strict$threshold$DEpadjCutoff, 1e-6)
+
+  expect_true(length(input_data_strict$data$TG_ORA) <= length(input_data_default$data$TG_ORA))
+  expect_true(length(input_data_strict$data$Edge_ORA) <= length(input_data_default$data$Edge_ORA))
+})

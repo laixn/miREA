@@ -17,6 +17,7 @@ Edge_Topology(
   minSize = NULL,
   maxSize = NULL,
   ncores = NULL,
+  BPPARAM = NULL,
   seed = NULL
 )
 }
@@ -53,7 +54,13 @@ Use default_pAdjMethod to find all possible values.}
 
 \item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.}
 
-\item{ncores}{Number of cores for permutation test (parallel computing different pathways).}
+\item{ncores}{Number of cores for permutation test (parallel computing different pathways).
+Ignored if `BPPARAM` is supplied.}
+
+\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling how the
+permutation test is parallelized. If NULL (the default), one is constructed
+automatically from `ncores` (serial if `ncores` is NULL/1, otherwise
+[BiocParallel::SnowParam()]).}
 
 \item{seed}{Optional integer seed for the permutation test. If NULL (the
 default), no internal seed is set and the permutation draws depend

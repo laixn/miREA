@@ -16,8 +16,18 @@
 #' @param gene_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param mir_mat optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw miRNA expression matrix (each row a miRNA, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.
 #' @param scoreFun optional, needed for Edge_Score1D, Edge_Score2D, Edge_Topology. See default_scoreFun for all supportive methods.
+#' @param DElogFCCutoff optional, the absolute log2FC threshold used to call a miRNA/gene differentially
+#'        expressed when building the DE sets for the ORA methods and the plotting functions. Default is 1.
+#' @param DEpadjCutoff optional, the adjusted p-value threshold used to call a miRNA/gene differentially
+#'        expressed when building the DE sets for the ORA methods and the plotting functions. Default is 0.05.
+#' @param corCutoff optional, the miRNA-gene expression correlation threshold (MGIs with `cor < corCutoff`
+#'        are considered) used when building the DE sets for the ORA methods and the plotting functions.
+#'        Default is 0.
+#' @param corPadjCutoff optional, the adjusted p-value threshold for the miRNA-gene expression correlation,
+#'        used when building the DE sets for the ORA methods and the plotting functions. Default is 0.05.
 #' @note gene_mat and mir_mat should have same sample name format. If the number of shared samples below 50 % of the minimum of gene samples and miRNA samples, a warning would happen to remind you recheck them.
-#' @return A list that contains all the data formats needed for miREA.
+#' @return A list that contains all the data formats needed for miREA, including a `threshold` element
+#'        recording the `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/`corPadjCutoff` values actually used.
 #' @references Zhang Z, Lai X (2026). miREA: a network-based tool for
 #' microRNA-oriented enrichment analysis. bioRxiv. \doi{10.64898/2026.02.27.708509}
 #' @examples
@@ -46,7 +56,9 @@ getAllInputData <- function(methods, pathway,
                                mir_DEdata, gene_DEdata = NULL,
                                background_MGI = NULL, background_GGI = NULL, GGI_source = "Omnipath",
                                gene_mat = NULL, mir_mat = NULL,
-                               scoreFun = NULL){
+                               scoreFun = NULL,
+                               DElogFCCutoff = 1, DEpadjCutoff = 0.05,
+                               corCutoff = 0, corPadjCutoff = 0.05){
   message("Generate all input data...")
   pathway <- coerce_pathway(pathway)
   gene_mat <- coerce_expr_mat(gene_mat)
@@ -149,8 +161,12 @@ getAllInputData <- function(methods, pathway,
 
   message("  Start generate expression data...")
   data <- get_data(methods = methods, mir_DEdata = mir_DEdata, gene_DEdata = gene_DEdata,
-                   background_MGI = background_MGI, gene_mat = gene_mat, mir_mat = mir_mat, scoreFun = scoreFun)
+                   background_MGI = background_MGI, gene_mat = gene_mat, mir_mat = mir_mat, scoreFun = scoreFun,
+                   DElogFCCutoff = DElogFCCutoff, DEpadjCutoff = DEpadjCutoff,
+                   corCutoff = corCutoff, corPadjCutoff = corPadjCutoff)
   result[["data"]] <- data
+  result[["threshold"]] <- list(DElogFCCutoff = DElogFCCutoff, DEpadjCutoff = DEpadjCutoff,
+                                 corCutoff = corCutoff, corPadjCutoff = corPadjCutoff)
 
   message("  Start generate pathway data...")
   pathway_data <- get_pathway_data(methods = methods, pathway = pathway, background_MGI = background_MGI)
@@ -210,7 +226,9 @@ getAllInputData <- function(methods, pathway,
 # background_MGI: only needed for Edge_ method
 # will return a list, contains the input of each method
 get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
-                     background_MGI, gene_mat = NULL, mir_mat = NULL, scoreFun){
+                     background_MGI, gene_mat = NULL, mir_mat = NULL, scoreFun,
+                     DElogFCCutoff = 1, DEpadjCutoff = 0.05,
+                     corCutoff = 0, corPadjCutoff = 0.05){
   scoreFun <- get_data_validate_inputs(methods, gene_DEdata, gene_mat, mir_mat, background_MGI, scoreFun)
 
   coerced <- get_data_coerce_expr(gene_DEdata, mir_DEdata)
@@ -218,10 +236,11 @@ get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
   mir_DEdata <- coerced$mir_DEdata
   background_MGI <- get_data_coerce_background_mgi(background_MGI)
 
-  result <- get_data_node_based(methods, mir_DEdata, gene_DEdata, background_MGI)
+  result <- get_data_node_based(methods, mir_DEdata, gene_DEdata, background_MGI, DElogFCCutoff, DEpadjCutoff)
 
   if (sum(grepl("Edge_", methods)) > 0){
-    result <- c(result, get_data_edge_based(methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun))
+    result <- c(result, get_data_edge_based(methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun,
+                                             DElogFCCutoff, DEpadjCutoff, corCutoff, corPadjCutoff))
   }
   result
 }
@@ -296,10 +315,11 @@ get_data_coerce_background_mgi <- function(background_MGI) {
 }
 
 #' @noRd
-get_data_node_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI) {
+get_data_node_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI,
+                                 DElogFCCutoff = 1, DEpadjCutoff = 0.05) {
   result <- list()
   if (sum(methods %in% c("TG_ORA", "TG_Score", "MiR_ORA")) > 0){
-    interested_miRNAs <- mir_DEdata[abs(mirLogFC) > 1 & mirPadj < 0.05, unique(miRNA)]
+    interested_miRNAs <- mir_DEdata[abs(mirLogFC) > DElogFCCutoff & mirPadj < DEpadjCutoff, unique(miRNA)]
   }
 
   if ("TG_ORA" %in% methods){
@@ -321,7 +341,9 @@ get_data_node_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
 }
 
 #' @noRd
-get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun) {
+get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI, mir_mat, gene_mat, scoreFun,
+                                 DElogFCCutoff = 1, DEpadjCutoff = 0.05,
+                                 corCutoff = 0, corPadjCutoff = 0.05) {
   DE_method <- c("Edge_ORA", "Edge_Network")
   score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
   result <- list()
@@ -336,9 +358,9 @@ get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
 
   if (any(DE_method %in% methods)){
     sel <- dict[
-      cor < 0 & corPadj < 0.05 &
-        abs(mirLogFC) > 1 & mirPadj < 0.05 &
-        abs(geneLogFC) > 1 & genePadj < 0.05
+      cor < corCutoff & corPadj < corPadjCutoff &
+        abs(mirLogFC) > DElogFCCutoff & mirPadj < DEpadjCutoff &
+        abs(geneLogFC) > DElogFCCutoff & genePadj < DEpadjCutoff
     ]
     data <- if (nrow(sel) > 0) paste0(sel$miRNA, ":", sel$gene) else character(0)
     for (sub_method in intersect(DE_method, methods)){

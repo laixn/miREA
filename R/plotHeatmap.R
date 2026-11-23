@@ -16,6 +16,17 @@
 #' @param gene_annot A list contains the annotations of genes, where each sub-element denotes a character vector containing a list of genes. It will generate a annotation bar on the top of the heatmap to show whether the genes hit in the annotation list. Default is NULL, which means no annotation bar will be generated.
 #' @param mir_annot Same format as gene_annot. If not NULL, it will generate an annotation bar for miRNAs at the left side of the heatmap, to show whether miRNAs hit in the given list.
 #' @param annot_color The color of the annotation bars for genes and miRNAs
+#' @param DElogFCCutoff optional, the absolute log2FC threshold used to call a miRNA/gene differentially
+#'        expressed for the heatmap annotation. If NULL (the default), falls back to
+#'        `input_data$threshold$DElogFCCutoff` (set by [getAllInputData()]), or 1 if that is absent.
+#' @param DEpadjCutoff optional, the adjusted p-value threshold used to call a miRNA/gene differentially
+#'        expressed for the heatmap annotation. If NULL (the default), falls back to
+#'        `input_data$threshold$DEpadjCutoff`, or 0.05 if that is absent.
+#' @param corCutoff optional, the miRNA-gene expression correlation threshold for the heatmap annotation.
+#'        If NULL (the default), falls back to `input_data$threshold$corCutoff`, or 0 if that is absent.
+#' @param corPadjCutoff optional, the adjusted p-value threshold for the miRNA-gene expression correlation,
+#'        for the heatmap annotation. If NULL (the default), falls back to
+#'        `input_data$threshold$corPadjCutoff`, or 0.05 if that is absent.
 
 #' @return A heatmap plot either in the current window, or saved as heatmap_[method].pdf in the plot_path.
 #' @examples
@@ -40,10 +51,18 @@
 #' @export
 plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathway = 10,
                                 plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL,
-                                gene_annot = NULL, mir_annot = NULL, annot_color = "#A6DDBA"){
+                                gene_annot = NULL, mir_annot = NULL, annot_color = "#A6DDBA",
+                                DElogFCCutoff = NULL, DEpadjCutoff = NULL,
+                                corCutoff = NULL, corPadjCutoff = NULL){
   if (length(method) != 1){
     stop("Please specify only ONE [method] each time!")
   }
+
+  thr <- input_data[["threshold"]]
+  DElogFCCutoff <- DElogFCCutoff %||% thr[["DElogFCCutoff"]] %||% 1
+  DEpadjCutoff  <- DEpadjCutoff  %||% thr[["DEpadjCutoff"]]  %||% 0.05
+  corCutoff     <- corCutoff     %||% thr[["corCutoff"]]     %||% 0
+  corPadjCutoff <- corPadjCutoff %||% thr[["corPadjCutoff"]] %||% 0.05
   if (! method %in% names(result$result)){
     stop("No valid result for method:", method, ". Please check your result file or method parameter!")
   }
@@ -109,9 +128,9 @@ plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathwa
   pathway_miRs <- unique(pathway$miRNA)
   pathway_TGs <- unique(pathway$gene)
 
-  DEMGI <- data %>% filter(cor < 0, corPadj < 0.05, abs(mirLogFC) > 1, mirPadj < 0.05, abs(geneLogFC) > 1, genePadj < 0.05) %>%
+  DEMGI <- data %>% filter(cor < corCutoff, corPadj < corPadjCutoff, abs(mirLogFC) > DElogFCCutoff, mirPadj < DEpadjCutoff, abs(geneLogFC) > DElogFCCutoff, genePadj < DEpadjCutoff) %>%
     mutate(MGI = paste0(miRNA, ":", gene))
-  DEG <- data %>% filter(abs(geneLogFC) > 1, genePadj < 0.05) %>% pull(gene)
+  DEG <- data %>% filter(abs(geneLogFC) > DElogFCCutoff, genePadj < DEpadjCutoff) %>% pull(gene)
   MGIList <- data %>% arrange(strength) %>% select(miRNA, gene, strength) %>% filter(miRNA %in% pathway_miRs, gene %in% pathway_TGs)
 
   DEMGI_path <- pathway %>% inner_join(DEMGI, by = c("miRNA", "gene")) %>% filter(pathway %in% all_paths)
@@ -121,7 +140,7 @@ plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathwa
   #### 1.1 pathway-level annotation: path_order, path_MGI, path_DEMGI -----
   n_total <- length(unique(MGIList$miRNA))
   n_keep <- min(n_mir, n_total)
-  DEmiRs <- data %>% filter(abs(mirLogFC) > 1, mirPadj < 0.05) %>% pull(miRNA) %>% unique()
+  DEmiRs <- data %>% filter(abs(mirLogFC) > DElogFCCutoff, mirPadj < DEpadjCutoff) %>% pull(miRNA) %>% unique()
 
   top_miRNA <- MGIList %>% mutate(MGI = paste0(miRNA, ":", gene)) %>%
     mutate(is_DE = ifelse(MGI %in% unique(DEMGI$MGI), 1, 0)) %>%
@@ -413,7 +432,7 @@ plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathwa
         height = unit(1.5, "cm")
       ),
       star = anno_text(
-        ifelse(abs(gene_anno$geneLogFC) > 1, "*", ""),
+        ifelse(abs(gene_anno$geneLogFC) > DElogFCCutoff, "*", ""),
         gp = gpar(fontsize = 18, col = ifelse(gene_anno$geneLogFC < 0, "blue", "red")),
         location = 0.5,
         just = "center",
