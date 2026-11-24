@@ -25,8 +25,8 @@ network, converts it to its line graph so that edges become nodes, and
 runs a random walk with restart seeded from the differentially expressed
 MGIs. Each pathway is scored by how much of the propagated signal lands
 on its own MGIs, with significance assessed against permuted restart
-sets, controlled by `iter`. Like `Edge_Topology()`, this method needs a
-gene to gene interaction (GGI) network in addition to `background_MGI`.
+sets, controlled by `iter`. It needs a gene-gene interaction (GGI) network
+in addition to `background_MGI`.
 Because the line graph scales with the combined size of the background
 MGI and GGI networks, this method can be memory and time intensive on
 real sized data. Consider increasing `ncores` for large analyses.
@@ -103,8 +103,15 @@ res <- Edge_Network(
     pvalueCutoff = 1,
     seed = 42
 )
-head(res)
+res_display <- head(res)
+res_display$contribute_edge <- NULL
+res_display
 ```
+
+`contribute_edge` is omitted from the display above because it lists every
+contributing edge for a pathway as a single string, which can be very long
+on the toy network and is better inspected directly on `res` than printed
+in full here. `n_contribute_edge` reports how many edges that string holds.
 
 # Run through miREA()
 
@@ -131,7 +138,9 @@ result <- miREA(
     pvalueCutoff = 1,
     seed = 42
 )
-head(result$result$Edge_Network)
+result_display <- head(result$result$Edge_Network)
+result_display$contribute_edge <- NULL
+result_display
 ```
 
 # Session info
