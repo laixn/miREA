@@ -1,3 +1,12 @@
+# miREA 0.99.4
+
+* Restored consistent 4-space indentation across the R source, fixing an
+  accidental partial reformat to 2-space indentation introduced while
+  preparing the previous release.
+* Wrapped long roxygen documentation lines, vignette prose, and the
+  `DESCRIPTION` `biocViews` field to at most 80 characters, addressing the
+  BiocCheck line-length and indentation NOTEs. 
+
 # miREA 0.99.3
 
 * Addressed comments from the first round of Bioconductor review

@@ -1,6 +1,6 @@
 Package: miREA
 Title: Network-Based Edge-Centric MicroRNA-Oriented Enrichment Analysis
-Version: 0.99.3
+Version: 0.99.4
 Authors@R: c(
     person("Zhesi", "Zhang", role = c("aut", "cre"),
            email = "zhesizhang07@gmail.com",
