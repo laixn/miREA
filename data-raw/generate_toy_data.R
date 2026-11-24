@@ -3,12 +3,9 @@
 ## the toy data needs to be rebuilt. Requires data.table and access to the
 ## manuscript's deposited raw data (see `zenodo_dir` below).
 ##
-## This revision replaces an earlier version of this script (recovered from git
-## history at commit 5bd0f45; deleted at c60cd6e) that re-ran DESeq2 on a fresh
-## 80-tumor-sample subsample of the raw TCGA counts. Instead, it directly subsets
-## the manuscript's own already-computed, already-deposited DE results and raw
-## expression matrices for BLCA (`raw_data/cancer_data/{DEG,DEmiR,paired}/`, the
-## same Zenodo deposit `toy_pathway`'s 10 Reactome pathways were themselves
+## It directly subsetsthe manuscript's own already-computed, already-deposited DE 
+## results and raw expression matrices for BLCA (`raw_data/cancer_data/{DEG,DEmiR,paired}/`, 
+## the same Zenodo deposit `toy_pathway`'s 10 Reactome pathways were themselves
 ## selected from -- see R/data.R and the enrichment run under
 ## `data/input_data/{hallmark,Reactome}/BLCA_*_input_data.RData`, which share
 ## this same underlying DE/expression data regardless of which pathway database
