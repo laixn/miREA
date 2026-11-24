@@ -8,20 +8,21 @@
 \title{Full background MGI/GGI data for miREA}
 \format{
 \describe{
-  \item{background_MGI}{A data.frame with columns `miRNA`, `gene`:
-    306,150 miRNA-gene interactions covering 2,562 miRNAs and 5,135
+  \item{background_MGI}{A data.frame with columns `miRNA` and `gene`,
+    giving 306,150 miRNA-gene interactions covering 2,562 miRNAs and 5,135
     protein-coding genes.}
   \item{background_GGI_Reactome}{A data.frame with columns
-    `source_gene`, `target_gene`, `direction`: a frozen snapshot of
-    464,630 Reactome Functional Interaction network edges, covering
-    13,640 genes.}
+    `source_gene`, `target_gene`, and `direction`, giving a frozen
+    snapshot of 464,630 Reactome Functional Interaction network edges,
+    covering 13,640 genes.}
 }
 }
 \source{
 \describe{
   \item{background_MGI}{The most comprehensive MGI dataset available in
-    the literature: 251,888,701 putative MGIs derived from miRNA target
-    prediction algorithms, filtered using Argonaute (AGO) CLIP-seq data
+    the literature, built from 251,888,701 putative MGIs derived from
+    miRNA target prediction algorithms, filtered using Argonaute (AGO)
+    CLIP-seq data
     to retain experimentally supported interactions, with miRNA and gene
     names unified via miRBase and HGNC gene symbols v115 (09/2025). See
     Hua, X., Li, Y., Pentaparthi, S.R., et al. (2023). Landscape of
@@ -31,7 +32,7 @@
     Functional Interaction network's predefined gene-gene interactions,
     with undirected/mixed-sign edges expanded into directed pairs, then
     harmonized to current HGNC gene symbols. This is a frozen snapshot
-    of a specific dated Reactome FI release; fetching Reactome live via
+    of a specific dated Reactome FI release. Fetching Reactome live via
     [getAllInputData()]'s `GGI_source = "Reactome"` option reconstructs
     the network from a pinned (but not HGNC-harmonized) release instead.
     Reactome's data is licensed CC0 (public domain dedication), so this
@@ -43,7 +44,7 @@ The complete (non-toy) miRNA-gene interaction (MGI) background, and the
 Reactome gene-gene interaction (GGI) background, used in the miREA
 manuscript. These are the datasets [getAllInputData()] falls back to when
 `background_MGI` is not supplied, or `background_GGI` is not supplied and
-`GGI_source = "Reactome"`. There is no bundled Omnipath GGI background:
+`GGI_source = "Reactome"`. There is no bundled Omnipath GGI background.
 `GGI_source = "Omnipath"` instead fetches Omnipath's full interaction set
 live, with no license/source filtering, since Omnipath aggregates many
 underlying databases with their own (sometimes restrictive) licenses,

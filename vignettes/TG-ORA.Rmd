@@ -1,0 +1,121 @@
+---
+title: "2. TG-ORA"
+author: "Zhesi Zhang, Xin Lai"
+date: "`r Sys.Date()`"
+package: miREA
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{2. TG-ORA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Overview
+
+`TG_ORA()` performs target gene enrichment analysis by testing the overlap
+between a set of differentially expressed genes and each pathway's gene
+set. The input gene set is the target genes of differentially expressed
+miRNAs, mapped through `background_MGI`. This is a standard
+over-representation analysis, built on `r BiocStyle::Biocpkg("clusterProfiler")`'s
+`enricher()`.
+
+This vignette uses the same toy BLCA example data as the package's main
+Quick Start vignette. See `vignette("miREA")` for a description of that
+data and for running all nine methods together through `miREA()`.
+
+# Required inputs
+
+* `pathway`, a two column data frame with columns `pathway` and `gene`.
+* `mir_DEdata`, a four column data frame with columns `miRNA`,
+  `log2FoldChange`, `stat`, and `padj`.
+* `background_MGI`, a two column data frame with columns `miRNA` and
+  `gene`, or `NULL` to use the bundled default (see `vignette("miREA")`,
+  Step 1, for details on `background_MGI`).
+* `background` for `TG_ORA()` itself, a character vector of background
+  genes. If left `NULL`, `clusterProfiler::enricher()` falls back to its
+  own default universe.
+
+```{r load-data}
+library(miREA)
+data(toy_pathway)
+data(toy_mir_DEdata)
+data(toy_gene_DEdata)
+data(background_MGI)
+```
+
+# Run TG-ORA
+
+```{r prepare-input}
+input_data <- getAllInputData(
+    methods = "TG_ORA",
+    pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI
+)
+```
+
+`input_data$data$TG_ORA` holds the target genes of differentially
+expressed miRNAs, built by `getAllInputData()`. `input_data$pathway$TG`
+holds the pathway gene sets, unchanged from the `toy_pathway` input.
+
+```{r run-tg-ora}
+res <- TG_ORA(
+    TG = input_data$data$TG_ORA,
+    background = unique(toy_pathway$gene),
+    pathway = input_data$pathway$TG,
+    pvalueCutoff = 1
+)
+head(res)
+```
+
+# Run through miREA()
+
+`TG_ORA()` can also be run through the `miREA()` wrapper, which is useful
+when you want its result alongside other methods' results in a single
+`miREAResult` object (see `vignette("miREA")`, Step 2, for the
+multi-method case). For a single target, `background` can be a plain
+character vector instead of a named list.
+
+```{r run-through-miREA}
+result <- miREA(
+    methods = "TG_ORA",
+    input_data = input_data,
+    background = unique(toy_pathway$gene),
+    pvalueCutoff = 1
+)
+head(result$result$TG_ORA)
+```
+
+# Supplying your own miRNA list
+
+`TG_ORA()`'s real input is a list of genes targeted by miRNAs of
+interest, not a list of genes directly. If you already have a miRNA list
+from an external analysis instead of letting `getAllInputData()` derive
+one from `mir_DEdata`, map that miRNA list to its target genes through
+`background_MGI`, the same step `getAllInputData()` performs internally,
+and call `TG_ORA()` with the result.
+
+```{r custom-list, eval=FALSE}
+my_miRs <- c("hsa-miR-21-5p", "hsa-miR-155-5p") # replace with your own miRNA list
+my_TG <- unique(background_MGI$gene[background_MGI$miRNA %in% my_miRs])
+res_custom <- TG_ORA(
+    TG = my_TG,
+    background = unique(toy_pathway$gene),
+    pathway = toy_pathway,
+    pvalueCutoff = 1
+)
+```
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```

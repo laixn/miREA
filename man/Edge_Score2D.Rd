@@ -51,7 +51,7 @@ default), no internal seed is set and the permutation draws depend
 on the caller's current random state. If supplied, the permutation
 is made reproducible via [withr::with_seed()] when running serially,
 or via `BPPARAM`'s `RNGseed` when `ncores > 1`/a parallel `BPPARAM`
-is used; neither alters the caller's global random state.}
+is used. Neither alters the caller's global random state.}
 }
 \value{
 a dataframe contains enrichment result for Edge-Score2D, including

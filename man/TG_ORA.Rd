@@ -17,7 +17,9 @@ TG_ORA(
 \arguments{
 \item{TG}{A character vector contains selected target genes of DEmiRs.}
 
-\item{background}{A character vector contains background genes.}
+\item{background}{A character vector contains background genes. If NULL
+(the default), the background used internally by
+[clusterProfiler::enricher()] is used instead.}
 
 \item{pathway}{A two-column dataframe contains pathway and their member genes.}
 

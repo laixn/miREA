@@ -34,10 +34,10 @@ Defaults to an empty list.}
 
 \item{x}{A [miREAResult-class] object.}
 
-\item{name}{The slot to access: one of `"result"`, `"time"`,
+\item{name}{The slot to access, one of `"result"`, `"time"`,
 `"valid_methods"`, `"failed_methods"`, `"parameter"`.}
 
-\item{i}{The slot to access: one of `"result"`, `"time"`,
+\item{i}{The slot to access, one of `"result"`, `"time"`,
 `"valid_methods"`, `"failed_methods"`, `"parameter"`.}
 
 \item{j}{Not used.}

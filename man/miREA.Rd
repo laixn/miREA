@@ -23,25 +23,26 @@ miREA(
 
 \item{input_data}{Input data list, containing the input data for all methods, including data, pathway, pathway_GGI, GGI, and dict_MGI.
 Use getAllInputData() function to generate. You could also generate it by yourself.
-  input_data$data: each sub-element is named by the method, containing the input data format.
-    TG_ORA: DEG, MiR_ORA: DEmiR, Edge_ORA: DEMGI, Edge_Network: DEMGI
-      All of them is a character vector, containing all selected differential expressed items (genes/miRNAs/MGI)
-    TG_Score: geneList, MiR_Score: miRList, Edge_Score1D: MGIList
-      All of them is a named numeric vector, where the names are items (genes/miRNAs/MGI), corresponding value is their score, which is ranked by the score.
-    Edge_Topology: MGIdata
-      A five-column dataframe, containing MGI miRNA gene strength.
-    Edge_Score2D: MGI2D
-      A five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).
-  input_data$pathway: each sub-element is named by the object, which could be TG, MiR, and Edge.
-  input_data$pathway_GGI: a dataframe containing pathway and their directed GGI involved. Only useful when methods contain Edge_Topology and Edge_Network.
-  input_data$MGI: a dataframe containing MGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
-  input_data$GGI: a dataframe containing directed GGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
-  input_data$dict_MGI: a dataframe containing all possible MGIs and their expression profiles. Only useful for Edge_Topology.}
+  input_data$data, each sub-element named by the method, contains the input data in the
+    following formats.
+    TG_ORA uses DEG, MiR_ORA uses DEmiR, Edge_ORA uses DEMGI, and Edge_Network uses DEMGI.
+      Each is a character vector, containing all selected differential expressed items (genes/miRNAs/MGI).
+    TG_Score uses geneList, MiR_Score uses miRList, and Edge_Score1D uses MGIList.
+      Each is a named numeric vector, where the names are items (genes/miRNAs/MGI), and the corresponding value is their score, by which the vector is ranked.
+    Edge_Topology uses MGIdata,
+      a five-column dataframe, containing MGI miRNA gene strength.
+    Edge_Score2D uses MGI2D,
+      a five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).
+  input_data$pathway, each sub-element named by the object, which could be TG, MiR, and Edge.
+  input_data$pathway_GGI, a dataframe containing pathway and their directed GGI involved. Only useful when methods contain Edge_Topology and Edge_Network.
+  input_data$MGI, a dataframe containing MGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
+  input_data$GGI, a dataframe containing directed GGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
+  input_data$dict_MGI, a dataframe containing all possible MGIs and their expression profiles. Only useful for Edge_Topology.}
 
 \item{background}{Contains background items (genes for TG_ method, miRNAs for MiR_ method, MGIs for Edge_ method).
 If methods contains more than one targets, it should be a list where each sub-element is a character vector named by the target (TG, MiR, or Edge).
 If methods contains only one target, it could also be a character vector.
-Required: miREA does not ship a bundled default background, so background = NULL raises an error.}
+Required. miREA does not ship a bundled default background, so background = NULL raises an error.}
 
 \item{minSize}{The minimum pathway set sizes allowed for analysis, filtering out pathways with number of members less than the minSize threshold.}
 
@@ -71,8 +72,11 @@ If NULL, unparallel computing will be used.}
 (Edge_Score2D, Edge_Topology, Edge_Network). If NULL (the default),
 no internal seed is set and the permutation draws depend on the
 caller's current random state. If supplied, it is forwarded to all
-three methods via [withr::with_seed()], which does not alter the
-caller's global random state.}
+three methods. Edge_Topology and Edge_Network make it reproducible
+via [withr::with_seed()]. Edge_Score2D does the same when running
+serially, or uses it as `BPPARAM`'s `RNGseed` when run in parallel
+(`ncores > 1`). None of these alter the caller's global random
+state.}
 }
 \value{
 A [miREAResult-class] object containing the per-method result tables

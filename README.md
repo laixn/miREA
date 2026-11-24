@@ -39,7 +39,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("miREA")
 ```
 
-To install the development version directly from GitHub:
+The development version can be installed directly from GitHub.
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -51,7 +51,7 @@ BiocManager::install("laixn/miREA")
 
 See `vignette("miREA")` for a full worked example using the small example
 dataset bundled with the package (`?miREA_example_data`), covering the full
-workflow: `getAllInputData()` → `miREA()` →
+workflow from `getAllInputData()` to `miREA()` to
 `plotSummary()`/`plotHeatmap()`/`plotHeatmapSankey()`.
 
 ```r
@@ -64,7 +64,7 @@ e.g. `?Edge_ORA`, `?Edge_Score1D`.
 
 ## Output
 
-miREA returns results containing:
+miREA returns results containing the following.
 
 * a list named `input_data` for the input data of miREA.
 * a list named `result` for the enrichment result, including parameters,
@@ -86,7 +86,7 @@ This package is distributed under the Artistic License 2.0. At runtime it
 can retrieve molecular interaction data from [Omnipath](https://omnipathdb.org/)
 (via `OmnipathR`) and/or bundle a [Reactome](https://reactome.org/) Functional
 Interaction network snapshot. These are not the same thing as the package's
-own license:
+own license, as summarized below.
 
 * **Reactome**: Reactome's data is licensed
   [CC0](https://reactome.org/license) (public domain dedication), so the
@@ -96,13 +96,13 @@ own license:
   databases, each carrying its own license, some of which restrict
   commercial use. `getAllInputData(..., GGI_source = "Omnipath")` fetches
   Omnipath's **full, unfiltered** interaction set live (not bundled with the
-  package) — miREA does not filter by license or source. Omnipath/OmnipathR
+  package), and miREA does not filter by license or source. Omnipath/OmnipathR
   does expose a `license` argument intended for this, but in our testing it
   did not actually narrow the returned interactions, so rather than give a
   false impression of filtering, miREA returns the data as-is. If your use
   case requires a license-restricted subset (e.g. commercially-licensed
-  sources only), filter it yourself — for example using
-  `OmnipathR::resource_info()` to inspect each source's license — and supply
+  sources only), filter it yourself, for example using
+  `OmnipathR::resource_info()` to inspect each source's license, and supply
   the result via `background_GGI`.
 
 The Artistic License 2.0 of this package does **not** extend to such
@@ -127,6 +127,6 @@ analysis. Submitted (2026).
 
 ---
 
-© [Lai Lab](https://sites.google.com/view/lai-lab) - This package is
+© [Lai Lab](https://sites.google.com/view/lai-lab). This package is
 available under the [Artistic-2.0](https://opensource.org/licenses/Artistic-2.0)
 license.

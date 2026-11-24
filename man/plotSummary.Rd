@@ -30,7 +30,7 @@ Invisibly, a list with the combined summary plot and the p-value density
 }
 \description{
 Draws summary plots comparing enrichment results across the different
-miREA methods: a positive-rate/PCA/pairwise-overlap panel, and a p-value
+miREA methods, a positive-rate/PCA/pairwise-overlap panel, and a p-value
 density plot.
 }
 \examples{

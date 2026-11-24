@@ -29,9 +29,10 @@ getAllInputData(
 \item{pathway}{compulsory. It should be a two-column pathway, containing pathway and gene, or a GSEABase GeneSetCollection object.}
 
 \item{mir_DEdata}{compulsory. A dataframe of differential expression results, with columns matched
-by name (not position), so extra columns are fine. Recognized logFC columns:
-`log2FoldChange`/`logFC`; stat columns: `stat`/`t`; padj columns: `padj`/`adj.P.Val`
-(i.e. `DESeq2::results()` or `limma::topTable()` output can be passed directly). The miRNA
+by name (not position), so extra columns are fine. Recognized columns are
+`log2FoldChange` or `logFC` for logFC, `stat` or `t` for stat, and `padj` or
+`adj.P.Val` for padj (i.e. `DESeq2::results()` or `limma::topTable()` output can be
+passed directly). The miRNA
 ID is read from a `miRNA`/`ID`/`SYMBOL`/`Row.names` column if present, otherwise from
 `rownames(mir_DEdata)` (the default for `DESeq2::results()`/`limma::topTable()` output).}
 
@@ -42,7 +43,7 @@ shapes as `mir_DEdata` (with `gene` instead of `miRNA` as the ID).}
 
 \item{background_GGI}{optional, it should be a two-column data frame that contains source gene and target gene. If supplied, GGI_source is ignored (a message notes this). If NULL and GGI_source = "Omnipath" (or GGI_source = NULL, which is treated the same as "Omnipath"), miREA fetches Omnipath's full interaction set live (requires the OmnipathR package and an internet connection), with no license/source filtering (see the "Third-party data licensing" section of the package README for why, and how to supply a license-restricted subset yourself). If NULL and GGI_source = "Reactome", miREA falls back to its bundled `background_GGI_Reactome` dataset (a frozen CC0-licensed snapshot, no commercial-use restriction).}
 
-\item{GGI_source}{optional, select from "Omnipath" or "Reactome", or NULL. Selects how background_GGI is obtained when not provided directly; NULL behaves like "Omnipath". The default is "Omnipath".}
+\item{GGI_source}{optional, select from "Omnipath" or "Reactome", or NULL. Selects how background_GGI is obtained when not provided directly. NULL behaves like "Omnipath". The default is "Omnipath".}
 
 \item{gene_mat}{optional, needed for Edge_ method, used for calculating correlations between miRNAs and genes. It should be a raw gene expression matrix (each row a gene, each column a sample), either as a dataframe/matrix or as a SummarizedExperiment object.}
 

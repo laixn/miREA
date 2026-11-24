@@ -24,7 +24,7 @@ Edge_Topology(
 \arguments{
 \item{MGI}{A four-column dataframe, including MGI miRNA gene strength.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "pos".
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "neg".
 The "pos" and "neg" score types are intended to be used for one-tailed tests
 (i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
 The "std" is used when interested in both positive and negative scores.}
@@ -38,15 +38,17 @@ The "std" is used when interested in both positive and negative scores.}
 \item{dict_MGI}{A four-column dataframe, including MGI miRNA gene strength. Containing all possible MGIs that could be used in permutation test. Equals to input_data$dict_MGI.}
 
 \item{iter}{Maximum number of permutations for the permutation test. The
-actual number of permutations run for a given pathway can be lower:
-internally, permutations are drawn in up to three sequential
+actual number of permutations run for a given pathway can be lower.
+Internally, permutations are drawn in up to three sequential
 stages (roughly 10%, 50%, and 100% of `iter`), stopping early once
 enough extreme permutation scores have been observed to settle the
 p-value. The number of permutations actually used for a pathway is
 reported in the `nPerm` column of the result.}
 
 \item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
-Use default_pAdjMethod to find all possible values.}
+Use default_pAdjMethod to find all possible values.
+If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If no adjustment is desired, set pAdjMethod = "none".}
 
 \item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
 

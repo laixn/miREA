@@ -11,21 +11,21 @@
 \title{Toy BLCA example data for miREA}
 \format{
 \describe{
-  \item{toy_pathway}{A data.frame with columns `pathway`, `gene`: pathway-gene
-    membership for the 10 Reactome pathways most enriched in the full
-    manuscript BLCA run.}
+  \item{toy_pathway}{A data.frame with columns `pathway` and `gene`, giving
+    pathway-gene membership for the 10 Reactome pathways most enriched in
+    the full manuscript BLCA run.}
   \item{toy_gene_DEdata}{A data.frame with columns `gene`, `log2FoldChange`,
-    `stat`, `padj`: differential expression results for the genes in
-    `toy_pathway` (1,142 of 1,145 pathway genes have a result; the other 3
-    were dropped by DESeq2's independent filtering and simply carry no DE
-    info downstream).}
+    `stat`, and `padj`, giving differential expression results for the
+    genes in `toy_pathway`. 1,142 of 1,145 pathway genes have a result.
+    The other 3 were dropped by DESeq2's independent filtering and simply
+    carry no DE info downstream.}
   \item{toy_mir_DEdata}{A data.frame with columns `miRNA`, `log2FoldChange`,
-    `stat`, `padj`: differential expression results for the miRNAs that
-    target a `toy_pathway` gene (via `background_MGI`) and are DE-testable.}
+    `stat`, and `padj`, giving differential expression results for the
+    miRNAs that target a `toy_pathway` gene (via `background_MGI`) and are
+    DE-testable.}
   \item{toy_gene_mat}{A gene-by-sample expression matrix (data.frame, genes
-    as rownames), restricted to the genes in `toy_pathway` (all 1,145 of
-    them, including the 3 that `toy_gene_DEdata` lacks a DE result for),
-    the 403 tumor TCGA samples.}
+    as rownames), restricted to 1,145 genes in `toy_pathway` and 403 tumor 
+    TCGA samples.}
   \item{toy_mir_mat}{A miRNA-by-sample expression matrix (data.frame,
     miRNAs as rownames), restricted to the miRNAs in `toy_mir_DEdata`, the
     same 403 tumor TCGA samples as `toy_gene_mat`.}
@@ -34,46 +34,47 @@
 \source{
 \describe{
   \item{toy_gene_DEdata, toy_mir_DEdata, toy_gene_mat, toy_mir_mat}{Subset,
-    by gene/miRNA, of the manuscript's own full TCGA BLCA differential
-    expression results and raw expression matrices (403 tumor + 19 normal
-    samples, DESeq2, design `~ type`, tumor vs. normal; Methods 2.3,
-    \doi{10.64898/2026.02.27.708509}) -- i.e. the exact DE results
+    by gene and miRNA, of the manuscript's own full TCGA BLCA differential
+    expression results and raw expression matrices (403 tumor and 19 normal
+    samples, DESeq2, design `~ type`, tumor vs. normal, Methods 2.3,
+    \doi{10.64898/2026.02.27.708509}). These are the exact DE results
     `toy_pathway` below was itself selected from, not an independently
     re-derived DE run on a different sample subset. Restricted to the genes
     in `toy_pathway`, and the miRNAs that target one of those genes via
-    `background_MGI` and are DE-testable. `toy_gene_mat`/`toy_mir_mat` are
-    the raw counts for the tumor samples only (matching the manuscript's
-    correlation step, computed within the tumor population).}
+    `background_MGI` and are DE-testable. `toy_gene_mat` and `toy_mir_mat`
+    are the raw counts for the tumor samples only (matching the
+    manuscript's correlation step, computed within the tumor population).}
   \item{toy_pathway}{The 10 Reactome pathways with the lowest (padj,
     p_value) in the Edge_Score1D output of the full manuscript BLCA run
-    (Reactome pathway set as in Methods 2.2, 2,766 pathways, v94;
-    \doi{10.64898/2026.02.27.708509}; full enrichment results at
-    \url{https://zenodo.org/records/18803209}). Reactome's data is
-    CC0 (public domain), so this carries no usage restriction, unlike
-    the KEGG-derived MSigDB sets used here previously.}
+    (Reactome pathway set as in Methods 2.2, 2,766 pathways, v94,
+    \doi{10.64898/2026.02.27.708509}). Full enrichment results are
+    available at \url{https://zenodo.org/records/18803209}. Reactome's
+    data is CC0 (public domain), so this carries no usage restriction,
+    unlike the KEGG-derived MSigDB sets used here previously.}
 }
 }
 \description{
 A small, self-contained example dataset derived from the real BLCA
 (bladder urothelial carcinoma) data used in the miREA manuscript.
 `toy_pathway` is a fixed set of 10 Reactome pathways selected from the full
-manuscript BLCA run (see `@source` below); `toy_gene_DEdata`/`toy_mir_DEdata`/
-`toy_gene_mat`/`toy_mir_mat` are the manuscript's own differential
-expression results and raw expression matrices (403 tumor + 19 normal TCGA
-samples; the normal samples are only used to compute differential
-expression, not correlation -- see below), restricted to the genes/miRNAs
-needed to exercise `toy_pathway` (so every exported function in the package
-can run on real, not synthetic, data without shipping the full ~35,000-gene
-DE-testable universe). `toy_gene_mat`/`toy_mir_mat` use only the tumor
-samples (correlation is computed within the tumor population, as in the
-manuscript). For the full datasets used in the manuscript, see the
-Zenodo deposit at \url{https://zenodo.org/records/18803209}.
+manuscript BLCA run (see `@source` below). `toy_gene_DEdata`, `toy_mir_DEdata`,
+`toy_gene_mat`, and `toy_mir_mat` are the manuscript's own differential
+expression results and raw expression matrices (403 tumor and 19 normal TCGA
+samples). The normal samples are only used to compute differential
+expression, not correlation (see below). These objects are restricted to
+the genes/miRNAs needed to exercise `toy_pathway`, so every exported
+function in the package can run on real, not synthetic, data without
+shipping the full ~35,000-gene DE-testable universe. `toy_gene_mat` and
+`toy_mir_mat` use only the tumor samples, since correlation is computed
+within the tumor population, as in the manuscript. For the full datasets
+used in the manuscript, see the Zenodo deposit at
+\url{https://zenodo.org/records/18803209}.
 }
 \note{
 These toy objects are paired with the full, real background_MGI
   and background_GGI_Reactome datasets (see [miREA_background_data]) for
-  examples/tests that need a background_MGI/background_GGI argument —
-  there is no separate "toy" subset of those, since the full datasets are
+  examples/tests that need a background_MGI/background_GGI argument.
+  There is no separate "toy" subset of those, since the full datasets are
   already small enough to use directly.
 }
 \examples{

@@ -27,15 +27,15 @@ discards the inherent many-to-many structure of miRNA-gene regulation and can
 bias functional interpretation. miREA instead models the regulatory edges
 themselves.
 
-The package implements:
+The package implements the following methods.
 
-* **Four node-based methods**: `TG_ORA`, `TG_Score` (target-gene-based),
+* **Four node-based methods** are `TG_ORA`, `TG_Score` (target-gene-based),
   `MiR_ORA`, `MiR_Score` (miRNA-based).
-* **Five edge-based methods**: `Edge_ORA`, `Edge_Score1D`, `Edge_Score2D`,
+* **Five edge-based methods** are `Edge_ORA`, `Edge_Score1D`, `Edge_Score2D`,
   `Edge_Topology`, `Edge_Network`, spanning over-representation,
   scoring-based, topology-aware, and network-propagation approaches.
 
-All nine methods share a common workflow: prepare method-specific input data
+All nine methods share a common workflow. Prepare method-specific input data
 with `getAllInputData()`, run the selected methods with `miREA()`, and
 visualize results with `plotSummary()`, `plotHeatmap()`, or
 `plotHeatmapSankey()`.
@@ -135,26 +135,17 @@ names(input_data)
 
 ## Supplying background_MGI and background_GGI
 
-`getAllInputData()` takes two background network arguments. `background_MGI`
-provides the miRNA to gene interaction universe used by the `MiR_` and
-`Edge_` methods. `background_GGI` provides the gene to gene interaction
-universe used by `Edge_Topology` and `Edge_Network`. Both arguments are
-optional.
+`getAllInputData()` takes two background network arguments. `background_MGI` 
+provides the miRNA to gene interaction universe used by all methods. 
+`background_GGI` provides the gene to gene interaction universe used by 
+`Edge_Topology` and `Edge_Network`. Both arguments are optional.
 
 When `background_MGI` is left as `NULL`, `getAllInputData()` falls back to
 the bundled `background_MGI` dataset, containing 306,150 miRNA to gene
 interactions derived from the literature source cited in
 `?miREA_background_data`. A custom `background_MGI` must be supplied either
 as a character vector formatted as `[miRNA]:[gene]`, or as a two column
-data frame with a miRNA column and a gene column. One way to build a
-custom `background_MGI` is `multiMiR::get_multimir()`, which queries
-several curated and predicted miRNA target databases.
-
-```{r build-background-mgi, eval=FALSE}
-mgi <- multiMiR::get_multimir(table = "validated", summary = TRUE)
-background_MGI <- unique(mgi@data[, c("mature_mirna_id", "target_symbol")])
-colnames(background_MGI) <- c("miRNA", "gene")
-```
+data frame with a miRNA column and a gene column.
 
 When `background_GGI` is left as `NULL`, the source used depends on
 `GGI_source`.
@@ -177,17 +168,6 @@ When `background_GGI` is left as `NULL`, the source used depends on
 A custom `background_GGI` must be supplied as a two column data frame
 containing a source gene column and a target gene column.
 
-The manuscript's own `background_GGI` (Methods 2.1) was built by
-extracting 282,504 experimentally validated interactions restricted to
-*Homo sapiens* from Omnipath, treating undirected interactions as
-bidirectional, and reconstructing Reactome pathway networks from
-Reactome's predefined gene to gene interactions, for a combined 464,595
-GGIs across 13,640 genes (see \doi{10.64898/2026.02.27.708509} for
-details). This combined figure is distinct from the Reactome only
-`background_GGI_Reactome` snapshot bundled with the package, which
-contains 464,630 edges. Users who want the exact background used in the
-manuscript should download it from the Zenodo deposit linked above rather
-than relying on the bundled snapshot.
 
 ## Interoperability with standard Bioconductor classes
 
@@ -221,71 +201,39 @@ identical(input_data_bioc$data$Edge_ORA, input_data$data$Edge_ORA)
 
 # Step 2: Run enrichment analysis
 
-`miREA()` involves two independent kinds of background input that are easy
-to conflate:
+`miREA()` takes a `background` argument that supplies the gene, miRNA, or
+MGI universe each requested method is tested against. `background` has no 
+bundled default, and `background = NULL` raises an error.
 
-* `getAllInputData()`'s `background_MGI`/`background_GGI` (the underlying
-  miRNA-gene / gene-gene interaction networks) are both optional and fall
-  back to miREA's bundled defaults (`data(background_MGI)`, a live Omnipath
-  fetch, or `data(background_GGI_Reactome)`) when left `NULL` — see below.
-* `miREA()`'s own `background` argument (the TG/MiR/Edge background
-  universes each method's enrichment test is run against) has **no**
-  bundled default and must always be built and supplied explicitly, even if
-  you already supplied `background_MGI`/`background_GGI` above;
-  `background = NULL` raises an error. See the `run-miREA` code chunk below
-  for how to build it from `input_data`/`background_MGI`.
+`background` is a named list holding one entry per analysis target. `TG`
+holds the gene background used by `TG_ORA` and `TG_Score`. `MiR` holds the
+miRNA background used by `MiR_ORA` and `MiR_Score`. `Edge` holds the miRNA
+to gene interaction background used by the `Edge_` methods.
 
-## Customizing background_MGI/background_GGI
+Each entry can be built directly from `input_data`, the object returned by
+`getAllInputData()` in Step 1. `input_data$pathway$TG` and `input_data$pathway$MiR` 
+already hold the gene and miRNA universe restricted to the supplied pathway set.
+`input_data$background_MGI` records whichever `background_MGI` was
+actually used in Step 1.
 
-miREA ships bundled defaults for both, so this section is only needed if you
-want a different source, a newer snapshot, or a license-restricted subset —
-or want to download the exact background used in the manuscript from the
-Zenodo deposit linked above.
-
-`background_MGI` (curated miRNA-gene interactions) can be rebuilt from, e.g.,
-`multiMiR::get_multimir()`, which queries several curated/predicted
-miRNA-target databases:
-
-```{r build-background-mgi, eval=FALSE}
-mgi <- multiMiR::get_multimir(table = "validated", summary = TRUE)
-background_MGI <- unique(mgi@data[, c("mature_mirna_id", "target_symbol")])
-colnames(background_MGI) <- c("miRNA", "gene")
-```
-
-`background_GGI` (gene-gene interactions, needed for `Edge_Topology` and
-`Edge_Network`) is obtained differently depending on `GGI_source` when
-`background_GGI = NULL`; see `getAllInputData()`:
-
-* `GGI_source = "Omnipath"` (the default) fetches Omnipath's full
-  interaction set live (requires the `OmnipathR` package and an internet
-  connection), with no license/source filtering. Omnipath aggregates many
-  underlying databases with their own licenses, some of which restrict
-  commercial use — see the "Third-party data licensing" section of the
-  package README for why miREA does not filter this itself, and how to
-  supply a license-restricted subset via `background_GGI`. This package's
-  own license does not extend to such third-party data; users are
-  responsible for ensuring their use complies with the applicable source
-  licenses.
-* `GGI_source = "Reactome"` falls back to the bundled
-  `data(background_GGI_Reactome)` snapshot, a frozen, CC0-licensed (no
-  usage restriction) Reactome Functional Interaction network release.
-
-The manuscript's own `background_GGI` (Methods 2.1) was built by extracting
-282,504 experimentally validated, *Homo sapiens*-only interactions from
-Omnipath (undirected interactions treated as bidirectional), and
-reconstructing Reactome pathway networks from Reactome's predefined
-gene-gene interactions, for a combined 464,595 GGIs across 13,640 genes
-(see \doi{10.64898/2026.02.27.708509} for details). This Omnipath+Reactome
-figure (464,595) is the manuscript's own analysis background and is
-distinct from the Reactome-only `background_GGI_Reactome` bundled with the
-package (464,630 edges, see the bullet list above).
+The permutation based methods (`Edge_Score2D`, `Edge_Topology`, and
+`Edge_Network`) accept a `seed` argument so their results are reproducible
+across runs. We set `seed = 42` below. Leaving `seed` unset draws a fresh
+random permutation each run.
 
 ```{r run-miREA}
-background <- list(
-    TG = unique(toy_pathway$gene),
-    MiR = unique(input_data$pathway$MiR$miRNA),
-    Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
-)
+background <- list()
+if ("TG" %in% names(input_data$pathway)) {
+    background[["TG"]] <- unique(input_data$pathway$TG$gene)
+}
+if ("MiR" %in% names(input_data$pathway)) {
+    background[["MiR"]] <- unique(input_data$pathway$MiR$miRNA)
+}
+if ("background_MGI" %in% names(input_data)) {
+    background[["Edge"]] <- unique(paste0(
+        input_data$background_MGI$miRNA, ":", input_data$background_MGI$gene
+    ))
+}
 
 result <- miREA(
     methods = default_method_list,
@@ -297,7 +245,8 @@ result <- miREA(
     pAdjMethod = "BH",
     pvalueCutoff = 1,
     iter = 20,
-    ncores = 1
+    ncores = 1,
+    seed = 42
 )
 result$valid_methods
 ```
@@ -311,14 +260,14 @@ result
 ```
 
 `result$result` is a named list with one data.frame per method. For example,
-the `TG_ORA` result:
+here is the `TG_ORA` result.
 
 ```{r show-result}
 head(result$result$TG_ORA)
 ```
 
 All per-method results can also be flattened into a single dataframe (with a
-`method` column) via `as.data.frame()`:
+`method` column) via `as.data.frame()`.
 
 ```{r show-result-flat}
 head(as.data.frame(result))
@@ -331,14 +280,14 @@ These methods only report pathways with at least one overlapping
 differentially expressed gene, miRNA, or edge, so some pathways can still be
 missing even at `pvalueCutoff = 1` (all 10 of the toy pathways happen to have
 at least one such overlap here, so none are dropped in this particular
-example; on your own data, check `nrow()` of the ORA results against the
-number of input pathways if you want to confirm none were silently excluded).
+example. On your own data, check `nrow()` of the ORA results against the
+number of input pathways to see whether some pathways are silently excluded).
 
 # Step 3: Visualize results
 
-`plotSummary()` compares results across all requested methods: positive
-enrichment rates, a PCA of per-method pathway rankings, pairwise overlap
-between methods, and a p-value density plot.
+`plotSummary()` compares results across all requested methods, including
+positive enrichment rates, a PCA of per-method pathway rankings, pairwise
+overlap between methods, and a p-value density plot.
 
 ```{r plot-summary, fig.width = 10, fig.height = 6}
 plotSummary(result, penrichCutoff = 0.05)
@@ -366,24 +315,21 @@ plotHeatmapSankey(
 
 # Choosing methods for your own data
 
-miREA supports 4 node-based and 5 edge-based methods. You do not need to run
-all nine. Select the method(s) most appropriate for your dataset and research
+miREA supports 4 node-based and 5 edge-based methods. You do not always need to 
+run all nine. Select the method(s) most appropriate for your dataset and research
 question. See the method performance comparisons in the miREA manuscript
 (`r BiocStyle::Biocpkg("miREA")`'s companion
 [bioRxiv preprint](https://doi.org/10.64898/2026.02.27.708509)) for guidance.
-`Edge_Topology` in particular can be computationally expensive on large,
-real-sized pathway/background data. Consider excluding it or increasing
-`ncores` for large analyses.
+
+Please note that `Edge_Topology` in particular can be computationally expensive. 
+Please check the time cost for methods on differentpathways in the miREA manuscript 
+and consider excluding it or increasing `ncores` for analyses. `ncores` is the main 
+lever for scaling down wall-clock time.
 
 For the permutation-based methods (`Edge_Score2D`, `Edge_Topology`,
-`Edge_Network`), we recommend `iter >= 1000` (the default); this vignette only
+`Edge_Network`), we recommend `iter >= 1000` (default is 1000). This vignette only
 uses `iter = 20` to keep build time short on the small toy dataset, and is not
-representative of real analyses. On real-sized data -- the manuscript's own
-BLCA analysis, a genome-scale background against 10 pathways, `iter = 1000` --
-`Edge_Topology` took about 30 minutes and `Edge_Network` about 3.6 minutes,
-both on 8 cores. Runtime scales with the size of the background MGI/GGI
-network and the number of pathways tested, so these numbers are only a rough
-guide; `ncores` is the main lever for scaling down wall-clock time.
+representative of real analyses. 
 
 # Session info
 

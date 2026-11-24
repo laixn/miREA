@@ -1,0 +1,125 @@
+---
+title: "8. Edge-Score2D"
+author: "Zhesi Zhang, Xin Lai"
+date: "`r Sys.Date()`"
+package: miREA
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{8. Edge-Score2D}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Overview
+
+`Edge_Score2D()` performs miRNA gene interaction (MGI) enrichment
+analysis by scoring each pathway on how unexpectedly its MGIs cluster in
+a two dimensional miRNA by gene score space, relative to randomly drawn
+MGI sets of the same size. Significance is assessed by its own
+permutation test, controlled by the `iter` argument, with an optional
+`seed` for reproducibility.
+
+This vignette uses the same toy BLCA example data as the package's main
+Quick Start vignette. See `vignette("miREA")` for a description of that
+data and for running all nine methods together through `miREA()`.
+
+# Required inputs
+
+* `pathway`, a three column data frame with columns `pathway`, `miRNA`,
+  and `gene`.
+* `mir_DEdata`, a four column data frame with columns `miRNA`,
+  `log2FoldChange`, `stat`, and `padj`.
+* `gene_DEdata`, a four column data frame with columns `gene`,
+  `log2FoldChange`, `stat`, and `padj`.
+* `mir_mat` and `gene_mat`, raw expression matrices with samples as
+  columns, used to score each MGI.
+* `scoreFun`, the transform applied to the miRNA and gene scores, for
+  example `"rank"`.
+* `background_MGI`, a two column data frame with columns `miRNA` and
+  `gene`, or `NULL` to use the bundled default (see `vignette("miREA")`,
+  Step 1, for details on `background_MGI`).
+* `background` for `Edge_Score2D()` itself, a character vector of
+  background MGIs formatted as `[miRNA]:[gene]`.
+* `iter`, the number of permutations. The function default is 1000. This
+  vignette uses `iter = 10` to keep build time short on the small toy
+  dataset.
+* `seed`, an optional integer for reproducible permutation draws.
+
+```{r load-data}
+library(miREA)
+data(toy_pathway)
+data(toy_mir_DEdata)
+data(toy_gene_DEdata)
+data(toy_gene_mat)
+data(toy_mir_mat)
+data(background_MGI)
+```
+
+# Run Edge-Score2D
+
+```{r prepare-input}
+input_data <- getAllInputData(
+    methods = "Edge_Score2D",
+    pathway = toy_pathway,
+    mir_DEdata = toy_mir_DEdata,
+    gene_DEdata = toy_gene_DEdata,
+    background_MGI = background_MGI,
+    gene_mat = toy_gene_mat,
+    mir_mat = toy_mir_mat,
+    scoreFun = "rank"
+)
+```
+
+`input_data$data$Edge_Score2D` holds the two dimensional MGI scores,
+built by `getAllInputData()` from `toy_gene_mat` and `toy_mir_mat`
+expression, transformed with `scoreFun`. `input_data$pathway$Edge` holds
+the pathway MGI sets, derived from `toy_pathway`'s genes through
+`background_MGI`.
+
+```{r run-edge-score2d}
+background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
+res <- Edge_Score2D(
+    MGI2D = input_data$data$Edge_Score2D,
+    pathway = input_data$pathway$Edge,
+    background = background,
+    iter = 10,
+    ncores = 1,
+    pvalueCutoff = 1,
+    seed = 42
+)
+head(res)
+```
+
+# Run through miREA()
+
+`Edge_Score2D()` can also be run through the `miREA()` wrapper, which is
+useful when you want its result alongside other methods' results in a
+single `miREAResult` object (see `vignette("miREA")`, Step 2, for the
+multi-method case). For a single target, `background` can be a plain
+character vector instead of a named list.
+
+```{r run-through-miREA}
+result <- miREA(
+    methods = "Edge_Score2D",
+    input_data = input_data,
+    background = background,
+    iter = 10,
+    ncores = 1,
+    pvalueCutoff = 1,
+    seed = 42
+)
+head(result$result$Edge_Score2D)
+```
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```

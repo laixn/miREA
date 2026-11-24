@@ -19,7 +19,7 @@ Edge_Score1D(
 
 \item{pathway}{A three-column dataframe contains pathway, miRNA, gene.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "pos".
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "neg".
 The "pos" and "neg" score types are intended to be used for one-tailed tests
 (i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
 The "std" is used when interested in both positive and negative scores.}

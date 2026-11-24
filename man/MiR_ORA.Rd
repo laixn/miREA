@@ -17,7 +17,10 @@ MiR_ORA(
 \arguments{
 \item{DEmiR}{A character vector contains selected differential expressed miRNAs.}
 
-\item{background}{A character vector contains background miRNAs.}
+\item{background}{A character vector contains background miRNAs. If NULL
+(the default), all mature *Homo sapiens* miRNAs from miRBase
+version 22 are fetched via [miRBaseConverter::getAllMiRNAs()] and
+used instead.}
 
 \item{pathway}{A two-column dataframe contains pathway and their member miRNAs.}
 

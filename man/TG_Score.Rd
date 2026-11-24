@@ -19,7 +19,7 @@ TG_Score(
 
 \item{pathway}{A two-column dataframe contains pathway and their member genes.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "pos".
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "std".
 The "pos" and "neg" score types are intended to be used for one-tailed tests
 (i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
 The "std" is used when interested in both positive and negative scores.}
