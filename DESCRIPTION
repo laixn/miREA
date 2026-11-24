@@ -21,7 +21,8 @@ Description: miREA performs microRNA-oriented enrichment analysis by modeling
 License: Artistic-2.0
 URL: https://github.com/laixn/miREA
 BugReports: https://github.com/laixn/miREA/issues
-biocViews: miRNA, GeneExpression, GeneSetEnrichment, Network, NetworkEnrichment, Pathways, SystemsBiology
+biocViews: miRNA, GeneExpression, GeneSetEnrichment, Network,
+    NetworkEnrichment, Pathways, SystemsBiology
 Encoding: UTF-8
 LazyData: false
 Roxygen: list(markdown = FALSE)

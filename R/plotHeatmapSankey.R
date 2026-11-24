@@ -4,37 +4,69 @@
 #' edge-based method, combined with a Sankey diagram showing the
 #' miRNA-gene-pathway flow. Only supports one method each time.
 #'
-#' @param method a character that specifies only one method which you have the corresponding enrichment result (only five edge-based methods are supported).
-#' @param result the output of miREA() function, used here as the unprocessed result list.
-#' @param input_data the output of getAllInputData() function, used here as the unprocessed input_data list.
-#' @param n_mir_heatmap The number of miRNAs included in the heatmap. Default is 20.
-#' @param n_mir_sankey The number of miRNAs included in the Sankey diagram. Default is 10.
-#' @param n_pathway The number of top enriched pathways included in the heatmap. Default it 10. If the number of enriched pathways is less than n_pathway, all enriched pathways will be included.
-#' @param plot_path The directory to save the plot. If not null, it will generate a pdf file named heatmap_sankey_[method].pdf at the plot path. If null, the plot will be drawn at the current window.
-#' @param penrichCutoff  The threshold for deciding enrichment of pathways. Default is 0.05.
-#' @param height The height of the plot, in cm. If not, it will be set to default values.
-#' @param width The width of the plot, in cm. If not, it will be set to default values.
-#' @param sankey_prop The ratio of the height of Sankey diagram and heatmap. Default is 1.5.
-#' @param gene_annot A list contains the annotations of genes, where each sub-element denotes a character vector containing a list of genes. It will generate a annotation bar on the top of the heatmap to show whether the genes hit in the annotation list. Default is NULL, which means no annotation bar will be generated.
-#' @param mir_annot Same format as gene_annot. If not NULL, it will generate an annotation bar for miRNAs at the left side of the heatmap, to show whether miRNAs hit in the given list.
+#' @param method a character that specifies only one method which you have the
+#'        corresponding enrichment result (only five edge-based methods are
+#'        supported).
+#' @param result the output of miREA() function, used here as the unprocessed
+#'        result list.
+#' @param input_data the output of getAllInputData() function, used here as the
+#'        unprocessed input_data list.
+#' @param n_mir_heatmap The number of miRNAs included in the heatmap. Default is
+#'        20.
+#' @param n_mir_sankey The number of miRNAs included in the Sankey diagram.
+#'        Default is 10.
+#' @param n_pathway The number of top enriched pathways included in the heatmap.
+#'        Default it 10. If the number of enriched pathways is less than
+#'        n_pathway, all enriched pathways will be included.
+#' @param plot_path The directory to save the plot. If not null, it will
+#'        generate a pdf file named heatmap_sankey_[method].pdf at the plot
+#'        path. If null, the plot will be drawn at the current window.
+#' @param penrichCutoff  The threshold for deciding enrichment of pathways.
+#'        Default is 0.05.
+#' @param height The height of the plot, in cm. If not, it will be set to
+#'        default values.
+#' @param width The width of the plot, in cm. If not, it will be set to default
+#'        values.
+#' @param sankey_prop The ratio of the height of Sankey diagram and heatmap.
+#'        Default is 1.5.
+#' @param gene_annot A list contains the annotations of genes, where each
+#'        sub-element denotes a character vector containing a list of genes. It
+#'        will generate a annotation bar on the top of the heatmap to show
+#'        whether the genes hit in the annotation list. Default is NULL, which
+#'        means no annotation bar will be generated.
+#' @param mir_annot Same format as gene_annot. If not NULL, it will generate an
+#'        annotation bar for miRNAs at the left side of the heatmap, to show
+#'        whether miRNAs hit in the given list.
 #' @param annot_color The color of the annotation bars for genes and miRNAs
-#' @param DElogFCCutoff optional, the absolute log2FC threshold used to call a miRNA/gene differentially
-#'        expressed for the heatmap/Sankey annotation. If NULL (the default), falls back to
-#'        `input_data$threshold$DElogFCCutoff` (set by [getAllInputData()]), or 1 if that is absent.
-#' @param DEpadjCutoff optional, the adjusted p-value threshold used to call a miRNA/gene differentially
-#'        expressed for the heatmap/Sankey annotation. If NULL (the default), falls back to
+#' @param DElogFCCutoff optional, the absolute log2FC threshold used to call a
+#'        miRNA/gene differentially
+#'        expressed for the heatmap/Sankey annotation. If NULL (the default),
+#'        falls back to
+#'        `input_data$threshold$DElogFCCutoff` (set by [getAllInputData()]), or
+#'        1 if that is absent.
+#' @param DEpadjCutoff optional, the adjusted p-value threshold used to call a
+#'        miRNA/gene differentially
+#'        expressed for the heatmap/Sankey annotation. If NULL (the default),
+#'        falls back to
 #'        `input_data$threshold$DEpadjCutoff`, or 0.05 if that is absent.
-#' @param corCutoff optional, the miRNA-gene expression correlation threshold for the heatmap/Sankey
-#'        annotation. If NULL (the default), falls back to `input_data$threshold$corCutoff`, or 0 if
+#' @param corCutoff optional, the miRNA-gene expression correlation threshold
+#'        for the heatmap/Sankey
+#'        annotation. If NULL (the default), falls back to
+#'        `input_data$threshold$corCutoff`, or 0 if
 #'        that is absent.
-#' @param corPadjCutoff optional, the adjusted p-value threshold for the miRNA-gene expression
-#'        correlation, for the heatmap/Sankey annotation. If NULL (the default), falls back to
+#' @param corPadjCutoff optional, the adjusted p-value threshold for the
+#'        miRNA-gene expression
+#'        correlation, for the heatmap/Sankey annotation. If NULL (the default),
+#'        falls back to
 #'        `input_data$threshold$corPadjCutoff`, or 0.05 if that is absent.
 
 #' @return Invisibly returns `list(ht_list, legend_list)` (the drawn
-#'        [ComplexHeatmap::HeatmapList-class] and its annotation legends), whether or not
-#'        `plot_path` is supplied. If `plot_path` is supplied, the plot is additionally saved as
-#'        `heatmap_sankey_[method].pdf` at that path and a message reports the file location.
+#'        [ComplexHeatmap::HeatmapList-class] and its annotation legends),
+#'        whether or not
+#'        `plot_path` is supplied. If `plot_path` is supplied, the plot is
+#'        additionally saved as
+#'        `heatmap_sankey_[method].pdf` at that path and a message reports the
+#'        file location.
 #' @examples
 #' data(toy_pathway)
 #' data(toy_gene_DEdata)
@@ -43,7 +75,8 @@
 #' data(toy_mir_mat)
 #' data(background_MGI)
 #' # Edge_Score2D is included so input_data carries the MGI "strength" scores
-#' # plotHeatmapSankey() needs for its heatmap cells, without running it in miREA().
+#' # plotHeatmapSankey() needs for its heatmap cells, without running it in
+#' miREA().
 #' input_data <- getAllInputData(
 #'     methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
 #'     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
@@ -57,7 +90,8 @@
 #'     methods = "Edge_ORA", input_data = input_data, background = background,
 #'     minSize = NULL, maxSize = NULL, pvalueCutoff = 1
 #' )
-#' plotHeatmapSankey(method = "Edge_ORA", result = result, input_data = input_data, penrichCutoff = 1)
+#' plotHeatmapSankey(method = "Edge_ORA", result = result, input_data =
+#' input_data, penrichCutoff = 1)
 #' @export
 plotHeatmapSankey <- function(method, result, input_data, n_mir_heatmap = 20, n_mir_sankey = 10, n_pathway = 10,
                               plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL, sankey_prop = 1.5,

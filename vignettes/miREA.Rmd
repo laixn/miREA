@@ -171,7 +171,8 @@ containing a source gene column and a target gene column.
 
 ## Interoperability with standard Bioconductor classes
 
-`gene_mat`/`mir_mat` also accept a `r BiocStyle::Biocpkg("SummarizedExperiment")`
+`gene_mat`/`mir_mat` also accept a
+`r BiocStyle::Biocpkg("SummarizedExperiment")`
 object in place of a raw matrix/dataframe (the first assay is used), and
 `pathway` accepts a `r BiocStyle::Biocpkg("GSEABase")` `GeneSetCollection` in
 place of the two-column dataframe. This lets miREA plug directly into
@@ -211,8 +212,9 @@ miRNA background used by `MiR_ORA` and `MiR_Score`. `Edge` holds the miRNA
 to gene interaction background used by the `Edge_` methods.
 
 Each entry can be built directly from `input_data`, the object returned by
-`getAllInputData()` in Step 1. `input_data$pathway$TG` and `input_data$pathway$MiR` 
-already hold the gene and miRNA universe restricted to the supplied pathway set.
+`getAllInputData()` in Step 1. `input_data$pathway$TG` and
+`input_data$pathway$MiR` already hold the gene and miRNA universe restricted
+to the supplied pathway set.
 `input_data$background_MGI` records whichever `background_MGI` was
 actually used in Step 1.
 
@@ -315,21 +317,21 @@ plotHeatmapSankey(
 
 # Choosing methods for your own data
 
-miREA supports 4 node-based and 5 edge-based methods. You do not always need to 
-run all nine. Select the method(s) most appropriate for your dataset and research
-question. See the method performance comparisons in the miREA manuscript
-(`r BiocStyle::Biocpkg("miREA")`'s companion
+miREA supports 4 node-based and 5 edge-based methods. You do not always need
+to run all nine. Select the method(s) most appropriate for your dataset and
+research question. See the method performance comparisons in the miREA
+manuscript (`r BiocStyle::Biocpkg("miREA")`'s companion
 [bioRxiv preprint](https://doi.org/10.64898/2026.02.27.708509)) for guidance.
 
-Please note that `Edge_Topology` in particular can be computationally expensive. 
-Please check the time cost for methods on differentpathways in the miREA manuscript 
-and consider excluding it or increasing `ncores` for analyses. `ncores` is the main 
-lever for scaling down wall-clock time.
+Please note that `Edge_Topology` in particular can be computationally
+expensive. Please check the time cost for methods on different pathways in
+the miREA manuscript and consider excluding it or increasing `ncores` for
+analyses. `ncores` is the main lever for scaling down wall-clock time.
 
 For the permutation-based methods (`Edge_Score2D`, `Edge_Topology`,
-`Edge_Network`), we recommend `iter >= 1000` (default is 1000). This vignette only
-uses `iter = 20` to keep build time short on the small toy dataset, and is not
-representative of real analyses. 
+`Edge_Network`), we recommend `iter >= 1000` (default is 1000). This
+vignette only uses `iter = 20` to keep build time short on the small toy
+dataset, and is not representative of real analyses.
 
 # Session info
 

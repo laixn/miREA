@@ -102,7 +102,8 @@ external analysis instead of letting `getAllInputData()` derive one from
 `input_data$pathway$MiR`.
 
 ```{r custom-list, eval=FALSE}
-my_DEmiR <- c("hsa-miR-21-5p", "hsa-miR-155-5p") # replace with your own miRNA list
+# replace with your own miRNA list
+my_DEmiR <- c("hsa-miR-21-5p", "hsa-miR-155-5p")
 res_custom <- MiR_ORA(
     DEmiR = my_DEmiR,
     background = unique(input_data$pathway$MiR$miRNA),

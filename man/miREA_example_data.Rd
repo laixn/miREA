@@ -24,7 +24,7 @@
     miRNAs that target a `toy_pathway` gene (via `background_MGI`) and are
     DE-testable.}
   \item{toy_gene_mat}{A gene-by-sample expression matrix (data.frame, genes
-    as rownames), restricted to 1,145 genes in `toy_pathway` and 403 tumor 
+    as rownames), restricted to 1,145 genes in `toy_pathway` and 403 tumor
     TCGA samples.}
   \item{toy_mir_mat}{A miRNA-by-sample expression matrix (data.frame,
     miRNAs as rownames), restricted to the miRNAs in `toy_mir_DEdata`, the
@@ -57,7 +57,8 @@
 A small, self-contained example dataset derived from the real BLCA
 (bladder urothelial carcinoma) data used in the miREA manuscript.
 `toy_pathway` is a fixed set of 10 Reactome pathways selected from the full
-manuscript BLCA run (see `@source` below). `toy_gene_DEdata`, `toy_mir_DEdata`,
+manuscript BLCA run (see `@source` below). `toy_gene_DEdata`,
+`toy_mir_DEdata`,
 `toy_gene_mat`, and `toy_mir_mat` are the manuscript's own differential
 expression results and raw expression matrices (403 tumor and 19 normal TCGA
 samples). The normal samples are only used to compute differential

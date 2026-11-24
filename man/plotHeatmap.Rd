@@ -24,50 +24,79 @@ plotHeatmap(
 )
 }
 \arguments{
-\item{method}{a character that specifies only one method which you have the corresponding enrichment result (only five edge-based methods are supported).}
+\item{method}{a character that specifies only one method which you have the
+corresponding enrichment result (only five edge-based methods are
+supported).}
 
-\item{result}{the output of miREA() function, used here as the unprocessed result list.}
+\item{result}{the output of miREA() function, used here as the unprocessed
+result list.}
 
-\item{input_data}{the output of getAllInputData() function, used here as the unprocessed input_data list.}
+\item{input_data}{the output of getAllInputData() function, used here as the
+unprocessed input_data list.}
 
-\item{n_mir_heatmap}{The number of miRNAs included in the heatmap. Default is 10.}
+\item{n_mir_heatmap}{The number of miRNAs included in the heatmap. Default is
+10.}
 
-\item{n_pathway}{The number of top enriched pathways included in the heatmap. Default it 10. If the number of enriched pathways is less than n_pathway, all enriched pathways will be included.}
+\item{n_pathway}{The number of top enriched pathways included in the heatmap.
+Default it 10. If the number of enriched pathways is less than
+n_pathway, all enriched pathways will be included.}
 
-\item{plot_path}{The directory to save the plot. If not null, it will generate a pdf file named heatmap_[method].pdf at the plot path. If null, the plot will be drawn at the current window.}
+\item{plot_path}{The directory to save the plot. If not null, it will
+generate a pdf file named heatmap_[method].pdf at the plot path. If
+null, the plot will be drawn at the current window.}
 
-\item{penrichCutoff}{The threshold for deciding enrichment of pathways. Default is 0.05.}
+\item{penrichCutoff}{The threshold for deciding enrichment of pathways.
+Default is 0.05.}
 
-\item{height}{The height of the plot, in cm. If not, it will be set to default values.}
+\item{height}{The height of the plot, in cm. If not, it will be set to
+default values.}
 
-\item{width}{The width of the plot, in cm. If not, it will be set to default values.}
+\item{width}{The width of the plot, in cm. If not, it will be set to default
+values.}
 
-\item{gene_annot}{A list contains the annotations of genes, where each sub-element denotes a character vector containing a list of genes. It will generate a annotation bar on the top of the heatmap to show whether the genes hit in the annotation list. Default is NULL, which means no annotation bar will be generated.}
+\item{gene_annot}{A list contains the annotations of genes, where each
+sub-element denotes a character vector containing a list of genes. It
+will generate a annotation bar on the top of the heatmap to show
+whether the genes hit in the annotation list. Default is NULL, which
+means no annotation bar will be generated.}
 
-\item{mir_annot}{Same format as gene_annot. If not NULL, it will generate an annotation bar for miRNAs at the left side of the heatmap, to show whether miRNAs hit in the given list.}
+\item{mir_annot}{Same format as gene_annot. If not NULL, it will generate an
+annotation bar for miRNAs at the left side of the heatmap, to show
+whether miRNAs hit in the given list.}
 
 \item{annot_color}{The color of the annotation bars for genes and miRNAs}
 
-\item{DElogFCCutoff}{optional, the absolute log2FC threshold used to call a miRNA/gene differentially
-expressed for the heatmap annotation. If NULL (the default), falls back to
-`input_data$threshold$DElogFCCutoff` (set by [getAllInputData()]), or 1 if that is absent.}
+\item{DElogFCCutoff}{optional, the absolute log2FC threshold used to call a
+miRNA/gene differentially
+expressed for the heatmap annotation. If NULL (the default), falls
+back to
+`input_data$threshold$DElogFCCutoff` (set by [getAllInputData()]), or
+1 if that is absent.}
 
-\item{DEpadjCutoff}{optional, the adjusted p-value threshold used to call a miRNA/gene differentially
-expressed for the heatmap annotation. If NULL (the default), falls back to
+\item{DEpadjCutoff}{optional, the adjusted p-value threshold used to call a
+miRNA/gene differentially
+expressed for the heatmap annotation. If NULL (the default), falls
+back to
 `input_data$threshold$DEpadjCutoff`, or 0.05 if that is absent.}
 
-\item{corCutoff}{optional, the miRNA-gene expression correlation threshold for the heatmap annotation.
-If NULL (the default), falls back to `input_data$threshold$corCutoff`, or 0 if that is absent.}
+\item{corCutoff}{optional, the miRNA-gene expression correlation threshold
+for the heatmap annotation.
+If NULL (the default), falls back to `input_data$threshold$corCutoff`,
+or 0 if that is absent.}
 
-\item{corPadjCutoff}{optional, the adjusted p-value threshold for the miRNA-gene expression correlation,
+\item{corPadjCutoff}{optional, the adjusted p-value threshold for the
+miRNA-gene expression correlation,
 for the heatmap annotation. If NULL (the default), falls back to
 `input_data$threshold$corPadjCutoff`, or 0.05 if that is absent.}
 }
 \value{
 Invisibly returns `list(ht_list, legend_list)` (the drawn
-       [ComplexHeatmap::HeatmapList-class] and its annotation legends), whether or not
-       `plot_path` is supplied. If `plot_path` is supplied, the heatmap is additionally
-       saved as `heatmap_[method].pdf` at that path and a message reports the file location.
+       [ComplexHeatmap::HeatmapList-class] and its annotation legends),
+       whether or not
+       `plot_path` is supplied. If `plot_path` is supplied, the heatmap is
+       additionally
+       saved as `heatmap_[method].pdf` at that path and a message reports the
+       file location.
 }
 \description{
 Draws a heatmap of the miRNA-gene-pathway enrichment result for one
@@ -96,5 +125,6 @@ result <- miREA(
     methods = "Edge_ORA", input_data = input_data, background = background,
     minSize = NULL, maxSize = NULL, pvalueCutoff = 1
 )
-plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data, penrichCutoff = 1)
+plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data,
+penrichCutoff = 1)
 }

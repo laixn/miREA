@@ -19,31 +19,43 @@ Edge_Score2D(
 )
 }
 \arguments{
-\item{MGI2D}{A five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).}
+\item{MGI2D}{A five-column dataframe, including MGI miRNA gene cor(x)
+ranknormratio(y).}
 
 \item{pathway}{A three-column dataframe contains pathway miRNA gene.}
 
-\item{background}{A character vector contains background MGIs in the format of [miRNA]:[gene].}
+\item{background}{A character vector contains background MGIs in the format
+of [miRNA]:[gene].}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 0.05.}
 
-\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.}
+\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs less than the minSize threshold.}
 
-\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.}
+\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs more than the maxSize threshold.}
 
 \item{iter}{Number of iterations for permutation test}
 
-\item{ncores}{Number of cores for calculating randomized r during the permutation test.
+\item{ncores}{Number of cores for calculating randomized r during the
+permutation test.
 Ignored if `BPPARAM` is supplied.}
 
-\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling how the
-permutation test is parallelized. If NULL (the default), one is constructed
-automatically from `ncores` and `seed` (serial if `ncores` is NULL/1, otherwise
+\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling
+how the
+permutation test is parallelized. If NULL (the default), one is
+constructed
+automatically from `ncores` and `seed` (serial if `ncores` is NULL/1,
+otherwise
 [BiocParallel::SnowParam()]).}
 
 \item{seed}{Optional integer seed for the permutation test. If NULL (the
@@ -62,8 +74,10 @@ a dataframe contains enrichment result for Edge-Score2D, including
        p-value, `(nMoreExtreme + 1) / (iter + 1)`).
 }
 \description{
-Perform miRNA-gene interaction (MGI) enrichment analysis based on a two-dimensional
-edge score (expression correlation and differential-expression-informed ratio),
+Perform miRNA-gene interaction (MGI) enrichment analysis based on a
+two-dimensional
+edge score (expression correlation and differential-expression-informed
+ratio),
 using a permutation test against randomized correlation values.
 }
 \examples{
@@ -74,7 +88,8 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-    methods = "Edge_Score2D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    methods = "Edge_Score2D", pathway = toy_pathway, mir_DEdata =
+    toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
 )

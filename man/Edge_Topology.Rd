@@ -24,18 +24,25 @@ Edge_Topology(
 \arguments{
 \item{MGI}{A four-column dataframe, including MGI miRNA gene strength.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "neg".
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all
+       possible options. Default pvalueType is "neg".
 The "pos" and "neg" score types are intended to be used for one-tailed tests
-(i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
+(i.e. when one is interested only in positive ("pos") or negative ("neg")
+enrichment).
 The "std" is used when interested in both positive and negative scores.}
 
-\item{background}{A character vector contains background MGI in the format of [miRNA]:[gene].}
+\item{background}{A character vector contains background MGI in the format of
+[miRNA]:[gene].}
 
-\item{pathway}{A three-column dataframe, including pathway, miRNA, gene. Equals to input_data$pathway$Edge.}
+\item{pathway}{A three-column dataframe, including pathway, miRNA, gene.
+Equals to input_data$pathway$Edge.}
 
-\item{pathway_GGI}{A three column dataframe, including pathway, from, to. Equals to input_data$pathway_GGI.}
+\item{pathway_GGI}{A three column dataframe, including pathway, from, to.
+Equals to input_data$pathway_GGI.}
 
-\item{dict_MGI}{A four-column dataframe, including MGI miRNA gene strength. Containing all possible MGIs that could be used in permutation test. Equals to input_data$dict_MGI.}
+\item{dict_MGI}{A four-column dataframe, including MGI miRNA gene strength.
+Containing all possible MGIs that could be used in permutation test.
+Equals to input_data$dict_MGI.}
 
 \item{iter}{Maximum number of permutations for the permutation test. The
 actual number of permutations run for a given pathway can be lower.
@@ -45,22 +52,31 @@ enough extreme permutation scores have been observed to settle the
 p-value. The number of permutations actually used for a pathway is
 reported in the `nPerm` column of the result.}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 0.05.}
 
-\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.}
+\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs less than the minSize threshold.}
 
-\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.}
+\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs more than the maxSize threshold.}
 
-\item{ncores}{Number of cores for permutation test (parallel computing different pathways).
+\item{ncores}{Number of cores for permutation test (parallel computing
+different pathways).
 Ignored if `BPPARAM` is supplied.}
 
-\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling how the
-permutation test is parallelized. If NULL (the default), one is constructed
+\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling
+how the
+permutation test is parallelized. If NULL (the default), one is
+constructed
 automatically from `ncores` (serial if `ncores` is NULL/1, otherwise
 [BiocParallel::SnowParam()]).}
 
@@ -93,7 +109,8 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-    methods = "Edge_Topology", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    methods = "Edge_Topology", pathway = toy_pathway, mir_DEdata =
+    toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
     GGI_source = "Reactome",
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"

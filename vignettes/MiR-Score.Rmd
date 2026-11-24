@@ -108,7 +108,10 @@ instead of letting `getAllInputData()` derive one from `mir_DEdata`, call
 lowest score.
 
 ```{r custom-list, eval=FALSE}
-my_miRList <- sort(c(`hsa-miR-21-5p` = 2.3, `hsa-miR-155-5p` = -1.1), decreasing = TRUE)
+my_miRList <- sort(
+    c(`hsa-miR-21-5p` = 2.3, `hsa-miR-155-5p` = -1.1),
+    decreasing = TRUE
+)
 res_custom <- MiR_Score(
     miRList = my_miRList,
     pathway = input_data$pathway$MiR,

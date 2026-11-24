@@ -116,7 +116,8 @@ with that list and `input_data$pathway$Edge`. `DEMGI` must be a character
 vector formatted as `[miRNA]:[gene]`.
 
 ```{r custom-list, eval=FALSE}
-my_DEMGI <- c("hsa-miR-21-5p:TP53", "hsa-miR-155-5p:MYC") # replace with your own MGI list
+# replace with your own MGI list
+my_DEMGI <- c("hsa-miR-21-5p:TP53", "hsa-miR-155-5p:MYC")
 res_custom <- Edge_ORA(
     DEMGI = my_DEMGI,
     background = background,

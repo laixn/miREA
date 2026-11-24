@@ -23,8 +23,8 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 between a set of differentially expressed genes and each pathway's gene
 set. The input gene set is the target genes of differentially expressed
 miRNAs, mapped through `background_MGI`. This is a standard
-over-representation analysis, built on `r BiocStyle::Biocpkg("clusterProfiler")`'s
-`enricher()`.
+over-representation analysis, built on
+`r BiocStyle::Biocpkg("clusterProfiler")`'s `enricher()`.
 
 This vignette uses the same toy BLCA example data as the package's main
 Quick Start vignette. See `vignette("miREA")` for a description of that
@@ -104,7 +104,8 @@ one from `mir_DEdata`, map that miRNA list to its target genes through
 and call `TG_ORA()` with the result.
 
 ```{r custom-list, eval=FALSE}
-my_miRs <- c("hsa-miR-21-5p", "hsa-miR-155-5p") # replace with your own miRNA list
+# replace with your own miRNA list
+my_miRs <- c("hsa-miR-21-5p", "hsa-miR-155-5p")
 my_TG <- unique(background_MGI$gene[background_MGI$miRNA %in% my_miRs])
 res_custom <- TG_ORA(
     TG = my_TG,

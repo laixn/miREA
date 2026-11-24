@@ -19,53 +19,90 @@ miREA(
 )
 }
 \arguments{
-\item{methods}{Method used for enrichment analysis, see default_method_list for all supportive options. Methods could be several, like c("Edge_ORA", "Edge_Score1D").}
+\item{methods}{Method used for enrichment analysis, see default_method_list
+for all supportive options. Methods could be several, like
+c("Edge_ORA", "Edge_Score1D").}
 
-\item{input_data}{Input data list, containing the input data for all methods, including data, pathway, pathway_GGI, GGI, and dict_MGI.
-Use getAllInputData() function to generate. You could also generate it by yourself.
-  input_data$data, each sub-element named by the method, contains the input data in the
+\item{input_data}{Input data list, containing the input data for all methods,
+including data, pathway, pathway_GGI, GGI, and dict_MGI.
+Use getAllInputData() function to generate. You could also generate it
+by yourself.
+  input_data$data, each sub-element named by the method, contains the
+  input data in the
     following formats.
-    TG_ORA uses DEG, MiR_ORA uses DEmiR, Edge_ORA uses DEMGI, and Edge_Network uses DEMGI.
-      Each is a character vector, containing all selected differential expressed items (genes/miRNAs/MGI).
-    TG_Score uses geneList, MiR_Score uses miRList, and Edge_Score1D uses MGIList.
-      Each is a named numeric vector, where the names are items (genes/miRNAs/MGI), and the corresponding value is their score, by which the vector is ranked.
+    TG_ORA uses DEG, MiR_ORA uses DEmiR, Edge_ORA uses DEMGI, and
+    Edge_Network uses DEMGI.
+      Each is a character vector, containing all selected differential
+      expressed items (genes/miRNAs/MGI).
+    TG_Score uses geneList, MiR_Score uses miRList, and Edge_Score1D
+    uses MGIList.
+      Each is a named numeric vector, where the names are items
+      (genes/miRNAs/MGI), and the corresponding value is their score,
+      by which the vector is ranked.
     Edge_Topology uses MGIdata,
       a five-column dataframe, containing MGI miRNA gene strength.
     Edge_Score2D uses MGI2D,
-      a five-column dataframe, including MGI miRNA gene cor(x) ranknormratio(y).
-  input_data$pathway, each sub-element named by the object, which could be TG, MiR, and Edge.
-  input_data$pathway_GGI, a dataframe containing pathway and their directed GGI involved. Only useful when methods contain Edge_Topology and Edge_Network.
-  input_data$MGI, a dataframe containing MGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
-  input_data$GGI, a dataframe containing directed GGIs across all the pathways and DEMGIs. Only useful for Edge_Network.
-  input_data$dict_MGI, a dataframe containing all possible MGIs and their expression profiles. Only useful for Edge_Topology.}
+      a five-column dataframe, including MGI miRNA gene cor(x)
+      ranknormratio(y).
+  input_data$pathway, each sub-element named by the object, which
+  could be TG, MiR, and Edge.
+  input_data$pathway_GGI, a dataframe containing pathway and their
+  directed GGI involved. Only useful when methods contain
+  Edge_Topology and Edge_Network.
+  input_data$MGI, a dataframe containing MGIs across all the pathways
+  and DEMGIs. Only useful for Edge_Network.
+  input_data$GGI, a dataframe containing directed GGIs across all the
+  pathways and DEMGIs. Only useful for Edge_Network.
+  input_data$dict_MGI, a dataframe containing all possible MGIs and
+  their expression profiles. Only useful for Edge_Topology.}
 
-\item{background}{Contains background items (genes for TG_ method, miRNAs for MiR_ method, MGIs for Edge_ method).
-If methods contains more than one targets, it should be a list where each sub-element is a character vector named by the target (TG, MiR, or Edge).
-If methods contains only one target, it could also be a character vector.
-Required. miREA does not ship a bundled default background, so background = NULL raises an error.}
+\item{background}{Contains background items (genes for TG_ method, miRNAs for
+MiR_ method, MGIs for Edge_ method).
+            If methods contains more than one targets, it should be a
+            list where each sub-element is a character vector named by
+            the target (TG, MiR, or Edge).
+            If methods contains only one target, it could also be a
+            character vector.
+            Required. miREA does not ship a bundled default
+            background, so background = NULL raises an error.}
 
-\item{minSize}{The minimum pathway set sizes allowed for analysis, filtering out pathways with number of members less than the minSize threshold.}
+\item{minSize}{The minimum pathway set sizes allowed for analysis, filtering
+out pathways with number of members less than the minSize threshold.}
 
-\item{maxSize}{The maximum pathway set sizes allowed for analysis, filtering out pathways with number of members more than the maxSize threshold.}
+\item{maxSize}{The maximum pathway set sizes allowed for analysis, filtering
+out pathways with number of members more than the maxSize threshold.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is list(TG = "std", MiR = "std", Edge = "neg").
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all
+       possible options. Default pvalueType is list(TG = "std", MiR = "std",
+       Edge = "neg").
 The "pos" and "neg" score types are intended to be used for one-tailed tests
-(i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
-The "std" is used when interested in both positive and negative scores, which is the same as the original GSEA algorithm.
-Only used in Score-based method (Edge_Score2D, Edge_Topology, TG_Score, MiR_Score).}
+(i.e. when one is interested only in positive ("pos") or negative ("neg")
+enrichment).
+The "std" is used when interested in both positive and negative scores, which
+is the same as the original GSEA algorithm.
+Only used in Score-based method (Edge_Score2D, Edge_Topology, TG_Score,
+MiR_Score).}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 1.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 1.}
 
-\item{iter}{Number of iterations when perform permutation test. Default iter is 1000.}
+\item{iter}{Number of iterations when perform permutation test. Default iter
+is 1000.}
 
-\item{ncores}{Number of cores for parallel computing. Only useful if methods contain Edge_Score2D, Edge_Topology, and Edge_Network.
-It accepts either a integer that is universal for all methods, or a list specify the number of cores for each method separately.
-Our recommendation is to specify different nodes for each method. E.g., list(Edge_Score2D = 4, Edge_Topology = 32, Edge_Network = 8).
+\item{ncores}{Number of cores for parallel computing. Only useful if methods
+contain Edge_Score2D, Edge_Topology, and Edge_Network.
+It accepts either a integer that is universal for all methods, or a
+list specify the number of cores for each method separately.
+Our recommendation is to specify different nodes for each method.
+E.g., list(Edge_Score2D = 4, Edge_Topology = 32, Edge_Network = 8).
 If NULL, unparallel computing will be used.}
 
 \item{seed}{Optional integer seed for the permutation-based methods
@@ -83,7 +120,8 @@ A [miREAResult-class] object containing the per-method result tables
 (`result`), per-method elapsed time (`time`), the methods that completed
 without error (`valid_methods`), the methods that errored along with their
 error message (`failed_methods`), and the call parameters (`parameter`).
-`parameter$DE_threshold` records the `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/
+`parameter$DE_threshold` records the
+`DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/
 `corPadjCutoff` values used to build `input_data` (see [getAllInputData()]),
 or `NULL` if `input_data` does not carry a `threshold` element.
 Supports `$` access to these fields for backward compatibility.
@@ -112,7 +150,8 @@ background <- list(
     Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 )
 result <- miREA(
-    methods = default_method_list, input_data = input_data, background = background,
+    methods = default_method_list, input_data = input_data, background =
+    background,
     minSize = NULL, maxSize = NULL,
     pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
     pAdjMethod = "BH", pvalueCutoff = 1, iter = 10, ncores = 1
@@ -121,5 +160,6 @@ result$valid_methods
 }
 \references{
 Zhang Z, Lai X (2026). miREA: a network-based tool for
-microRNA-oriented enrichment analysis. bioRxiv. \doi{10.64898/2026.02.27.708509}
+microRNA-oriented enrichment analysis. bioRxiv.
+\doi{10.64898/2026.02.27.708509}
 }

@@ -3,7 +3,8 @@
 #' A small, self-contained example dataset derived from the real BLCA
 #' (bladder urothelial carcinoma) data used in the miREA manuscript.
 #' `toy_pathway` is a fixed set of 10 Reactome pathways selected from the full
-#' manuscript BLCA run (see `@source` below). `toy_gene_DEdata`, `toy_mir_DEdata`,
+#' manuscript BLCA run (see `@source` below). `toy_gene_DEdata`,
+#' `toy_mir_DEdata`,
 #' `toy_gene_mat`, and `toy_mir_mat` are the manuscript's own differential
 #' expression results and raw expression matrices (403 tumor and 19 normal TCGA
 #' samples). The normal samples are only used to compute differential

@@ -22,36 +22,52 @@ Edge_Network(
 )
 }
 \arguments{
-\item{DEMGI}{A character vector contains a list of interested MGIs in the format of [miRNA]:[gene].}
+\item{DEMGI}{A character vector contains a list of interested MGIs in the
+format of [miRNA]:[gene].}
 
-\item{pathway_gene}{A two-column dataframe, including pathway and gene. Equals to input_data$pathway$TG.}
+\item{pathway_gene}{A two-column dataframe, including pathway and gene.
+Equals to input_data$pathway$TG.}
 
-\item{pathway_MGI}{A three-column dataframe, including pathway, miRNA, gene. Equals to input_data$pathway$Edge.}
+\item{pathway_MGI}{A three-column dataframe, including pathway, miRNA, gene.
+Equals to input_data$pathway$Edge.}
 
-\item{pathway_GGI}{A three column dataframe, including pathway, from, to. Equals to input_data$pathway_GGI.}
+\item{pathway_GGI}{A three column dataframe, including pathway, from, to.
+Equals to input_data$pathway_GGI.}
 
-\item{MGI}{A two-column dataframe, including MGIs across all DEMGIs and pathways built from background.}
+\item{MGI}{A two-column dataframe, including MGIs across all DEMGIs and
+pathways built from background.}
 
-\item{GGI}{A two-column dataframe, including GGIs across all DEMGIs and pathways, including internal GGIs and GGIs linking different pathways and DEMGIs.}
+\item{GGI}{A two-column dataframe, including GGIs across all DEMGIs and
+pathways, including internal GGIs and GGIs linking different pathways
+and DEMGIs.}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 0.05.}
 
-\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.}
+\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs less than the minSize threshold.}
 
-\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.}
+\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs more than the maxSize threshold.}
 
 \item{iter}{Number of iterations for permutation test}
 
-\item{ncores}{Number of cores for permutation test (parallel computing random RWR procedure).
+\item{ncores}{Number of cores for permutation test (parallel computing random
+RWR procedure).
 Ignored if `BPPARAM` is supplied.}
 
-\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling how the
-permutation test is parallelized. If NULL (the default), one is constructed
+\item{BPPARAM}{A [BiocParallel::BiocParallelParam-class] instance controlling
+how the
+permutation test is parallelized. If NULL (the default), one is
+constructed
 automatically from `ncores` (serial if `ncores` is NULL/1, otherwise
 [BiocParallel::SnowParam()]).}
 
@@ -82,14 +98,17 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-    methods = "Edge_Network", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    methods = "Edge_Network", pathway = toy_pathway, mir_DEdata =
+    toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
     GGI_source = "Reactome",
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
 )
 res <- Edge_Network(
-    DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
-    pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
+    DEMGI = input_data$data$Edge_Network, pathway_gene =
+    input_data$pathway$TG,
+    pathway_MGI = input_data$pathway$Edge, pathway_GGI =
+    input_data$pathway_GGI,
     MGI = input_data$MGI, GGI = input_data$GGI,
     minSize = 2, maxSize = 5000, iter = 10, ncores = 1, pvalueCutoff = 1
 )

@@ -110,7 +110,8 @@ internally, then rank those genes by their own differential expression
 statistic from `gene_DEdata`.
 
 ```{r custom-list, eval=FALSE}
-my_miRs <- c("hsa-miR-21-5p", "hsa-miR-155-5p") # replace with your own miRNA list
+# replace with your own miRNA list
+my_miRs <- c("hsa-miR-21-5p", "hsa-miR-155-5p")
 my_TG <- unique(background_MGI$gene[background_MGI$miRNA %in% my_miRs])
 my_geneList <- toy_gene_DEdata$stat[match(my_TG, toy_gene_DEdata$gene)]
 names(my_geneList) <- my_TG

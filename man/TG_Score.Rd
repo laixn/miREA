@@ -17,29 +17,39 @@ TG_Score(
 \arguments{
 \item{geneList}{A named vector shows the ranked score of target genes.}
 
-\item{pathway}{A two-column dataframe contains pathway and their member genes.}
+\item{pathway}{A two-column dataframe contains pathway and their member
+genes.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "std".
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all
+       possible options. Default pvalueType is "std".
 The "pos" and "neg" score types are intended to be used for one-tailed tests
-(i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
+(i.e. when one is interested only in positive ("pos") or negative ("neg")
+enrichment).
 The "std" is used when interested in both positive and negative scores.}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 0.05.}
 
-\item{minSize}{The minimum gene set sizes allowed for analysis, filtering out pathways with number of member genes less than the minSize threshold.}
+\item{minSize}{The minimum gene set sizes allowed for analysis, filtering out
+pathways with number of member genes less than the minSize threshold.}
 
-\item{maxSize}{The maximum gene set sizes allowed for analysis, filtering out pathways with number of member genes more than the maxSize threshold.}
+\item{maxSize}{The maximum gene set sizes allowed for analysis, filtering out
+pathways with number of member genes more than the maxSize threshold.}
 }
 \value{
 A dataframe containing the enrichment result for TG-Score.
 }
 \description{
-Perform target gene enrichment analysis based on whether the pathway genes are located unexpectedly forward towards the ranked gene list.
+Perform target gene enrichment analysis based on whether the pathway genes
+are located unexpectedly forward towards the ranked gene list.
 }
 \examples{
 data(toy_pathway)

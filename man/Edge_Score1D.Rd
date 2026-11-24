@@ -19,27 +19,36 @@ Edge_Score1D(
 
 \item{pathway}{A three-column dataframe contains pathway, miRNA, gene.}
 
-\item{pvalueType}{How to calculate p value. See default_pvalueType for all possible options. Default pvalueType is "neg".
+\item{pvalueType}{How to calculate p value. See default_pvalueType for all
+       possible options. Default pvalueType is "neg".
 The "pos" and "neg" score types are intended to be used for one-tailed tests
-(i.e. when one is interested only in positive ("pos") or negative ("neg") enrichment).
+(i.e. when one is interested only in positive ("pos") or negative ("neg")
+enrichment).
 The "std" is used when interested in both positive and negative scores.}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 0.05.}
 
-\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs less than the minSize threshold.}
+\item{minSize}{The minimum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs less than the minSize threshold.}
 
-\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out pathways with number of member MGIs more than the maxSize threshold.}
+\item{maxSize}{The maximum MGI set sizes allowed for analysis, filtering out
+pathways with number of member MGIs more than the maxSize threshold.}
 }
 \value{
 A dataframe containing the enrichment result for Edge-Score1D.
 }
 \description{
-Perform miRNA-gene interaction (MGI) enrichment analysis based on whether the pathway MGI are located unexpectedly forward towards the ranked MGI list.
+Perform miRNA-gene interaction (MGI) enrichment analysis based on whether the
+pathway MGI are located unexpectedly forward towards the ranked MGI list.
 }
 \examples{
 data(toy_pathway)
@@ -49,12 +58,14 @@ data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
 input_data <- getAllInputData(
-    methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata = toy_mir_DEdata,
+    methods = "Edge_Score1D", pathway = toy_pathway, mir_DEdata =
+    toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
 )
 res <- Edge_Score1D(
-    MGIList = input_data$data$Edge_Score1D, pathway = input_data$pathway$Edge,
+    MGIList = input_data$data$Edge_Score1D, pathway =
+    input_data$pathway$Edge,
     pvalueType = "neg", pvalueCutoff = 1, minSize = 2, maxSize = 5000
 )
 head(res)

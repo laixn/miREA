@@ -14,18 +14,25 @@ plotSummary(
 )
 }
 \arguments{
-\item{result}{the output of miREA() function, used here as the unprocessed result list.}
+\item{result}{the output of miREA() function, used here as the unprocessed
+result list.}
 
-\item{penrichCutoff}{The threshold for deciding enrichment of pathways. Default is 0.05.}
+\item{penrichCutoff}{The threshold for deciding enrichment of pathways.
+Default is 0.05.}
 
-\item{plot_path}{The directory to save the plot. If not null, it will generate two pdf file named summary.pdf and pvalue_density.pdf at the plot path. If null, the plot will be drawn at the current window.}
+\item{plot_path}{The directory to save the plot. If not null, it will
+generate two pdf file named summary.pdf and pvalue_density.pdf at the
+plot path. If null, the plot will be drawn at the current window.}
 
 \item{fill_col}{a named vector to specify fill colors for different methods.}
 }
 \value{
-Invisibly, a list with the combined summary plot and the p-value density
-  plot (`list(summary, pvalue)`). As a side effect, draws both plots in the current
-  window if plot_path is NULL, or saves them as summary.pdf and pvalue_density.pdf
+Invisibly, a list with the combined summary plot and the p-value
+       density
+  plot (`list(summary, pvalue)`). As a side effect, draws both plots in the
+  current
+  window if plot_path is NULL, or saves them as summary.pdf and
+  pvalue_density.pdf
   at plot_path.
 }
 \description{

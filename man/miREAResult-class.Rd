@@ -21,13 +21,17 @@ miREAResult(result, time, valid_methods, failed_methods = list(), parameter)
 \S4method{as.data.frame}{miREAResult}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{result}{Named list, one enrichment result data.frame per requested method.}
+\item{result}{Named list, one enrichment result data.frame per requested
+method.}
 
-\item{time}{A data.frame recording the elapsed time (in seconds) for each method.}
+\item{time}{A data.frame recording the elapsed time (in seconds) for each
+method.}
 
-\item{valid_methods}{Character vector of methods that completed without error.}
+\item{valid_methods}{Character vector of methods that completed without
+error.}
 
-\item{failed_methods}{Named list mapping each method that errored to its error message.
+\item{failed_methods}{Named list mapping each method that errored to its
+error message.
 Defaults to an empty list.}
 
 \item{parameter}{A list of the parameters [miREA()] was called with.}
@@ -62,13 +66,16 @@ the function's previous plain-list return value.
 \section{Slots}{
 
 \describe{
-\item{\code{result}}{Named list, one enrichment result data.frame per requested method.}
+\item{\code{result}}{Named list, one enrichment result data.frame per requested
+method.}
 
-\item{\code{time}}{A data.frame recording the elapsed time (in seconds) for each method.}
+\item{\code{time}}{A data.frame recording the elapsed time (in seconds) for each
+method.}
 
 \item{\code{valid_methods}}{Character vector of methods that completed without error.}
 
-\item{\code{failed_methods}}{Named list mapping each method that errored to its error message.}
+\item{\code{failed_methods}}{Named list mapping each method that errored to its error
+message.}
 
 \item{\code{parameter}}{A list of the parameters [miREA()] was called with.}
 }}

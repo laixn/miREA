@@ -15,31 +15,43 @@ MiR_ORA(
 )
 }
 \arguments{
-\item{DEmiR}{A character vector contains selected differential expressed miRNAs.}
+\item{DEmiR}{A character vector contains selected differential expressed
+miRNAs.}
 
 \item{background}{A character vector contains background miRNAs. If NULL
 (the default), all mature *Homo sapiens* miRNAs from miRBase
 version 22 are fetched via [miRBaseConverter::getAllMiRNAs()] and
 used instead.}
 
-\item{pathway}{A two-column dataframe contains pathway and their member miRNAs.}
+\item{pathway}{A two-column dataframe contains pathway and their member
+miRNAs.}
 
-\item{pAdjMethod}{The method used for multiple testing correction to adjust p-values and control the false discovery rate.
+\item{pAdjMethod}{The method used for multiple testing correction to adjust
+p-values and control the false discovery rate.
 Use default_pAdjMethod to find all possible values.
-If not specified, Benjamini & Hochberg (BH) method will be automatically used.
+If not specified, Benjamini & Hochberg (BH) method will be
+automatically used.
 If no adjustment is desired, set pAdjMethod = "none".}
 
-\item{pvalueCutoff}{The threshold for statistical significance, filtering out pathways with padj values above the specified pvalueCutoff. Default pvalueCutoff is 0.05.}
+\item{pvalueCutoff}{The threshold for statistical significance, filtering out
+pathways with padj values above the specified pvalueCutoff. Default
+pvalueCutoff is 0.05.}
 
-\item{minSize}{The minimum miRNA set sizes allowed for analysis, filtering out pathways with number of member miRNAs less than the minSize threshold.}
+\item{minSize}{The minimum miRNA set sizes allowed for analysis, filtering
+out pathways with number of member miRNAs less than the minSize
+threshold.}
 
-\item{maxSize}{The maximum miRNA set sizes allowed for analysis, filtering out pathways with number of member miRNAs more than the maxSize threshold.}
+\item{maxSize}{The maximum miRNA set sizes allowed for analysis, filtering
+out pathways with number of member miRNAs more than the maxSize
+threshold.}
 }
 \value{
 A dataframe containing the enrichment result for MiR-ORA.
 }
 \description{
-Perform miRNA enrichment analysis based on the overlap between differentially expressed miRNA set and pathway miRNA set. Pathway miRNA set was mapped from pathway gene set.
+Perform miRNA enrichment analysis based on the overlap between differentially
+expressed miRNA set and pathway miRNA set. Pathway miRNA set was mapped from
+pathway gene set.
 }
 \examples{
 data(toy_pathway)
@@ -51,7 +63,8 @@ input_data <- getAllInputData(
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- MiR_ORA(
-    DEmiR = input_data$data$MiR_ORA, background = unique(input_data$pathway$MiR$miRNA),
+    DEmiR = input_data$data$MiR_ORA, background =
+    unique(input_data$pathway$MiR$miRNA),
     pathway = input_data$pathway$MiR, pvalueCutoff = 1
 )
 head(res)
