@@ -1,4 +1,4 @@
-# miREA 0.99.0
+# miREA 0.99.2
 
 * Initial Bioconductor submission.
 * Four node-based and five edge-based miRNA-oriented enrichment methods:

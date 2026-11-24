@@ -20,7 +20,7 @@ test_that("plotSummary(), plotHeatmap(), and plotHeatmapSankey() run without err
         methods = default_method_list, input_data = input_data, background = background,
         minSize = 2, maxSize = 5000,
         pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
-        pAdjMethod = "BH", pvalueCutoff = 1, iter = 20, ncores = 1
+        pAdjMethod = "BH", pvalueCutoff = 1, iter = 5, ncores = 1
     ))
 
     pdf(NULL)

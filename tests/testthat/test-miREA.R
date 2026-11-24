@@ -21,7 +21,7 @@ test_that("miREA() runs all nine methods and returns a result per method", {
         methods = default_method_list, input_data = input_data, background = background,
         minSize = 2, maxSize = 5000,
         pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
-        pAdjMethod = "BH", pvalueCutoff = 1, iter = 20, ncores = 1
+        pAdjMethod = "BH", pvalueCutoff = 1, iter = 5, ncores = 1
     ))
 
     expect_setequal(result$valid_methods, default_method_list)

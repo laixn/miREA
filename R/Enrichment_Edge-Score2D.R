@@ -49,7 +49,7 @@
 #' background <- unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
 #' res <- Edge_Score2D(
 #'     MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-#'     background = background, iter = 100, ncores = 1, pvalueCutoff = 1
+#'     background = background, iter = 10, ncores = 1, pvalueCutoff = 1
 #' )
 #' head(res)
 #' @export

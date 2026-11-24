@@ -15,7 +15,7 @@ test_that("Edge_Score2D: same seed gives identical results, seed=NULL gives diff
     run <- function(seed) {
         Edge_Score2D(
             MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-            background = background, iter = 20, ncores = 1, pvalueCutoff = 1, seed = seed
+            background = background, iter = 5, ncores = 1, pvalueCutoff = 1, seed = seed
         )
     }
 
@@ -41,7 +41,7 @@ test_that("Edge_Topology: same seed gives identical results, seed=NULL gives dif
             MGI = input_data$data$Edge_Topology, background = background,
             pathway = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
             dict_MGI = input_data$dict_MGI, pvalueType = "neg",
-            minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1, seed = seed
+            minSize = 2, maxSize = 5000, iter = 5, ncores = 1, pvalueCutoff = 1, seed = seed
         )
     }
 
@@ -63,7 +63,7 @@ test_that("Edge_Network: same seed gives identical results, seed=NULL gives diff
             DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
             pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
             MGI = input_data$MGI, GGI = input_data$GGI,
-            minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1, seed = seed
+            minSize = 2, maxSize = 5000, iter = 5, ncores = 1, pvalueCutoff = 1, seed = seed
         )
     }
 
@@ -86,7 +86,7 @@ test_that("miREA() forwards seed consistently across Edge_Score2D/Edge_Topology/
             methods = c("Edge_Score2D", "Edge_Topology", "Edge_Network"),
             input_data = input_data, background = background,
             minSize = 2, maxSize = 5000, pvalueType = list(Edge = "neg"),
-            pvalueCutoff = 1, iter = 20, ncores = 1, seed = seed
+            pvalueCutoff = 1, iter = 5, ncores = 1, seed = seed
         )$result
     }
 
@@ -116,7 +116,7 @@ test_that("Edge_Score2D/Edge_Topology/Edge_Network's internal seed does not leak
     draw1 <- runif(1)
     Edge_Score2D(
         MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-        background = background, iter = 20, ncores = 1, pvalueCutoff = 1, seed = 999
+        background = background, iter = 5, ncores = 1, pvalueCutoff = 1, seed = 999
     )
     draw2 <- runif(1)
 

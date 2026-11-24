@@ -60,7 +60,7 @@ vignette("miREA", package = "miREA")
 ```
 
 Every exported function also has a runnable example on its own help page,
-e.g. `?Edge_ORA`, `?Edge_Topology`.
+e.g. `?Edge_ORA`, `?Edge_Score1D`.
 
 ## Output
 

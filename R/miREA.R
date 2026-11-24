@@ -83,7 +83,7 @@
 #'     methods = default_method_list, input_data = input_data, background = background,
 #'     minSize = NULL, maxSize = NULL,
 #'     pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
-#'     pAdjMethod = "BH", pvalueCutoff = 1, iter = 20, ncores = 1
+#'     pAdjMethod = "BH", pvalueCutoff = 1, iter = 10, ncores = 1
 #' )
 #' result$valid_methods
 #' @export

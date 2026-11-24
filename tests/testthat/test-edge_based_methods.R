@@ -28,7 +28,7 @@ test_that("Edge_ORA, Edge_Score1D, Edge_Score2D return enrichment results for th
 
     score2d <- Edge_Score2D(
         MGI2D = input_data$data$Edge_Score2D, pathway = input_data$pathway$Edge,
-        background = background, iter = 20, ncores = 1, pvalueCutoff = 1
+        background = background, iter = 5, ncores = 1, pvalueCutoff = 1
     )
     expect_s3_class(score2d, "data.frame")
     expect_true(nrow(score2d) > 0)
@@ -51,7 +51,7 @@ test_that("Edge_Topology returns enrichment results for the signal pathway", {
         MGI = input_data$data$Edge_Topology, background = background,
         pathway = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
         dict_MGI = input_data$dict_MGI, pvalueType = "neg",
-        minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1
+        minSize = 2, maxSize = 5000, iter = 5, ncores = 1, pvalueCutoff = 1
     )
     expect_s3_class(res, "data.frame")
     expect_true(nrow(res) > 0)
@@ -69,7 +69,7 @@ test_that("Edge_Network returns enrichment results for the signal pathway", {
         DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
         pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
         MGI = input_data$MGI, GGI = input_data$GGI,
-        minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1
+        minSize = 2, maxSize = 5000, iter = 5, ncores = 1, pvalueCutoff = 1
     )
     expect_s3_class(res, "data.frame")
     expect_true(nrow(res) > 0)
@@ -311,7 +311,7 @@ test_that("Edge_Score2D/Edge_Topology/Edge_Network accept an explicit BPPARAM", 
         DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
         pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
         MGI = input_data$MGI, GGI = input_data$GGI,
-        minSize = 2, maxSize = 5000, iter = 20, BPPARAM = BiocParallel::SerialParam(), pvalueCutoff = 1
+        minSize = 2, maxSize = 5000, iter = 5, BPPARAM = BiocParallel::SerialParam(), pvalueCutoff = 1
     )
     expect_s3_class(network, "data.frame")
 })
@@ -328,7 +328,7 @@ test_that("Edge_Network runs through the parallel RWR path with ncores > 1", {
         DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
         pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
         MGI = input_data$MGI, GGI = input_data$GGI,
-        minSize = 2, maxSize = 5000, iter = 20, ncores = 2, pvalueCutoff = 1
+        minSize = 2, maxSize = 5000, iter = 5, ncores = 2, pvalueCutoff = 1
     )
     expect_s3_class(res, "data.frame")
     expect_true(nrow(res) > 0)

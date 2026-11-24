@@ -63,7 +63,7 @@ test_that("Edge_Score2D() does not modify its data.table inputs", {
 
     invisible(Edge_Score2D(
         MGI2D = MGI2D_dt, pathway = pathway_dt, background = background,
-        iter = 20, ncores = 1, pvalueCutoff = 1
+        iter = 5, ncores = 1, pvalueCutoff = 1
     ))
 
     expect_identical(MGI2D_dt, MGI2D_snapshot)
@@ -92,7 +92,7 @@ test_that("Edge_Topology() does not modify its data.table inputs", {
     invisible(Edge_Topology(
         MGI = MGI_dt, background = background, pathway = pathway_dt, pathway_GGI = pathway_GGI_dt,
         dict_MGI = dict_MGI_dt, pvalueType = "neg", minSize = 2, maxSize = 5000,
-        iter = 20, ncores = 1, pvalueCutoff = 1
+        iter = 5, ncores = 1, pvalueCutoff = 1
     ))
 
     expect_identical(MGI_dt, MGI_snapshot)

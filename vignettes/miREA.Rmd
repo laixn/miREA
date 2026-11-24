@@ -82,11 +82,19 @@ BiocManager::install("miREA")
 
 This vignette uses a small, self-contained example dataset bundled with the
 package (see `?miREA_example_data`), derived from the real bladder urothelial
-carcinoma (BLCA) data used in the miREA manuscript. It covers 10
-bladder-cancer-relevant Reactome pathways and 422 TCGA samples (403 tumor and
-19 normal, used for differential expression). The 403 tumor samples are also
-used for miRNA-gene correlation. For the full datasets used in the manuscript,
-see the [Zenodo deposit](https://zenodo.org/records/18803209).
+carcinoma (BLCA) data used in the miREA manuscript. The toy_pathway covers 10
+Reactome pathways with 1,145 unique genes. toy_gene_DEdata and toy_mir_DEdata
+are derived from 422 TCGA samples (403 tumor and 19 normal, used for
+differential expression). The 403 tumor samples are also used for miRNA-gene
+correlation. The toy_gene_DEdata and toy_gene_mat retain the genes from the
+toy_pathway. The toy_mir_DEdata and toy_mir_mat retain 790 miRNAs that target
+a toy_pathway gene (via background_MGI) and are DE-testable in the full
+manuscript run. The background_GGI_Reactome contains 464,630 gene-gene
+interactions (GGIs) from Reactome. The background_MGI contains 306,150 MGIs
+from Hua, X., Li, Y., Pentaparthi, S.R., et al. (2023). Landscape of
+MicroRNA Regulatory Network Architecture and Functional Rerouting in Cancer.
+Cancer Res, 83, 59-73. For the full datasets used in the manuscript, see the
+[Zenodo deposit](https://zenodo.org/records/18803209).
 
 ```{r load-data}
 library(miREA)
@@ -125,6 +133,62 @@ input_data <- getAllInputData(
 names(input_data)
 ```
 
+## Supplying background_MGI and background_GGI
+
+`getAllInputData()` takes two background network arguments. `background_MGI`
+provides the miRNA to gene interaction universe used by the `MiR_` and
+`Edge_` methods. `background_GGI` provides the gene to gene interaction
+universe used by `Edge_Topology` and `Edge_Network`. Both arguments are
+optional.
+
+When `background_MGI` is left as `NULL`, `getAllInputData()` falls back to
+the bundled `background_MGI` dataset, containing 306,150 miRNA to gene
+interactions derived from the literature source cited in
+`?miREA_background_data`. A custom `background_MGI` must be supplied either
+as a character vector formatted as `[miRNA]:[gene]`, or as a two column
+data frame with a miRNA column and a gene column. One way to build a
+custom `background_MGI` is `multiMiR::get_multimir()`, which queries
+several curated and predicted miRNA target databases.
+
+```{r build-background-mgi, eval=FALSE}
+mgi <- multiMiR::get_multimir(table = "validated", summary = TRUE)
+background_MGI <- unique(mgi@data[, c("mature_mirna_id", "target_symbol")])
+colnames(background_MGI) <- c("miRNA", "gene")
+```
+
+When `background_GGI` is left as `NULL`, the source used depends on
+`GGI_source`.
+
+* `GGI_source = "Omnipath"`, the default, fetches the full Omnipath
+  interaction set at run time. This fetch requires the `OmnipathR` package
+  and an internet connection. No license based filtering is applied, even
+  though Omnipath aggregates interactions from several underlying
+  databases under different licenses, some of which restrict commercial
+  use. See the Third party data licensing section of the package README
+  for how to supply a license restricted subset through `background_GGI`
+  instead. The fetched interactions are limited to *Homo sapiens* through
+  the default organism setting of `OmnipathR`, rather than through
+  explicit species filtering by miREA.
+* `GGI_source = "Reactome"` falls back to the bundled
+  `data(background_GGI_Reactome)` snapshot, a frozen Reactome Functional
+  Interaction network release licensed under CC0, carrying no usage
+  restriction.
+
+A custom `background_GGI` must be supplied as a two column data frame
+containing a source gene column and a target gene column.
+
+The manuscript's own `background_GGI` (Methods 2.1) was built by
+extracting 282,504 experimentally validated interactions restricted to
+*Homo sapiens* from Omnipath, treating undirected interactions as
+bidirectional, and reconstructing Reactome pathway networks from
+Reactome's predefined gene to gene interactions, for a combined 464,595
+GGIs across 13,640 genes (see \doi{10.64898/2026.02.27.708509} for
+details). This combined figure is distinct from the Reactome only
+`background_GGI_Reactome` snapshot bundled with the package, which
+contains 464,630 edges. Users who want the exact background used in the
+manuscript should download it from the Zenodo deposit linked above rather
+than relying on the bundled snapshot.
+
 ## Interoperability with standard Bioconductor classes
 
 `gene_mat`/`mir_mat` also accept a `r BiocStyle::Biocpkg("SummarizedExperiment")`
@@ -157,17 +221,30 @@ identical(input_data_bioc$data$Edge_ORA, input_data$data$Edge_ORA)
 
 # Step 2: Run enrichment analysis
 
-`miREA()` requires a `background` for each target (`TG`, `MiR`, `Edge`) unless
-you already supplied one via `getAllInputData()`'s `background_MGI`. miREA
-does not ship a bundled default background. Build one from your own
-background_MGI/background_GGI, or download the full background used in the
-manuscript from the Zenodo deposit linked above.
+`miREA()` involves two independent kinds of background input that are easy
+to conflate:
 
-## Building a custom background_MGI/background_GGI
+* `getAllInputData()`'s `background_MGI`/`background_GGI` (the underlying
+  miRNA-gene / gene-gene interaction networks) are both optional and fall
+  back to miREA's bundled defaults (`data(background_MGI)`, a live Omnipath
+  fetch, or `data(background_GGI_Reactome)`) when left `NULL` — see below.
+* `miREA()`'s own `background` argument (the TG/MiR/Edge background
+  universes each method's enrichment test is run against) has **no**
+  bundled default and must always be built and supplied explicitly, even if
+  you already supplied `background_MGI`/`background_GGI` above;
+  `background = NULL` raises an error. See the `run-miREA` code chunk below
+  for how to build it from `input_data`/`background_MGI`.
 
-`background_MGI` (curated miRNA-gene interactions) is always required for
-`MiR_`/`Edge_` methods; one option is `multiMiR::get_multimir()`, which
-queries several curated/predicted miRNA-target databases:
+## Customizing background_MGI/background_GGI
+
+miREA ships bundled defaults for both, so this section is only needed if you
+want a different source, a newer snapshot, or a license-restricted subset —
+or want to download the exact background used in the manuscript from the
+Zenodo deposit linked above.
+
+`background_MGI` (curated miRNA-gene interactions) can be rebuilt from, e.g.,
+`multiMiR::get_multimir()`, which queries several curated/predicted
+miRNA-target databases:
 
 ```{r build-background-mgi, eval=FALSE}
 mgi <- multiMiR::get_multimir(table = "validated", summary = TRUE)
@@ -198,7 +275,10 @@ The manuscript's own `background_GGI` (Methods 2.1) was built by extracting
 Omnipath (undirected interactions treated as bidirectional), and
 reconstructing Reactome pathway networks from Reactome's predefined
 gene-gene interactions, for a combined 464,595 GGIs across 13,640 genes
-(see \doi{10.64898/2026.02.27.708509} for details).
+(see \doi{10.64898/2026.02.27.708509} for details). This Omnipath+Reactome
+figure (464,595) is the manuscript's own analysis background and is
+distinct from the Reactome-only `background_GGI_Reactome` bundled with the
+package (464,630 edges, see the bullet list above).
 
 ```{r run-miREA}
 background <- list(

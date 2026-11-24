@@ -101,7 +101,7 @@ res <- Edge_Topology(
     MGI = input_data$data$Edge_Topology, background = background,
     pathway = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
     dict_MGI = input_data$dict_MGI, pvalueType = "neg",
-    minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1
+    minSize = 2, maxSize = 5000, iter = 10, ncores = 1, pvalueCutoff = 1
 )
 head(res)
 }

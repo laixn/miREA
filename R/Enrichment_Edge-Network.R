@@ -52,7 +52,7 @@
 #'     DEMGI = input_data$data$Edge_Network, pathway_gene = input_data$pathway$TG,
 #'     pathway_MGI = input_data$pathway$Edge, pathway_GGI = input_data$pathway_GGI,
 #'     MGI = input_data$MGI, GGI = input_data$GGI,
-#'     minSize = 2, maxSize = 5000, iter = 20, ncores = 1, pvalueCutoff = 1
+#'     minSize = 2, maxSize = 5000, iter = 10, ncores = 1, pvalueCutoff = 1
 #' )
 #' head(res)
 #' @export

@@ -28,8 +28,8 @@
 #'     `stat`, `padj`: differential expression results for the miRNAs that
 #'     target a `toy_pathway` gene (via `background_MGI`) and are DE-testable.}
 #'   \item{toy_gene_mat}{A gene-by-sample expression matrix (data.frame, genes
-#'     as rownames), restricted to the genes in `toy_gene_DEdata`, the 403
-#'     tumor TCGA samples.}
+#'     as rownames), restricted to 1,145 genes in `toy_pathway` and 403 tumor 
+#'     TCGA samples.}
 #'   \item{toy_mir_mat}{A miRNA-by-sample expression matrix (data.frame,
 #'     miRNAs as rownames), restricted to the miRNAs in `toy_mir_DEdata`, the
 #'     same 403 tumor TCGA samples as `toy_gene_mat`.}
