@@ -120,11 +120,8 @@ data(toy_mir_DEdata)
 data(toy_gene_mat)
 data(toy_mir_mat)
 data(background_MGI)
-# Edge_Score2D is included so input_data carries the MGI "strength" scores
-# plotHeatmapSankey() needs for its heatmap cells, without running it in
-miREA().
 input_data <- getAllInputData(
-    methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+    methods = "Edge_ORA", pathway = toy_pathway,
     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
     background_MGI = background_MGI,
     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
@@ -136,6 +133,8 @@ result <- miREA(
     methods = "Edge_ORA", input_data = input_data, background = background,
     minSize = NULL, maxSize = NULL, pvalueCutoff = 1
 )
-plotHeatmapSankey(method = "Edge_ORA", result = result, input_data =
-input_data, penrichCutoff = 1)
+plotHeatmapSankey(
+    method = "Edge_ORA", result = result, input_data =
+        input_data, penrichCutoff = 1
+)
 }

@@ -1,3 +1,43 @@
+# miREA 0.99.5
+
+* Fixed a broken `@examples` block in `plotHeatmapSankey()`: a multi-line
+  comment was missing a leading `#` on its last line, which R CMD check
+  parsed as code and failed on with a syntax error (also affecting the R
+  code problem check).
+* `getAllInputData()` now always computes the per-MGI `strength` and `MGI`
+  columns for any `Edge_` method, not only `Edge_Score1D`/`Edge_Score2D`/
+  `Edge_Topology`. Previously, building `input_data` from `Edge_ORA` or
+  `Edge_Network` alone produced a `data` table missing `strength`, which
+  made `plotHeatmap()`/`plotHeatmapSankey()` error when called on such
+  input_data. `scoreFun`'s default/validation now applies whenever any
+  `Edge_` method is requested, matching the above.
+* Standardized the differential-expression threshold comparison to be
+  boundary-inclusive (`>=`, not `>`) everywhere it is used: the node-based
+  and edge-based DE/DEMGI definitions in `getAllInputData()`, the
+  DEMGI/DEG/DEmiRs filters and heatmap `*` DE-star annotations in
+  `plotHeatmap()`/`plotHeatmapSankey()`. This fixes a prior inconsistency
+  where the internal Sankey-building helper already used `>=` while every
+  other DE check used strict `>`, which could make a boundary-value MGI
+  count as DE in one plot panel but not the other within the same
+  `plotHeatmapSankey()` call. Note this also changes the DE-calling rule
+  used by `TG_ORA`/`TG_Score`/`MiR_ORA`/`Edge_ORA`/`Edge_Network`'s
+  enrichment analyses themselves (not only plotting), so results for MGIs
+  exactly at a cutoff boundary may differ from previous releases.
+* Removed the unused, dead-code-only internal `fetch_background_GGI_reactome()`
+  helper: `getAllInputData()`'s `GGI_source = "Reactome"` has always loaded
+  the bundled `background_GGI_Reactome` snapshot directly and never called
+  this function. Corrected the accompanying `background_GGI_Reactome`
+  documentation, which incorrectly described a live Reactome re-fetch path.
+* Removed dead default argument values from the internal `plot_sankey()`
+  helper (its single call site always passed every argument explicitly);
+  also removed its `n_pathway` parameter, which the function never used
+  (the top-N-enriched-pathway restriction is already applied once, upstream,
+  in `build_heatmap_components()`).
+* Added regression tests for the above: `Edge_ORA`/`Edge_Network`-only
+  `input_data` now carries `strength` and plots successfully; the DEMGI
+  classification in `plotHeatmap()`/`plotHeatmapSankey()` is independently
+  re-derived and checked against the documented inclusive (`>=`) rule.
+
 # miREA 0.99.4
 
 * Restored consistent 4-space indentation across the R source, fixing an

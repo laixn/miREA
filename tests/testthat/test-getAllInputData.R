@@ -289,3 +289,40 @@ test_that("fetch_background_GGI_omnipath() returns the expected structure", {
     expect_equal(colnames(interactions), c("source_genesymbol", "target_genesymbol", "interact"))
     expect_true(nrow(interactions) > 0)
 })
+
+test_that("getAllInputData() computes strength/MGI for Edge_ORA/Edge_Network alone, without any score method", {
+    # Regression test: strength/MGI used to only be computed when methods
+    # included Edge_Score1D/Edge_Score2D/Edge_Topology, which made
+    # plotHeatmap()/plotHeatmapSankey() fail for input_data built from
+    # Edge_ORA/Edge_Network alone.
+    expect_message(
+        input_data_ora <- getAllInputData(
+            methods = "Edge_ORA", pathway = toy_pathway,
+            mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+            background_MGI = background_MGI,
+            gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
+        ),
+        "Use the default \\[rank\\] instead"
+    )
+    expect_true(all(c("strength", "MGI") %in% colnames(input_data_ora$data$data)))
+
+    input_data_network <- getAllInputData(
+        methods = "Edge_Network", pathway = toy_pathway,
+        mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+        background_MGI = background_MGI, GGI_source = "Reactome",
+        gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
+    )
+    expect_true(all(c("strength", "MGI") %in% colnames(input_data_network$data$data)))
+
+    background <- list(Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene)))
+    result_ora <- miREA(
+        methods = "Edge_ORA", input_data = input_data_ora, background = background,
+        minSize = NULL, maxSize = NULL, pvalueCutoff = 1
+    )
+    pdf(NULL)
+    on.exit(dev.off(), add = TRUE)
+    expect_no_error(plotHeatmap(
+        method = "Edge_ORA", result = result_ora, input_data = input_data_ora,
+        penrichCutoff = 1
+    ))
+})

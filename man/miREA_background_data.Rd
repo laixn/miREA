@@ -32,9 +32,9 @@
     Functional Interaction network's predefined gene-gene interactions,
     with undirected/mixed-sign edges expanded into directed pairs, then
     harmonized to current HGNC gene symbols. This is a frozen snapshot
-    of a specific dated Reactome FI release. Fetching Reactome live via
-    [getAllInputData()]'s `GGI_source = "Reactome"` option reconstructs
-    the network from a pinned (but not HGNC-harmonized) release instead.
+    of a specific dated Reactome FI release; [getAllInputData()]'s
+    `GGI_source = "Reactome"` option loads this exact snapshot (there is
+    no separate live-fetch path for Reactome, unlike Omnipath).
     Reactome's data is licensed CC0 (public domain dedication), so this
     snapshot carries no usage restrictions.}
 }

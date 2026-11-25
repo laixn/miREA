@@ -60,7 +60,7 @@ data(toy_gene_DEdata)
 data(background_MGI)
 input_data <- getAllInputData(
     methods = "MiR_Score", pathway = toy_pathway, mir_DEdata =
-    toy_mir_DEdata,
+        toy_mir_DEdata,
     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 )
 res <- MiR_Score(

@@ -37,6 +37,60 @@ test_that("plotSummary(), plotHeatmap(), and plotHeatmapSankey() run without err
     ))
 })
 
+test_that("build_heatmap_components()'s DEMGI classification is boundary-inclusive (>=), matching plot_sankey()", {
+    # Regression test for a past build_heatmap_components()/plot_sankey() `>` vs
+    # `>=` mismatch: independently recompute the DEMGI predicate with the
+    # documented inclusive (>=) operator and check it matches path_DEMGI
+    # exactly, so a future accidental revert to `>` fails this test.
+    input_data <- cached_getAllInputData(
+        methods = default_method_list, pathway = toy_pathway,
+        mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
+        background_MGI = background_MGI, GGI_source = "Reactome",
+        gene_mat = toy_gene_mat, mir_mat = toy_mir_mat,
+        scoreFun = "rank"
+    )
+    background <- list(
+        TG = unique(toy_pathway$gene),
+        MiR = unique(input_data$pathway$MiR$miRNA),
+        Edge = unique(paste0(background_MGI$miRNA, ":", background_MGI$gene))
+    )
+    result <- cached_miREA(
+        methods = default_method_list, input_data = input_data, background = background,
+        minSize = 2, maxSize = 5000,
+        pvalueType = list(TG = "std", MiR = "std", Edge = "neg"),
+        pAdjMethod = "BH", pvalueCutoff = 1, iter = 5, ncores = 1
+    )
+
+    comp <- miREA:::build_heatmap_components(
+        method = "Edge_ORA", result = result, input_data = input_data,
+        n_mir_heatmap = 20, n_pathway = 10, penrichCutoff = 1,
+        gene_annot = NULL, mir_annot = NULL, annot_color = "#A6DDBA",
+        DElogFCCutoff = 1, DEpadjCutoff = 0.05, corCutoff = 0, corPadjCutoff = 0.05
+    )
+
+    expected_DEMGI <- dplyr::filter(
+        comp$data,
+        cor < 0, corPadj < 0.05,
+        abs(mirLogFC) >= 1, mirPadj < 0.05,
+        abs(geneLogFC) >= 1, genePadj < 0.05
+    )
+    expected_path <- dplyr::filter(
+        dplyr::inner_join(comp$pathway, expected_DEMGI, by = c("miRNA", "gene")),
+        pathway %in% comp$all_paths
+    )
+    expected_counts <- table(factor(expected_path$pathway, levels = comp$all_paths))
+    expect_equal(as.integer(comp$path_DEMGI), as.integer(expected_counts))
+
+    pdf(NULL)
+    on.exit(dev.off(), add = TRUE)
+    expect_no_error(plotHeatmap(
+        method = "Edge_ORA", result = result, input_data = input_data, penrichCutoff = 1
+    ))
+    expect_no_error(plotHeatmapSankey(
+        method = "Edge_ORA", result = result, input_data = input_data, penrichCutoff = 1
+    ))
+})
+
 test_that("plotHeatmap()/plotHeatmapSankey() inherit thresholds from input_data$threshold, and accept overrides", {
     input_data_strict <- getAllInputData(
         methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,

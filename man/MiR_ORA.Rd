@@ -64,7 +64,7 @@ input_data <- getAllInputData(
 )
 res <- MiR_ORA(
     DEmiR = input_data$data$MiR_ORA, background =
-    unique(input_data$pathway$MiR$miRNA),
+        unique(input_data$pathway$MiR$miRNA),
     pathway = input_data$pathway$MiR, pvalueCutoff = 1
 )
 head(res)

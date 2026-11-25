@@ -39,7 +39,7 @@
 #' )
 #' res <- MiR_ORA(
 #'     DEmiR = input_data$data$MiR_ORA, background =
-#'     unique(input_data$pathway$MiR$miRNA),
+#'         unique(input_data$pathway$MiR$miRNA),
 #'     pathway = input_data$pathway$MiR, pvalueCutoff = 1
 #' )
 #' head(res)
@@ -127,7 +127,7 @@ MiR_ORA <- function(DEmiR, background = NULL, pathway, pAdjMethod = "BH", pvalue
 #' data(background_MGI)
 #' input_data <- getAllInputData(
 #'     methods = "MiR_Score", pathway = toy_pathway, mir_DEdata =
-#'     toy_mir_DEdata,
+#'         toy_mir_DEdata,
 #'     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI
 #' )
 #' res <- MiR_Score(

@@ -60,16 +60,16 @@
 #' data(background_MGI)
 #' input_data <- getAllInputData(
 #'     methods = "Edge_Network", pathway = toy_pathway, mir_DEdata =
-#'     toy_mir_DEdata,
+#'         toy_mir_DEdata,
 #'     gene_DEdata = toy_gene_DEdata, background_MGI = background_MGI,
 #'     GGI_source = "Reactome",
 #'     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat
 #' )
 #' res <- Edge_Network(
 #'     DEMGI = input_data$data$Edge_Network, pathway_gene =
-#'     input_data$pathway$TG,
+#'         input_data$pathway$TG,
 #'     pathway_MGI = input_data$pathway$Edge, pathway_GGI =
-#'     input_data$pathway_GGI,
+#'         input_data$pathway_GGI,
 #'     MGI = input_data$MGI, GGI = input_data$GGI,
 #'     minSize = 2, maxSize = 5000, iter = 10, ncores = 1, pvalueCutoff = 1
 #' )

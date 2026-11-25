@@ -91,8 +91,10 @@ SummarizedExperiment. Selects which assay to
 extract, either by integer index or assay name. Default is 1 (the
 first assay).}
 
-\item{scoreFun}{optional, needed for Edge_Score1D, Edge_Score2D,
-Edge_Topology. See default_scoreFun for all supportive methods.}
+\item{scoreFun}{optional, needed for any Edge_ method (used to compute the
+per-MGI `strength` score stored in the `data` element of the
+return value, not only for Edge_Score1D, Edge_Score2D,
+Edge_Topology). See default_scoreFun for all supportive methods.}
 
 \item{DElogFCCutoff}{optional, the absolute log2FC threshold used to call a
 miRNA/gene differentially
@@ -120,7 +122,10 @@ A list that contains all the data formats needed for miREA, including
        a `threshold` element
        recording the
        `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/`corPadjCutoff` values
-       actually used.
+       actually used. If any Edge_ method is requested, its `data` element
+       (the full miRNA-gene dict used by the Edge_ methods) always
+       includes the per-MGI `strength` and `MGI` columns, regardless of
+       which specific Edge_ method(s) were requested.
 }
 \description{
 Functions to generate input data for miREA, based on the original expression

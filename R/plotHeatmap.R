@@ -79,10 +79,10 @@ build_heatmap_components <- function(method, result, input_data, n_mir_heatmap, 
     pathway_TGs <- unique(pathway$gene)
 
     DEMGI <- data %>%
-        filter(cor < corCutoff, corPadj < corPadjCutoff, abs(mirLogFC) > DElogFCCutoff, mirPadj < DEpadjCutoff, abs(geneLogFC) > DElogFCCutoff, genePadj < DEpadjCutoff) %>%
+        filter(cor < corCutoff, corPadj < corPadjCutoff, abs(mirLogFC) >= DElogFCCutoff, mirPadj < DEpadjCutoff, abs(geneLogFC) >= DElogFCCutoff, genePadj < DEpadjCutoff) %>%
         mutate(MGI = paste0(miRNA, ":", gene))
     DEG <- data %>%
-        filter(abs(geneLogFC) > DElogFCCutoff, genePadj < DEpadjCutoff) %>%
+        filter(abs(geneLogFC) >= DElogFCCutoff, genePadj < DEpadjCutoff) %>%
         pull(gene)
     MGIList <- data %>%
         arrange(strength) %>%
@@ -99,7 +99,7 @@ build_heatmap_components <- function(method, result, input_data, n_mir_heatmap, 
     n_total <- length(unique(MGIList$miRNA))
     n_keep <- min(n_mir, n_total)
     DEmiRs <- data %>%
-        filter(abs(mirLogFC) > DElogFCCutoff, mirPadj < DEpadjCutoff) %>%
+        filter(abs(mirLogFC) >= DElogFCCutoff, mirPadj < DEpadjCutoff) %>%
         pull(miRNA) %>%
         unique()
 
@@ -465,10 +465,8 @@ build_heatmap_components <- function(method, result, input_data, n_mir_heatmap, 
 #' data(toy_gene_mat)
 #' data(toy_mir_mat)
 #' data(background_MGI)
-#' # Edge_Score2D is included so input_data carries the MGI "strength" scores
-#' # plotHeatmap() needs for its heatmap cells, without running it in miREA().
 #' input_data <- getAllInputData(
-#'     methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+#'     methods = "Edge_ORA", pathway = toy_pathway,
 #'     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
 #'     background_MGI = background_MGI,
 #'     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
@@ -480,8 +478,10 @@ build_heatmap_components <- function(method, result, input_data, n_mir_heatmap, 
 #'     methods = "Edge_ORA", input_data = input_data, background = background,
 #'     minSize = NULL, maxSize = NULL, pvalueCutoff = 1
 #' )
-#' plotHeatmap(method = "Edge_ORA", result = result, input_data = input_data,
-#' penrichCutoff = 1)
+#' plotHeatmap(
+#'     method = "Edge_ORA", result = result, input_data = input_data,
+#'     penrichCutoff = 1
+#' )
 #' @export
 plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathway = 10,
                         plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL,
@@ -533,7 +533,7 @@ plotHeatmap <- function(method, result, input_data, n_mir_heatmap = 10, n_pathwa
                 height = unit(1.5, "cm")
             ),
             star = anno_text(
-                ifelse(abs(comp$gene_anno$geneLogFC) > comp$DElogFCCutoff, "*", ""),
+                ifelse(abs(comp$gene_anno$geneLogFC) >= comp$DElogFCCutoff, "*", ""),
                 gp = gpar(fontsize = 18, col = ifelse(comp$gene_anno$geneLogFC < 0, "blue", "red")),
                 location = 0.5,
                 just = "center",

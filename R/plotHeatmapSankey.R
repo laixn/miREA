@@ -74,11 +74,8 @@
 #' data(toy_gene_mat)
 #' data(toy_mir_mat)
 #' data(background_MGI)
-#' # Edge_Score2D is included so input_data carries the MGI "strength" scores
-#' # plotHeatmapSankey() needs for its heatmap cells, without running it in
-#' miREA().
 #' input_data <- getAllInputData(
-#'     methods = c("Edge_ORA", "Edge_Score2D"), pathway = toy_pathway,
+#'     methods = "Edge_ORA", pathway = toy_pathway,
 #'     mir_DEdata = toy_mir_DEdata, gene_DEdata = toy_gene_DEdata,
 #'     background_MGI = background_MGI,
 #'     gene_mat = toy_gene_mat, mir_mat = toy_mir_mat, scoreFun = "rank"
@@ -90,8 +87,10 @@
 #'     methods = "Edge_ORA", input_data = input_data, background = background,
 #'     minSize = NULL, maxSize = NULL, pvalueCutoff = 1
 #' )
-#' plotHeatmapSankey(method = "Edge_ORA", result = result, input_data =
-#' input_data, penrichCutoff = 1)
+#' plotHeatmapSankey(
+#'     method = "Edge_ORA", result = result, input_data =
+#'         input_data, penrichCutoff = 1
+#' )
 #' @export
 plotHeatmapSankey <- function(method, result, input_data, n_mir_heatmap = 20, n_mir_sankey = 10, n_pathway = 10,
                               plot_path = NULL, penrichCutoff = 0.05, height = NULL, width = NULL, sankey_prop = 1.5,
@@ -143,7 +142,7 @@ plotHeatmapSankey <- function(method, result, input_data, n_mir_heatmap = 20, n_
                 height = unit(1.5, "cm")
             ),
             star = anno_text(
-                ifelse(abs(comp$gene_anno$geneLogFC) > comp$DElogFCCutoff, "*", ""),
+                ifelse(abs(comp$gene_anno$geneLogFC) >= comp$DElogFCCutoff, "*", ""),
                 gp = gpar(fontsize = 18, col = ifelse(comp$gene_anno$geneLogFC < 0, "blue", "red")),
                 location = 0.5,
                 just = "center",
@@ -161,7 +160,7 @@ plotHeatmapSankey <- function(method, result, input_data, n_mir_heatmap = 20, n_
         dict = comp$data, pathway = comp$pathway, enriched_path = comp$enriched_path,
         all_paths = comp$all_paths, top_miRNA = comp$top_miRNA, mir_max = comp$mir_max,
         gene_max = comp$gene_max, strength_max = comp$v, penrichCutoff = penrichCutoff,
-        n_mir = n_mir_sankey, n_pathway = n_pathway,
+        n_mir = n_mir_sankey,
         DElogFCCutoff = comp$DElogFCCutoff, DEpadjCutoff = comp$DEpadjCutoff,
         corCutoff = comp$corCutoff, corPadjCutoff = comp$corPadjCutoff
     )
@@ -318,8 +317,8 @@ wrap_underscored_label <- function(x, width) {
     }, character(1), USE.NAMES = FALSE)
 }
 
-plot_sankey <- function(dict, pathway, enriched_path, all_paths, top_miRNA, mir_max, gene_max, strength_max, penrichCutoff = 0.05, n_mir = 25, n_pathway = 10,
-                        DElogFCCutoff = 1, DEpadjCutoff = 0.05, corCutoff = 0, corPadjCutoff = 0.05) {
+plot_sankey <- function(dict, pathway, enriched_path, all_paths, top_miRNA, mir_max, gene_max, strength_max, penrichCutoff, n_mir,
+                        DElogFCCutoff, DEpadjCutoff, corCutoff, corPadjCutoff) {
     pathway <- pathway %>% filter(pathway %in% all_paths)
     dict_DE <- dict %>%
         filter(cor < corCutoff, corPadj < corPadjCutoff, genePadj < DEpadjCutoff, abs(geneLogFC) >= DElogFCCutoff, mirPadj < DEpadjCutoff, abs(mirLogFC) >= DElogFCCutoff) %>%

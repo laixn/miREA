@@ -3,8 +3,8 @@
 ## the toy data needs to be rebuilt. Requires data.table and access to the
 ## manuscript's deposited raw data (see `zenodo_dir` below).
 ##
-## It directly subsetsthe manuscript's own already-computed, already-deposited DE 
-## results and raw expression matrices for BLCA (`raw_data/cancer_data/{DEG,DEmiR,paired}/`, 
+## It directly subsetsthe manuscript's own already-computed, already-deposited DE
+## results and raw expression matrices for BLCA (`raw_data/cancer_data/{DEG,DEmiR,paired}/`,
 ## the same Zenodo deposit `toy_pathway`'s 10 Reactome pathways were themselves
 ## selected from -- see R/data.R and the enrichment run under
 ## `data/input_data/{hallmark,Reactome}/BLCA_*_input_data.RData`, which share

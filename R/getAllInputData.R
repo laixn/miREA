@@ -63,8 +63,10 @@
 #'        SummarizedExperiment. Selects which assay to
 #'        extract, either by integer index or assay name. Default is 1 (the
 #'        first assay).
-#' @param scoreFun optional, needed for Edge_Score1D, Edge_Score2D,
-#'        Edge_Topology. See default_scoreFun for all supportive methods.
+#' @param scoreFun optional, needed for any Edge_ method (used to compute the
+#'        per-MGI `strength` score stored in the `data` element of the
+#'        return value, not only for Edge_Score1D, Edge_Score2D,
+#'        Edge_Topology). See default_scoreFun for all supportive methods.
 #' @param DElogFCCutoff optional, the absolute log2FC threshold used to call a
 #'        miRNA/gene differentially
 #'        expressed when building the DE sets for the ORA methods and the
@@ -89,7 +91,10 @@
 #'        a `threshold` element
 #'        recording the
 #'        `DElogFCCutoff`/`DEpadjCutoff`/`corCutoff`/`corPadjCutoff` values
-#'        actually used.
+#'        actually used. If any Edge_ method is requested, its `data` element
+#'        (the full miRNA-gene dict used by the Edge_ methods) always
+#'        includes the per-MGI `strength` and `MGI` columns, regardless of
+#'        which specific Edge_ method(s) were requested.
 #' @references Zhang Z, Lai X (2026). miREA: a network-based tool for
 #' microRNA-oriented enrichment analysis. bioRxiv.
 #' \doi{10.64898/2026.02.27.708509}
@@ -129,14 +134,16 @@ getAllInputData <- function(methods, pathway,
     sum_MiR <- sum(grepl("MiR_", methods))
     sum_Edge <- sum(grepl("Edge_", methods))
     target_method <- c("Edge_Topology", "Edge_Network")
-    score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
     colnames(pathway)[seq_len(2)] <- c("pathway", "gene")
     # check scoreFun
-    if (length(intersect(score_method, methods)) > 0 && is.null(scoreFun)) {
+    # scoreFun now always feeds the `strength` score computed for any Edge_
+    # method (not just Edge_Score1D/Edge_Score2D/Edge_Topology), so the
+    # default/validation gate is sum_Edge > 0 rather than score-method-specific.
+    if (sum_Edge > 0 && is.null(scoreFun)) {
         message("No [scoreFun] parameter has been specified. Use the default [rank] instead!\n")
         scoreFun <- "rank"
     }
-    if (length(intersect(score_method, methods)) > 0 && (!scoreFun %in% default_scoreFun)) {
+    if (sum_Edge > 0 && (!scoreFun %in% default_scoreFun)) {
         stop("The [scoreFun] you input is not valid. Please select one from the default_scoreFun!")
     }
 
@@ -261,21 +268,21 @@ getAllInputData <- function(methods, pathway,
 ### Notice: gene_mat, mir_mat should only conclude tumor samples
 
 
-# gene_mat: Edge_ORA
-# mir_mat: Edge_ORA
+# gene_mat: Edge_ method
+# mir_mat: Edge_ method
 # gene_DEdata: TG_ORA, TG_Score
 # mir_DEdata: MiR_ORA, MiR_Score
 # background_MGI: could be either two-column dataframe, or a character vector with format [miRNA]:[gene]
 #                 Edge_ORA, Edge_Score1D, Edge_Topology, Edge_Network
 # background_GGI
 # pathway
-# scoreFun: Edge_Score1D
+# scoreFun: any Edge_ method
 
 # gene_DEdata: except for TG_ORA, MiR_ORA and MiR_Score, should be four-column dataframe, containing gene, log2FC, stat, padj
 # mir_DEdata: compulsory, should be four-column dataframe, containing miRNA, log2FC, stat, padj
 # gene_mat: only needed for Edge_ method
 # mir_mat: only needed for Edge_ method
-# scoreFun: only needed for Edge_Score1D, Edge_Score2D, Edge_Topology, choose one from rank, sigmoid, normalize
+# scoreFun: needed for any Edge_ method, choose one from rank, sigmoid, normalize
 # background_MGI: only needed for Edge_ method
 # will return a list, contains the input of each method
 get_data <- function(methods, mir_DEdata, gene_DEdata = NULL,
@@ -308,14 +315,13 @@ get_data_validate_inputs <- function(methods, gene_DEdata, gene_mat, mir_mat, ba
     }
     sum_Edge <- sum(grepl("Edge_", methods))
     no_gene_DEdata <- c("TG_ORA", "MiR_ORA", "MiR_Score")
-    score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
     if (length(setdiff(methods, no_gene_DEdata)) > 0 && is.null(gene_DEdata)) {
         stop("Please make sure you have input gene_DEdata!")
     }
     if (sum_Edge != 0 && (is.null(gene_mat) || is.null(mir_mat))) {
         stop("Please make sure you have input gene_mat and mir_mat")
     }
-    if (any(score_method %in% methods) && is.null(scoreFun)) {
+    if (sum_Edge > 0 && is.null(scoreFun)) {
         message("You didn't specify scoreFun for transform expression score, set 'rank' automatically.\n")
         scoreFun <- "rank"
     }
@@ -446,7 +452,7 @@ get_data_node_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
                                 DElogFCCutoff = 1, DEpadjCutoff = 0.05) {
     result <- list()
     if (sum(methods %in% c("TG_ORA", "TG_Score", "MiR_ORA")) > 0) {
-        interested_miRNAs <- mir_DEdata[abs(mirLogFC) > DElogFCCutoff & mirPadj < DEpadjCutoff, unique(miRNA)]
+        interested_miRNAs <- mir_DEdata[abs(mirLogFC) >= DElogFCCutoff & mirPadj < DEpadjCutoff, unique(miRNA)]
     }
 
     if ("TG_ORA" %in% methods) {
@@ -472,7 +478,6 @@ get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
                                 DElogFCCutoff = 1, DEpadjCutoff = 0.05,
                                 corCutoff = 0, corPadjCutoff = 0.05) {
     DE_method <- c("Edge_ORA", "Edge_Network")
-    score_method <- c("Edge_Score1D", "Edge_Score2D", "Edge_Topology")
     result <- list()
 
     dict <- merge(background_MGI, mir_DEdata[, .(miRNA, mirLogFC, mirPadj)], by = "miRNA", all = FALSE)
@@ -481,38 +486,40 @@ get_data_edge_based <- function(methods, mir_DEdata, gene_DEdata, background_MGI
     dict <- merge(dict, cor, by = c("miRNA", "gene"), all = FALSE)
     dict <- na.omit(dict)
     data.table::setcolorder(dict, c("miRNA", "gene", "cor", "corPadj", "mirLogFC", "mirPadj", "geneLogFC", "genePadj"))
+
+    # ratio/normratio/strength/MGI are computed unconditionally (not just for
+    # Edge_Score1D/Edge_Score2D/Edge_Topology): `strength` is also needed by
+    # plotHeatmap()/plotHeatmapSankey() for any Edge_ method, including
+    # Edge_ORA/Edge_Network.
+    dict[, ratio := (geneLogFC / mirLogFC) * ((1 - genePadj) / (1 + mirPadj))]
+    dict[, normratio := apply_scoreFun(ratio, scoreFun)]
+    dict[, `:=`( # `:=`() form modifies multiple columns; infix `:=` modifies a single column
+        strength = cor * normratio,
+        MGI = paste0(miRNA, ":", gene)
+    )]
+    data.table::setorder(dict, strength)
     result[["data"]] <- dict
+    dict_dedup <- unique(dict, by = "MGI")
 
     if (any(DE_method %in% methods)) {
         sel <- dict[
             cor < corCutoff & corPadj < corPadjCutoff &
-                abs(mirLogFC) > DElogFCCutoff & mirPadj < DEpadjCutoff &
-                abs(geneLogFC) > DElogFCCutoff & genePadj < DEpadjCutoff
+                abs(mirLogFC) >= DElogFCCutoff & mirPadj < DEpadjCutoff &
+                abs(geneLogFC) >= DElogFCCutoff & genePadj < DEpadjCutoff
         ]
         data <- if (nrow(sel) > 0) paste0(sel$miRNA, ":", sel$gene) else character(0)
         for (sub_method in intersect(DE_method, methods)) {
             result[[sub_method]] <- data
         }
     }
-    if (any(score_method %in% methods)) {
-        dict[, ratio := (geneLogFC / mirLogFC) * ((1 - genePadj) / (1 + mirPadj))]
-        dict[, normratio := apply_scoreFun(ratio, scoreFun)]
-        dict[, `:=`( # `:=`() form modifies multiple columns; infix `:=` modifies a single column
-            strength = cor * normratio,
-            MGI = paste0(miRNA, ":", gene)
-        )]
-        data.table::setorder(dict, strength)
-        dict <- unique(dict, by = "MGI")
-
-        if ("Edge_Score1D" %in% methods) {
-            result[["Edge_Score1D"]] <- setNames(as.numeric(dict$strength), dict$MGI)
-        }
-        if ("Edge_Topology" %in% methods) {
-            result[["Edge_Topology"]] <- as.data.frame(dict[, .(MGI, miRNA, gene, strength)])
-        }
-        if ("Edge_Score2D" %in% methods) {
-            result[["Edge_Score2D"]] <- as.data.frame(dict[, .(MGI, miRNA, gene, cor, normratio)])
-        }
+    if ("Edge_Score1D" %in% methods) {
+        result[["Edge_Score1D"]] <- setNames(as.numeric(dict_dedup$strength), dict_dedup$MGI)
+    }
+    if ("Edge_Topology" %in% methods) {
+        result[["Edge_Topology"]] <- as.data.frame(dict_dedup[, .(MGI, miRNA, gene, strength)])
+    }
+    if ("Edge_Score2D" %in% methods) {
+        result[["Edge_Score2D"]] <- as.data.frame(dict_dedup[, .(MGI, miRNA, gene, cor, normratio)])
     }
     result
 }
