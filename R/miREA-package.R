@@ -63,7 +63,7 @@ utils::globalVariables(c(
     "EB", "edge", "fill_color", "flow_value", "flow_value.x", "flow_value.y",
     "from", "gene", "gene_count", "gene_flow_value", "geneLogFC", "genePadj",
     "geneStat", "i.strength", "ID", "is_DE", "method", "Method1", "Method2",
-    "MGI", "mirLogFC", "miRNA", "mirPadj", "mirStat", "n_DE", "normratio",
+    "MGI", "mirLogFC", "miRNA", "mirPadj", "mirStat", "n_DE", "n_pathway", "normratio",
     "p_value", "padj", "pathway", "PC1", "PC2", "positive_rate", "pvalue",
     "rand_score_dist", "ratio", "score", "stratum",
     "strength", "text", "to", "total_flow", "Type", "Value", "x", "y"
